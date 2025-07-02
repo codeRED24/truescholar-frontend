@@ -1,3 +1,22 @@
+const getValuesBetweenKeywords = (
+  startIndex: number,
+  words: string[],
+  keywords: string[]
+): string[] => {
+  const values: string[] = [];
+  for (let j = startIndex + 1; j < words.length; j++) {
+    if (keywords.includes(words[j])) break;
+    values.push(words[j]);
+  }
+  return values;
+};
+
+const parseMultiValues = (value: string): string[] =>
+  value
+    .split(/[,%2C]/)
+    .map((v) => v.trim())
+    .filter((v) => v.length > 0);
+
 export function buildCollegeSlug(filters: {
   statename?: string;
   coursename?: string;
@@ -80,38 +99,27 @@ export function parseSlugToFilters(slug: string) {
     "search",
   ];
 
-  const getValuesBetweenKeywords = (startIndex: number): string[] => {
-    const values: string[] = [];
-    for (let j = startIndex + 1; j < words.length; j++) {
-      if (keywords.includes(words[j])) {
-        break;
-      }
-      values.push(words[j]);
-    }
-    return values;
-  };
-
   for (let i = 0; i < words.length; i++) {
     if (words[i] === "state") {
-      const stateWords = getValuesBetweenKeywords(i);
+      const stateWords = getValuesBetweenKeywords(i, words, keywords);
       if (stateWords.length > 0) {
         filters.statename = stateWords.join("-");
       }
     }
     if (words[i] === "for") {
-      const courseWords = getValuesBetweenKeywords(i);
+      const courseWords = getValuesBetweenKeywords(i, words, keywords);
       if (courseWords.length > 0) {
         filters.coursename = courseWords.join("-");
       }
     }
     if (words[i] === "stream") {
-      const streamWords = getValuesBetweenKeywords(i);
+      const streamWords = getValuesBetweenKeywords(i, words, keywords);
       if (streamWords.length > 0) {
         filters.streamname = streamWords.join("-");
       }
     }
     if (words[i] === "search") {
-      const searchWords = getValuesBetweenKeywords(i);
+      const searchWords = getValuesBetweenKeywords(i, words, keywords);
       if (searchWords.length > 0) {
         filters.searchquery = searchWords.join("-");
       }
@@ -139,4 +147,64 @@ export function parseSlugToFilters(slug: string) {
   }
 
   return filters;
+}
+
+export function parseExamSlugToFilters(slug: string) {
+  const filters: {
+    streams: string[];
+    level: string[];
+  } = {
+    streams: [],
+    level: [],
+  };
+
+  // Decode URL-encoded characters first
+  const decodedSlug = decodeURIComponent(slug);
+
+  const words = decodedSlug.split("-");
+
+  const keywords = ["exams", "level", "stream"];
+
+  for (let i = 0; i < words.length; i++) {
+    if (words[i] === "level") {
+      const levelWords = getValuesBetweenKeywords(i, words, keywords);
+      if (levelWords.length > 0) {
+        filters.level = parseMultiValues(levelWords.join("-"));
+      }
+    }
+
+    if (words[i] === "stream") {
+      const streamWords = getValuesBetweenKeywords(i, words, keywords);
+      if (streamWords.length > 0) {
+        const joinedStreamWords = streamWords.join("-");
+        filters.streams = parseMultiValues(joinedStreamWords);
+      }
+    }
+  }
+
+  return filters;
+}
+
+export function buildExamSlug(filters: {
+  level?: string[];
+  streams?: string[];
+}) {
+  const parts = ["exams"];
+
+  if (filters.level && filters.level.length > 0) {
+    const levelValues = filters.level.map((v) =>
+      v.toLowerCase().replace(/[^a-z0-9]/g, "")
+    );
+    parts.push("level", levelValues.join("%2C"));
+  }
+
+  if (filters.streams && filters.streams.length > 0) {
+    const streamValues = filters.streams.map((v) =>
+      v.toLowerCase().replace(/[^a-z0-9]/g, "")
+    );
+    parts.push("stream", streamValues.join("%2C"));
+  }
+
+  // Always return at least "/exams" if no filters are applied
+  return `/${parts.join("-")}`;
 }

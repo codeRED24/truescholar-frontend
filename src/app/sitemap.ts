@@ -21,7 +21,7 @@ const INVALID_CHARACTERS_REGEX = /[&<>\"']/;
 //       console.warn(`Excluded invalid college URL slug: ${baseSlug}`);
 //       return [];
 //     }
-  
+
 //     const baseUrl = `https://www.truescholar.in/colleges/${baseSlug}`;
 //     return [
 //       { url: baseUrl, changeFrequency: "weekly" as const, priority: 1 },
@@ -32,7 +32,7 @@ const INVALID_CHARACTERS_REGEX = /[&<>\"']/;
 
 // async function generateExamsUrls(): Promise<MetadataRoute.Sitemap> {
 //   const allExams = (await getExams()) ?? { exams: [] };
-  
+
 //   if (!Array.isArray(allExams.exams)) {
 //     console.error("getExams() did not return an array.");
 //     return [];

@@ -4,6 +4,11 @@ import { getExams } from "@/api/list/getExams";
 import ExamFilters from "@/components/filters/ExamFilter";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import ExamListCard from "@/components/cards/ExamListCard";
+import { useParams } from "next/navigation";
+import {
+  parseExamSlugToFilters,
+  buildExamSlug,
+} from "@/components/utils/slugFormat";
 
 interface ExamsResponse {
   exams: ExamInformationDTO[];
@@ -30,19 +35,21 @@ const SkeletonExamCard: React.FC = () => (
 );
 
 const ExamsList: React.FC = () => {
-  const parseInitialFilters = useCallback(() => {
-    if (typeof window === "undefined")
-      return { category: [], streams: [], level: [] };
+  const paramsRoute = useParams();
+  // console.log(paramsRoute);
 
-    const params = new URLSearchParams(window.location.search);
-    const getParam = (key: string) =>
-      params.get(key) ? [params.get(key)!] : [];
-    return {
-      category: getParam("exam_category"),
-      streams: getParam("exam_streams"),
-      level: getParam("exam_level"),
-    };
-  }, []);
+  // Extract slug from the correct parameter
+  const rawSlug =
+    paramsRoute?.filterSlug ||
+    paramsRoute?.slug ||
+    paramsRoute?.slugAndId ||
+    "";
+  const slug = Array.isArray(rawSlug) ? rawSlug.join("-") : rawSlug;
+  // Parse filters from slug
+  // console.log({ slug, rawSlug, paramsRoute });
+
+  const parsedFilters = parseExamSlugToFilters(slug);
+  // console.log("Parsed filters from slug:", parsedFilters);
 
   const [exams, setExams] = useState<ExamInformationDTO[]>([]);
   const [page, setPage] = useState(1);
@@ -50,7 +57,7 @@ const ExamsList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [total, setTotal] = useState(0);
-  const [filters, setFilters] = useState(parseInitialFilters());
+  const [filters, setFilters] = useState(parsedFilters);
   const observer = useRef<IntersectionObserver | null>(null);
 
   const fetchExams = useCallback(
@@ -60,8 +67,8 @@ const ExamsList: React.FC = () => {
         setError(null);
 
         const selectedFilters: Record<string, string> = {};
-        if (filters.category.length)
-          selectedFilters["exam_category"] = filters.category[0];
+        // if (filters.category.length)
+        //   selectedFilters["exam_category"] = filters.category[0];
         if (filters.streams.length)
           selectedFilters["exam_streams"] = filters.streams[0];
         if (filters.level.length)
@@ -73,14 +80,15 @@ const ExamsList: React.FC = () => {
           selectedFilters,
         });
 
-        setExams((prev) =>
-          pageNum === 1 ? response.exams : [...prev, ...response.exams]
-        );
+        setExams((prev) => {
+          const newExams =
+            pageNum === 1 ? response.exams : [...prev, ...response.exams];
+          setHasMore(
+            response.exams.length > 0 && newExams.length < response.total
+          );
+          return newExams;
+        });
         setTotal(response.total);
-        setHasMore(
-          response.exams.length > 0 &&
-            exams.length + response.exams.length < response.total
-        );
       } catch (err) {
         setError("Failed to fetch exams. Please try again.");
         console.error("Fetch Exams Error:", err);
@@ -88,15 +96,18 @@ const ExamsList: React.FC = () => {
         setLoading(false);
       }
     },
-    [filters, exams.length]
+    [filters]
   );
 
   useEffect(() => {
+    setPage(1);
     fetchExams(1);
   }, [filters]);
 
   useEffect(() => {
-    fetchExams(page);
+    if (page > 1) {
+      fetchExams(page);
+    }
   }, [page]);
 
   const lastExamRef = useCallback(
@@ -117,28 +128,35 @@ const ExamsList: React.FC = () => {
     },
     [loading, hasMore]
   );
-    const handleFilterChange = useCallback(
-      (newFilters: {
-        category: string[];
-        streams: string[];
-        level: string[];
-      }) => {
-        setFilters(newFilters);
-        const params = new URLSearchParams();
-        if (newFilters.category.length)
-          params.set("exam_category", newFilters.category[0]);
-        if (newFilters.streams.length)
-          params.set("exam_streams", newFilters.streams[0]);
-        if (newFilters.level.length)
-          params.set("exam_level", newFilters.level[0]);
-        const newUrl = `${window.location.pathname}${
-          params.toString() ? `?${params.toString()}` : ""
-        }`;
-        window.history.pushState({}, "", newUrl);
-      },
-      []
-    );
-    const clearFilter = useCallback(
+
+  const handleFilterChange = useCallback(
+    (newFilters: {
+      // category: string[];
+      streams: string[];
+      level: string[];
+    }) => {
+      setFilters(newFilters);
+
+      // Build new slug from filters
+      const newSlug = buildExamSlug({
+        level: newFilters.level,
+        streams: newFilters.streams,
+      });
+
+      // console.log("New slug:", newSlug);
+
+      // Update URL with new slug - preserve the current path structure
+      const currentPath = window.location.pathname;
+      const basePath = currentPath.includes("/exam/") ? "/exam" : "";
+      const newUrl = `${basePath}${newSlug}`;
+
+      // console.log("New URL:", newUrl);
+      window.history.pushState({}, "", newUrl);
+    },
+    []
+  );
+
+  const clearFilter = useCallback(
     (type: keyof typeof filters, value: string) => {
       const newFilters = { ...filters, [type]: [] };
       setFilters(newFilters);
@@ -148,27 +166,27 @@ const ExamsList: React.FC = () => {
   );
 
   const SelectedFiltersDisplay = () => {
-        const allSelected = [
-          ...filters.category.map((val) => ({ type: "category", value: val })),
-          ...filters.streams.map((val) => ({ type: "streams", value: val })),
-          ...filters.level.map((val) => ({ type: "level", value: val })),
-        ];
-    
-        if (!allSelected.length) return null;
-    
-        return (
-          <div className="flex flex-wrap gap-2 my-2">
-            {allSelected.map(({ type, value }) => (
-              <span
-                key={`${type}-${value}`}
-                className="inline-flex items-center px-2 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
-              >
-                {value}
-              </span>
-            ))}
-          </div>
-        );
-      };
+    const allSelected = [
+      // ...filters.category.map((val) => ({ type: "category", value: val })),
+      ...filters.streams.map((val) => ({ type: "streams", value: val })),
+      ...filters.level.map((val) => ({ type: "level", value: val })),
+    ];
+
+    if (!allSelected.length) return null;
+
+    return (
+      <div className="flex flex-wrap gap-2 my-2">
+        {allSelected.map(({ type, value }) => (
+          <span
+            key={`${type}-${value}`}
+            className="inline-flex items-center px-2 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
+          >
+            {value}
+          </span>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="container mx-auto py-8 min-h-screen">
@@ -178,7 +196,10 @@ const ExamsList: React.FC = () => {
       </div>
 
       <div className="flex flex-col md:flex-row gap-6">
-        <ExamFilters onFilterChange={setFilters} initialFilters={filters} />
+        <ExamFilters
+          onFilterChange={handleFilterChange}
+          initialFilters={filters}
+        />
         <div className="flex-1">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {exams.map((exam, index) => (
