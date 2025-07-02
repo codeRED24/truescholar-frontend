@@ -1,0 +1,72 @@
+/*************** FAQ Section  ***************/
+.faq-item {
+  margin: 10px 0;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 18px;
+  list-style: none;
+}
+
+.faq-item summary {
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  color: #101828;
+  align-items: center;
+  margin: 0;
+}
+
+.faq-item summary::after {
+  content: "➕";
+  transition: transform 0.3s ease;
+  color: #1c252e;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+}
+
+.faq-item[open] {
+  background: #f5f6f8;
+}
+
+.faq-item[open] summary::after {
+  content: "➖";
+  color: #1c252e;
+}
+
+.faq-ques {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1c252e;
+  line-height: 1.5;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: space-between;
+}
+
+.faq-ans {
+  font-size: 16px;
+  font-weight: 300;
+  color: #1c252e;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.5s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+.faq-item[open] .faq-ans {
+  max-height: 500px;
+  opacity: 1;
+}
+
+details {
+  transition: max-height 0.3s ease-in-out;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}

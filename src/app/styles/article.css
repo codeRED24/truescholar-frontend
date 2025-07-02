@@ -1,0 +1,121 @@
+/*************** Article Section  ***************/
+.blur-overlay {
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0) 0%,
+      rgb(255, 255, 255) 100%
+    );
+    pointer-events: none;
+  }
+  
+  .article-content-body {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 16px 0;
+  }
+  
+  .article-content-body > h2,
+  .content-title {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 28px;
+    letter-spacing: 0;
+    text-align: left;
+    margin-bottom: 8px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  .article-content-body h3 {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 28px;
+    letter-spacing: 0;
+    text-align: left;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  .article-content-body > h6 {
+    font-size: 15px;
+    color: #667085;
+    line-height: 32px;
+    letter-spacing: 0;
+    font-weight: 400;
+    margin-top: 12px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  .article-content-body > p,
+  .content-item,
+  li {
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 24px;
+    letter-spacing: 0;
+    text-align: left;
+    color: #344054;
+    margin-bottom: 12px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  .imp-text {
+    font-weight: 500;
+  }
+  
+  .redirect-link {
+    color: #00A76F;
+    font-weight: 500;
+  }
+  
+  .”unorder-val” > li,
+  .unorder-val > li {
+    list-style: disc inside !important;
+    margin: 6px;
+    margin-bottom: 8px;
+  }
+  
+  .order-val {
+    padding-left: 20px;
+    counter-reset: item;
+  }
+  
+  .order-val > li {
+    position: relative;
+    margin: 6px;
+    margin-bottom: 16px;
+    font-size: 16px;
+    color: #344054;
+    /* padding-top: 24px; */
+    padding-left: 6px;
+  }
+  
+  .order-val > li::before {
+    /* content: "→ " counter(item, decimal-leading-zero) " "; */
+    content: counter(item, decimal-leading-zero) " ";
+    counter-increment: item;
+    position: absolute;
+    left: -23px;
+    top: 0;
+    color: #00A76F;
+    font-weight: 600;
+  }
+ 
+  .toc-item::before {
+    content: url("/svg/right-blue.svg");
+    margin-right: 0.5rem;
+  }
+  
+  .latestNewsContainer {
+    position: relative;
+    overflow: hidden;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    margin-top: 0.5rem;
+  }
+  

@@ -1,0 +1,51 @@
+.trigger {
+    width: 86px;
+    height: 86px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    padding: 0;
+    border: none;
+    background: none;
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .trigger:hover:not(.noStory) {
+    transform: scale(1.1);
+  }
+  
+  .unread {
+    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+    animation: gradientShift 4s linear infinite;
+  }
+  
+  .read {
+    background: #d3d3d3;
+  }
+  
+  .noStory {
+    background: #e0e0e0;
+    cursor: default;
+  }
+  
+  .innerImage {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: contain;
+    border: 2px solid white;
+    transition: opacity 0.3s ease;
+  }
+  
+  .trigger:hover .innerImage:not(.noStory) {
+    opacity: 0.9;
+  }
+  
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
