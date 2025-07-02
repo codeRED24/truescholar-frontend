@@ -1,0 +1,63 @@
+import { orgLD, websiteLD } from "@/lib/schema";
+import { Barlow, Public_Sans } from "next/font/google";
+import Script from "next/script";
+
+const publicSans = Public_Sans({
+  variable: "--font-public-sans",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+});
+
+const barlow = Barlow({
+  variable: "--font-barlow",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+});
+
+function GTMScript({ gtmId }: { gtmId: string }) {
+  if (!gtmId) return null;
+  return (
+    <>
+      <Script
+        async
+        src={`https://www.googletagmanager.com/gtag/js?id=${gtmId}`}
+        strategy="lazyOnload"
+      />
+      <Script
+        id="gtag-init"
+        dangerouslySetInnerHTML={{
+          __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${gtmId}');
+          `,
+        }}
+        strategy="lazyOnload"
+      />
+    </>
+  );
+}
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body className={`${publicSans.variable} ${barlow.variable} antialiased`}>
+        <Script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLD) }}
+        />
+        <Script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteLD) }}
+        />
+        <GTMScript gtmId="G-5CMGT07LVZ" />
+        {children}
+      </body>
+    </html>
+  );
+}

@@ -1,0 +1,200 @@
+/*************** General Table Styling ***************/
+.table-container-p,
+.table-container-s,
+.table-container-t,
+.table-container-ranking,
+.table-container-e {
+  overflow-x: auto;
+}
+.table-container-p,
+.table-container-s,
+.table-container-t,
+table td {
+  border-bottom: 1px dashed #dfe3e8;
+}
+
+.table-container-p,
+.table-container-s,
+.table-container-t,
+table tr:last-child td {
+  border-bottom: none;
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-radius: 16px;
+  border-spacing: 0;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+table th,
+table td {
+  padding: 8px 16px;
+  text-align: left;
+  font-size: 14px;
+  line-height: 24px;
+}
+
+table th {
+  text-transform: capitalize;
+  font-weight: 600;
+}
+
+table td {
+  font-weight: 300;
+  letter-spacing: 0.7px;
+  color: #344054;
+}
+
+table td:first-child {
+  font-weight: 500;
+}
+
+/*************** Primary Table (.table-container-p) ***************/
+.table-container-p table {
+  border: 1px solid #00a76f29;
+  border-radius: 16px;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+}
+.table-container-p table th {
+  background: #00a76f14;
+  color: #007867;
+}
+
+/* .table-container-p table td {
+  border-bottom: 1px dashed #DFE3E8;
+}
+
+.table-container-p table tr:last-child td {
+  border-bottom: none;
+} */
+
+/*************** Secondary Table (.table-container-s) ***************/
+.table-container-s table {
+  border: 1px solid #1c252e;
+}
+
+.table-container-s table th {
+  background: #1c252e;
+  color: #fff;
+}
+
+/*************** Tertiary Table (.table-container-t) ***************/
+.table-container-t table {
+  border: 1px solid #d0d5dd;
+}
+
+.table-container-t table th {
+  background: #f2f4f7;
+}
+
+/*************** Ranking Table (.table-container-ranking) ***************/
+.table-container-ranking {
+  font-size: 14px;
+  font-weight: 400;
+  color: #000;
+}
+
+.table-container-ranking table {
+  border-style: hidden;
+  border-collapse: separate;
+  border-spacing: 0 4;
+}
+
+.table-container-ranking thead tr {
+  background: #fff;
+}
+
+.table-container-ranking table td {
+  border-bottom: none;
+}
+
+.table-container-ranking tr {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 184, 217, 0.0608) 0%,
+    rgba(0, 184, 217, 0.0608) 50.78%,
+    rgba(175, 243, 255, 0.38) 100%
+  );
+}
+
+.table-container-ranking tr td:first-child {
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
+}
+
+.table-container-ranking tr td:last-child {
+  border-top-right-radius: 16px;
+  border-bottom-right-radius: 16px;
+}
+
+/*************** Exam Table (.table-container-e) ***************/
+.table-container-e table {
+  border: 1px solid #00a76f29;
+  background-color: #00a76f29;
+  border-radius: 16px;
+  border-collapse: separate;
+  border-spacing: 4;
+  overflow: hidden;
+}
+
+.table-container-e table td {
+  border: 1px solid #000;
+  border-radius: 12px;
+  background-color: #fff;
+}
+
+.table-container-e table td:first-child {
+  font-weight: 600;
+}
+.table-container-e table tr:last-child td {
+  border-bottom: 1px solid;
+}
+/*************** Course Table (.couse-table) ***************/
+.couse-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.couse-table th,
+.couse-table td {
+  padding: 14px 24px;
+  text-align: left;
+  width: 50%;
+  border: none;
+}
+
+/* cutoff table */
+
+.course-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 100%;
+}
+
+.course-table th {
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.course-table td {
+  border-bottom: 1px dashed #e5e6e7;
+  font-size: 0.9rem;
+}
+
+.course-table tr:last-child td {
+  border-bottom: none;
+}
+
+@media (max-width: 640px) {
+  .course-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}

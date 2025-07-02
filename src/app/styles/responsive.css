@@ -1,0 +1,83 @@
+/*************** Key Frames  ***************/
+
+.latestNewsTitle span {
+  display: inline-block;
+  font-size: 14px;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  animation: newsBulliten 0s linear infinite;
+}
+
+@keyframes newsBulliten {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+
+/*************** meadia query  ***************/
+
+@media screen and (max-width: 680px) {
+    .clgCardRight {
+      width: 20%;
+    }
+    .bottomStyle {
+      line-height: 30px !important;
+      width: 198px;
+    }
+    .article-content-body {
+      padding: 12px;
+      margin: 8px 0;
+    }
+    .article-content-body > h2,
+    .content-title {
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 24px;
+    }
+  
+    .article-content-body h3 {
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 28px;
+      letter-spacing: 0;
+      text-align: left;
+    }
+  
+    .article-content-body > h6 {
+      font-size: 15px;
+      color: #667085;
+      line-height: 32px;
+    }
+  
+    .article-content-body > p,
+    .content-item,
+    li {
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+  
+    .couse-table th,
+    .couse-table td {
+      padding: 10px 8px;
+      text-align: left;
+      width: 50%;
+      border: none;
+    }
+  
+    .imageBox::before {
+      left: 86px;
+    }
+    .faq-ques {
+      font-weight: 400;
+      font-size: 14px;
+    }
+    .Nav-route-link {
+      font-size: 13px;
+      font-weight: 300;
+      padding: 4px 0;
+    }
+  }

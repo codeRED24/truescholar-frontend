@@ -1,0 +1,108 @@
+@import "./styles/article.css";
+@import "./styles/responsive.css";
+@import "./styles/faq.css";
+@import "./styles/backgrounds.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+  .scrollbar-thumb-gray-300 {
+    scrollbar-color: #d1d5db transparent;
+  }
+  .scrollbar-track-gray-100 {
+    scrollbar-track-color: #f3f4f6;
+  }
+}
+
+body {
+  background: #f4f6f8;
+}
+img[alt] {
+  font-size: 8px;
+}
+@layer components {
+  .container-body {
+    @apply px-2 xl:px-24 w-full;
+  }
+}
+textarea:focus,
+input:focus {
+  outline: none;
+  border: 1px solid #00a76f;
+}
+
+/*************** Scroll-bar Section  ***************/
+/* ::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+
+::-webkit-scrollbar-thumb {
+  background: #aaacae;
+  border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #d0d5dd;
+} */
+
+.no-scroll-bar::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+
+
+/********* Tel **********/
+.react-tel-input .form-control{
+  border-radius: 16px !important;
+}
+.react-tel-input .flag-dropdown ul li {
+  list-style: none !important;
+  color: #000;
+}
+
+.react-tel-input .flag-dropdown {
+  background-color: #fff !important;
+  border: 1px solid #d0d5dd !important;
+  border-right: none !important;
+  padding: 7px 0 !important;
+  border-radius: 16px 0 0 16px !important;
+}
+.react-tel-input .flag-dropdown.open .selected-flag,
+.react-tel-input .flag-dropdown.open{
+  border-radius: 16px 0 0 16px !important;
+}
+/********* something else **********/
+.mobile-menu-item {
+  border-bottom: 1px solid #ddd;
+}
+
+.mobile-menu-trigger {
+  padding: 10px;
+  cursor: pointer;
+  background-color: #f7f7f7;
+  font-weight: bold;
+}
+
+.mobile-menu-options {
+  padding-left: 20px;
+  padding-bottom: 10px;
+  display: block;
+}
+.scrollable-content {
+  max-height: 100vh;
+  overflow: auto;
+  scroll-behavior: smooth;
+}
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+  }
+}
