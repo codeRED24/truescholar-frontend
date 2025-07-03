@@ -18,19 +18,19 @@ interface FilterOption {
 }
 
 interface FilterOptions {
-  exam_category: FilterOption[];
+  mode_of_exam: FilterOption[];
   exam_streams: FilterOption[];
   level_of_exam: FilterOption[];
 }
 
 interface ExamFiltersProps {
   onFilterChange: (filters: {
-    // category: string[];
+    mode: string[];
     streams: string[];
     level: string[];
   }) => void;
   initialFilters: {
-    // category: string[];
+    mode: string[];
     streams: string[];
     level: string[];
   };
@@ -40,7 +40,7 @@ const ExamFilters: React.FC<ExamFiltersProps> = React.memo(
   ({ onFilterChange, initialFilters }) => {
     const isMobile = useIsMobile();
     const [filterOptions, setFilterOptions] = useState<FilterOptions>({
-      exam_category: [],
+      mode_of_exam: [],
       exam_streams: [],
       level_of_exam: [],
     });
@@ -111,7 +111,7 @@ const ExamFilters: React.FC<ExamFiltersProps> = React.memo(
 
     const clearAllFilters = useCallback(() => {
       setSelectedFilters({
-        // category: [],
+        mode: [],
         streams: [],
         level: [],
       });
@@ -178,6 +178,7 @@ const ExamFilters: React.FC<ExamFiltersProps> = React.memo(
         )} */}
         {renderFilterSection("Streams", filterOptions.exam_streams, "streams")}
         {renderFilterSection("Level", filterOptions.level_of_exam, "level")}
+        {renderFilterSection("Mode", filterOptions.mode_of_exam, "mode")}
       </div>
     );
 

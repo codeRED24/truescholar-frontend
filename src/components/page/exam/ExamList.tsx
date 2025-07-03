@@ -36,20 +36,12 @@ const SkeletonExamCard: React.FC = () => (
 
 const ExamsList: React.FC = () => {
   const paramsRoute = useParams();
-  // console.log(paramsRoute);
 
   // Extract slug from the correct parameter
-  const rawSlug =
-    paramsRoute?.filterSlug ||
-    paramsRoute?.slug ||
-    paramsRoute?.slugAndId ||
-    "";
+  const rawSlug = paramsRoute?.filterSlug || "";
   const slug = Array.isArray(rawSlug) ? rawSlug.join("-") : rawSlug;
-  // Parse filters from slug
-  // console.log({ slug, rawSlug, paramsRoute });
 
   const parsedFilters = parseExamSlugToFilters(slug);
-  // console.log("Parsed filters from slug:", parsedFilters);
 
   const [exams, setExams] = useState<ExamInformationDTO[]>([]);
   const [page, setPage] = useState(1);
@@ -67,8 +59,8 @@ const ExamsList: React.FC = () => {
         setError(null);
 
         const selectedFilters: Record<string, string> = {};
-        // if (filters.category.length)
-        //   selectedFilters["exam_category"] = filters.category.join(",");
+        if (filters.mode.length)
+          selectedFilters["mode_of_exam"] = filters.mode.join(",");
         if (filters.streams.length)
           selectedFilters["exam_streams"] = filters.streams.join(",");
         if (filters.level.length)
@@ -130,15 +122,12 @@ const ExamsList: React.FC = () => {
   );
 
   const handleFilterChange = useCallback(
-    (newFilters: {
-      // category: string[];
-      streams: string[];
-      level: string[];
-    }) => {
+    (newFilters: { mode: string[]; streams: string[]; level: string[] }) => {
       setFilters(newFilters);
 
       // Build new slug from filters
       const newSlug = buildExamSlug({
+        mode: newFilters.mode,
         level: newFilters.level,
         streams: newFilters.streams,
       });

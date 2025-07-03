@@ -153,9 +153,11 @@ export function parseExamSlugToFilters(slug: string) {
   const filters: {
     streams: string[];
     level: string[];
+    mode: string[];
   } = {
     streams: [],
     level: [],
+    mode: [],
   };
 
   // Decode URL-encoded characters first
@@ -163,7 +165,7 @@ export function parseExamSlugToFilters(slug: string) {
 
   const words = decodedSlug.split("-");
 
-  const keywords = ["exams", "level", "stream"];
+  const keywords = ["exams", "level", "stream", "mode"];
 
   for (let i = 0; i < words.length; i++) {
     if (words[i] === "level") {
@@ -180,6 +182,14 @@ export function parseExamSlugToFilters(slug: string) {
         filters.streams = parseMultiValues(joinedStreamWords);
       }
     }
+
+    if (words[i] === "mode") {
+      const modeWords = getValuesBetweenKeywords(i, words, keywords);
+      if (modeWords.length > 0) {
+        const joinedModeWords = modeWords.join("-");
+        filters.mode = parseMultiValues(joinedModeWords);
+      }
+    }
   }
 
   return filters;
@@ -188,6 +198,7 @@ export function parseExamSlugToFilters(slug: string) {
 export function buildExamSlug(filters: {
   level?: string[];
   streams?: string[];
+  mode?: string[];
 }) {
   const parts = ["exams"];
 
@@ -207,6 +218,15 @@ export function buildExamSlug(filters: {
       )
     );
     parts.push("stream", streamValues.join("%2C"));
+  }
+
+  if (filters.mode && filters.mode.length > 0) {
+    const modeValues = Array.from(
+      new Set(
+        filters.mode.map((v) => v.toLowerCase().replace(/[^a-z0-9]/g, ""))
+      )
+    );
+    parts.push("mode", modeValues.join("%2C"));
   }
 
   return `/${parts.join("-")}`;
