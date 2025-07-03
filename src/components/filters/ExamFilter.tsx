@@ -87,10 +87,22 @@ const ExamFilters: React.FC<ExamFiltersProps> = React.memo(
 
     const handleFilterChange = useCallback(
       (type: keyof typeof selectedFilters, value: string) => {
+        // Helper function to normalize values for comparison
+        const normalizeValue = (val: string) =>
+          val.toLowerCase().replace(/[^a-z0-9]/g, "");
+
         setSelectedFilters((prev) => {
-          const updatedValues = prev[type].includes(value)
-            ? prev[type].filter((item) => item !== value)
+          const normalizedValue = normalizeValue(value);
+          const isAlreadySelected = prev[type].some(
+            (selectedValue) => normalizeValue(selectedValue) === normalizedValue
+          );
+
+          const updatedValues = isAlreadySelected
+            ? prev[type].filter(
+                (item) => normalizeValue(item) !== normalizedValue
+              )
             : [...prev[type], value];
+
           return { ...prev, [type]: updatedValues };
         });
       },

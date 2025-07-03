@@ -192,19 +192,22 @@ export function buildExamSlug(filters: {
   const parts = ["exams"];
 
   if (filters.level && filters.level.length > 0) {
-    const levelValues = filters.level.map((v) =>
-      v.toLowerCase().replace(/[^a-z0-9]/g, "")
+    const levelValues = Array.from(
+      new Set(
+        filters.level.map((v) => v.toLowerCase().replace(/[^a-z0-9]/g, ""))
+      )
     );
     parts.push("level", levelValues.join("%2C"));
   }
 
   if (filters.streams && filters.streams.length > 0) {
-    const streamValues = filters.streams.map((v) =>
-      v.toLowerCase().replace(/[^a-z0-9]/g, "")
+    const streamValues = Array.from(
+      new Set(
+        filters.streams.map((v) => v.toLowerCase().replace(/[^a-z0-9]/g, ""))
+      )
     );
     parts.push("stream", streamValues.join("%2C"));
   }
 
-  // Always return at least "/exams" if no filters are applied
   return `/${parts.join("-")}`;
 }

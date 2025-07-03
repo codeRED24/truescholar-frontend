@@ -68,11 +68,11 @@ const ExamsList: React.FC = () => {
 
         const selectedFilters: Record<string, string> = {};
         // if (filters.category.length)
-        //   selectedFilters["exam_category"] = filters.category[0];
+        //   selectedFilters["exam_category"] = filters.category.join(",");
         if (filters.streams.length)
-          selectedFilters["exam_streams"] = filters.streams[0];
+          selectedFilters["exam_streams"] = filters.streams.join(",");
         if (filters.level.length)
-          selectedFilters["exam_level"] = filters.level[0];
+          selectedFilters["exam_level"] = filters.level.join(",");
 
         const response: ExamsResponse = await getExams({
           page: pageNum,
@@ -158,7 +158,10 @@ const ExamsList: React.FC = () => {
 
   const clearFilter = useCallback(
     (type: keyof typeof filters, value: string) => {
-      const newFilters = { ...filters, [type]: [] };
+      const newFilters = {
+        ...filters,
+        [type]: filters[type].filter((item) => item !== value),
+      };
       setFilters(newFilters);
       handleFilterChange(newFilters);
     },
@@ -179,9 +182,19 @@ const ExamsList: React.FC = () => {
         {allSelected.map(({ type, value }) => (
           <span
             key={`${type}-${value}`}
-            className="inline-flex items-center px-2 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
+            className="inline-flex items-center px-2 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 cursor-pointer hover:bg-blue-200"
+            onClick={() => clearFilter(type as keyof typeof filters, value)}
           >
             {value}
+            <button
+              className="ml-1 text-blue-600 hover:text-blue-800"
+              onClick={(e) => {
+                e.stopPropagation();
+                clearFilter(type as keyof typeof filters, value);
+              }}
+            >
+              ×
+            </button>
           </span>
         ))}
       </div>
