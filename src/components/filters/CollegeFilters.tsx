@@ -35,8 +35,9 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
       stream: "",
     });
 
-    const formatForUrl = useCallback(
-      (value: string): string => value.toLowerCase().replace(/\s+/g, ""),
+    // Helper function to normalize values for comparison
+    const normalizeValue = useCallback(
+      (val: string): string => val.toLowerCase().replace(/[^a-z0-9]/g, ""),
       []
     );
 
@@ -45,37 +46,39 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
         const newFilters = {
           ...selectedFilters,
           [filterType]: value === selectedFilters[filterType] ? "" : value,
-          [`${filterType}_name`]:
-            value === selectedFilters[filterType] ? "" : formatForUrl(name),
         };
         onFilterChange(newFilters);
       },
-      [selectedFilters, onFilterChange, formatForUrl]
+      [selectedFilters, onFilterChange]
     );
 
     const handleLocalFilterChange = useCallback(
       (filterType: string, value: string) => {
         const currentValues = selectedFilters[filterType] as string[];
-        const formattedValue = formatForUrl(value);
-        const updatedValues = currentValues.includes(formattedValue)
-          ? currentValues.filter((v) => v !== formattedValue)
-          : [...currentValues, formattedValue];
+        const normalizedValue = normalizeValue(value);
+
+        // Check if the normalized value already exists
+        const isAlreadySelected = currentValues.some(
+          (selectedValue) => normalizeValue(selectedValue) === normalizedValue
+        );
+
+        const updatedValues = isAlreadySelected
+          ? currentValues.filter((v) => normalizeValue(v) !== normalizedValue)
+          : [...currentValues, value];
+
         const newFilters = { ...selectedFilters, [filterType]: updatedValues };
         onFilterChange(newFilters);
       },
-      [selectedFilters, onFilterChange, formatForUrl]
+      [selectedFilters, onFilterChange, normalizeValue]
     );
 
     const handleClearFilters = useCallback(() => {
       const clearedFilters = {
-        city_id: "",
-        state_id: "",
-        stream_id: "",
+        city_name: "",
+        state_name: "",
+        stream_name: "",
         type_of_institute: [],
-        fee_range: [], // Added fee_range to cleared filters
-        city_id_name: "",
-        state_id_name: "",
-        stream_id_name: "",
+        fee_range: [],
       };
       onFilterChange(clearedFilters);
       setSearchTerms({ city: "", state: "", stream: "" });
@@ -101,9 +104,9 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
 
     const areFiltersApplied = useCallback(
       () =>
-        selectedFilters.city_id !== "" ||
-        selectedFilters.state_id !== "" ||
-        selectedFilters.stream_id !== "" ||
+        selectedFilters.city_name !== "" ||
+        selectedFilters.state_name !== "" ||
+        selectedFilters.stream_name !== "" ||
         (selectedFilters.type_of_institute as string[]).length > 0 ||
         (selectedFilters.fee_range as string[]).length > 0,
       [selectedFilters]
@@ -111,7 +114,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
 
     const filteredCities = useMemo(
       () =>
-        filterSection.city_filter.filter((city) =>
+        filterSection.city_filter.filter((city: any) =>
           city.city_name?.toLowerCase().includes(searchTerms.city)
         ),
       [filterSection.city_filter, searchTerms.city]
@@ -119,7 +122,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
 
     const filteredStates = useMemo(
       () =>
-        filterSection.state_filter.filter((state) =>
+        filterSection.state_filter.filter((state: any) =>
           state.state_name?.toLowerCase().includes(searchTerms.state)
         ),
       [filterSection.state_filter, searchTerms.state]
@@ -127,7 +130,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
 
     const filteredStreams = useMemo(
       () =>
-        filterSection.stream_filter.filter((stream) =>
+        filterSection.stream_filter.filter((stream: any) =>
           stream.stream_name?.toLowerCase().includes(searchTerms.stream)
         ),
       [filterSection.stream_filter, searchTerms.stream]
@@ -174,21 +177,23 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
                 ? Array.from({ length: 8 }, (_, index) => (
                     <SkeletonFilterItem key={index} />
                   ))
-                : filteredCities.map((city) => (
+                : filteredCities.map((city: any) => (
                     <label
                       key={city.city_id}
                       className="flex items-center space-x-2 text-sm font-public"
                     >
                       <input
                         type="radio"
-                        name="city_id"
+                        name="city_name"
                         checked={
-                          selectedFilters.city_id === String(city.city_id)
+                          normalizeValue(
+                            selectedFilters.city_name as string
+                          ) === normalizeValue(city.city_name || "")
                         }
                         onChange={() =>
                           handleApiFilterChange(
-                            "city_id",
-                            String(city.city_id ?? ""),
+                            "city_name",
+                            city.city_name ?? "",
                             city.city_name ?? ""
                           )
                         }
@@ -207,9 +212,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
                 type="text"
                 placeholder="Search states..."
                 value={searchTerms.state}
-                onChange={(e) =>
-                  debouncedSearchChange("state", e.target.value)
-                }
+                onChange={(e) => debouncedSearchChange("state", e.target.value)}
                 className="w-full p-2 mb-2 border rounded-xl h-9 pr-8"
                 disabled={isLoading}
               />
@@ -228,21 +231,23 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
                 ? Array.from({ length: 8 }, (_, index) => (
                     <SkeletonFilterItem key={index} />
                   ))
-                : filteredStates.map((state) => (
+                : filteredStates.map((state: any) => (
                     <label
                       key={state.state_id}
                       className="flex items-center space-x-2 text-sm font-public"
                     >
                       <input
                         type="radio"
-                        name="state_id"
+                        name="state_name"
                         checked={
-                          selectedFilters.state_id === String(state.state_id)
+                          normalizeValue(
+                            selectedFilters.state_name as string
+                          ) === normalizeValue(state.state_name || "")
                         }
                         onChange={() =>
                           handleApiFilterChange(
-                            "state_id",
-                            String(state.state_id ?? ""),
+                            "state_name",
+                            state.state_name ?? "",
                             state.state_name ?? ""
                           )
                         }
@@ -282,21 +287,23 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
                 ? Array.from({ length: 8 }, (_, index) => (
                     <SkeletonFilterItem key={index} />
                   ))
-                : filteredStreams.map((stream) => (
+                : filteredStreams.map((stream: any) => (
                     <label
                       key={stream.stream_id}
                       className="flex items-center space-x-2 text-sm font-public"
                     >
                       <input
                         type="radio"
-                        name="stream_id"
+                        name="stream_name"
                         checked={
-                          selectedFilters.stream_id === String(stream.stream_id)
+                          normalizeValue(
+                            selectedFilters.stream_name as string
+                          ) === normalizeValue(stream.stream_name || "")
                         }
                         onChange={() =>
                           handleApiFilterChange(
-                            "stream_id",
-                            String(stream.stream_id ?? ""),
+                            "stream_name",
+                            stream.stream_name ?? "",
                             stream.stream_name ?? ""
                           )
                         }
@@ -314,15 +321,19 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
               ? Array.from({ length: 8 }, (_, index) => (
                   <SkeletonFilterItem key={index} />
                 ))
-              : filterSection.type_of_institute_filter.map((type) => (
+              : filterSection.type_of_institute_filter.map((type: any) => (
                   <label
                     key={type.value}
                     className="flex items-center space-x-2 text-sm font-public"
                   >
                     <input
                       type="checkbox"
-                      checked={(selectedFilters.type_of_institute as string[]).includes(
-                        formatForUrl(type.value ?? "")
+                      checked={(
+                        selectedFilters.type_of_institute as string[]
+                      ).some(
+                        (selectedValue) =>
+                          normalizeValue(selectedValue) ===
+                          normalizeValue(type.value ?? "")
                       )}
                       onChange={() =>
                         handleLocalFilterChange(
@@ -339,29 +350,27 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
           </>
           <>
             <h3 className="font-medium">Fee Range</h3>
-            {isLoading ? (
-              Array.from({ length: 5 }, (_, index) => (
-                <SkeletonFilterItem key={index} />
-              ))
-            ) : (
-              feeRanges.map((range) => (
-                <label
-                  key={range.value}
-                  className="flex items-center space-x-2 text-sm font-public"
-                >
-                  <input
-                    type="checkbox"
-                    checked={(selectedFilters.fee_range as string[]).includes(
-                      range.value
-                    )}
-                    onChange={() =>
-                      handleLocalFilterChange("fee_range", range.value)
-                    }
-                  />
-                  <span>{range.label}</span>
-                </label>
-              ))
-            )}
+            {isLoading
+              ? Array.from({ length: 5 }, (_, index) => (
+                  <SkeletonFilterItem key={index} />
+                ))
+              : feeRanges.map((range) => (
+                  <label
+                    key={range.value}
+                    className="flex items-center space-x-2 text-sm font-public"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={(selectedFilters.fee_range as string[]).includes(
+                        range.value
+                      )}
+                      // onChange={() =>
+                      //   handleLocalFilterChange("fee_range", range.value)
+                      // }
+                    />
+                    <span>{range.label}</span>
+                  </label>
+                ))}
           </>
         </div>
       </div>
