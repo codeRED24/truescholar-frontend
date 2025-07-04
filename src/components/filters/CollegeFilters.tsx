@@ -42,41 +42,45 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
     );
 
     const handleApiFilterChange = useCallback(
-      (filterType: string, value: string, name: string) => {
-        const newFilters = {
-          ...selectedFilters,
-          [filterType]: value === selectedFilters[filterType] ? "" : value,
-        };
-        onFilterChange(newFilters);
+      (filterType: string, value: string, name?: string) => {
+        const updatedFilters = { ...selectedFilters };
+
+        if (
+          filterType === "city_name" ||
+          filterType === "state_name" ||
+          filterType === "stream_name"
+        ) {
+          // For single-select filters (radio buttons), replace the value
+          updatedFilters[filterType] = value;
+        } else if (
+          filterType === "type_of_institute" ||
+          filterType === "fee_range"
+        ) {
+          // For multi-select filters (checkboxes), toggle the value in array
+          const currentValues = updatedFilters[filterType] as string[];
+          const valueIndex = currentValues.indexOf(value);
+
+          if (valueIndex === -1) {
+            // Value not in array, add it
+            updatedFilters[filterType] = [...currentValues, value];
+          } else {
+            // Value in array, remove it
+            updatedFilters[filterType] = currentValues.filter(
+              (item) => item !== value
+            );
+          }
+        }
+
+        onFilterChange(updatedFilters);
       },
       [selectedFilters, onFilterChange]
     );
 
-    const handleLocalFilterChange = useCallback(
-      (filterType: string, value: string) => {
-        const currentValues = selectedFilters[filterType] as string[];
-        const normalizedValue = normalizeValue(value);
-
-        // Check if the normalized value already exists
-        const isAlreadySelected = currentValues.some(
-          (selectedValue) => normalizeValue(selectedValue) === normalizedValue
-        );
-
-        const updatedValues = isAlreadySelected
-          ? currentValues.filter((v) => normalizeValue(v) !== normalizedValue)
-          : [...currentValues, value];
-
-        const newFilters = { ...selectedFilters, [filterType]: updatedValues };
-        onFilterChange(newFilters);
-      },
-      [selectedFilters, onFilterChange, normalizeValue]
-    );
-
     const handleClearFilters = useCallback(() => {
       const clearedFilters = {
-        city_name: "",
-        state_name: "",
-        stream_name: "",
+        city_name: [],
+        state_name: [],
+        stream_name: [],
         type_of_institute: [],
         fee_range: [],
       };
@@ -193,7 +197,6 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
                         onChange={() =>
                           handleApiFilterChange(
                             "city_name",
-                            city.city_name ?? "",
                             city.city_name ?? ""
                           )
                         }
@@ -247,7 +250,6 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
                         onChange={() =>
                           handleApiFilterChange(
                             "state_name",
-                            state.state_name ?? "",
                             state.state_name ?? ""
                           )
                         }
@@ -303,7 +305,6 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
                         onChange={() =>
                           handleApiFilterChange(
                             "stream_name",
-                            stream.stream_name ?? "",
                             stream.stream_name ?? ""
                           )
                         }
@@ -327,7 +328,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
                     className="flex items-center space-x-2 text-sm font-public"
                   >
                     <input
-                      type="checkbox"
+                      type="radio"
                       checked={(
                         selectedFilters.type_of_institute as string[]
                       ).some(
@@ -336,10 +337,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
                           normalizeValue(type.value ?? "")
                       )}
                       onChange={() =>
-                        handleLocalFilterChange(
-                          "type_of_institute",
-                          type.value ?? ""
-                        )
+                        handleApiFilterChange("type_of_institute", type.value)
                       }
                     />
                     <span>
@@ -360,13 +358,13 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
                     className="flex items-center space-x-2 text-sm font-public"
                   >
                     <input
-                      type="checkbox"
+                      type="radio"
                       checked={(selectedFilters.fee_range as string[]).includes(
                         range.value
                       )}
-                      // onChange={() =>
-                      //   handleLocalFilterChange("fee_range", range.value)
-                      // }
+                      onChange={() =>
+                        handleApiFilterChange("fee_range", range.value)
+                      }
                     />
                     <span>{range.label}</span>
                   </label>

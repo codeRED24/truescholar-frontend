@@ -59,11 +59,11 @@ type SortFunction = (
 
 // Fee ranges for label display
 const feeRanges = [
-  { label: "Below 50K", value: "below_50k" },
-  { label: "50K - 1.5L", value: "50k_150k" },
-  { label: "1.5L - 3L", value: "150k_300k" },
-  { label: "3L - 5L", value: "300k_500k" },
-  { label: "Above 5L", value: "above_500k" },
+  { label: "Below 50K", value: "below_50k", min: 0, max: 50000 },
+  { label: "50K - 1.5L", value: "50k_150k", min: 50000, max: 150000 },
+  { label: "1.5L - 3L", value: "150k_300k", min: 150000, max: 300000 },
+  { label: "3L - 5L", value: "300k_500k", min: 300000, max: 500000 },
+  { label: "Above 5L", value: "above_500k", min: 500000, max: Infinity },
 ];
 
 const CollegeListItem = React.memo(
