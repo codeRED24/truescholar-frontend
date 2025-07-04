@@ -1,6 +1,7 @@
-import LeadModal from "@/components/modals/LeadModal";
+import dynamic from "next/dynamic";
 import React from "react";
 import { RiCustomerService2Fill } from "react-icons/ri";
+const LeadModal = dynamic(() => import("@/components/modals/LeadModal"));
 
 const NewsLetter = () => {
   return (

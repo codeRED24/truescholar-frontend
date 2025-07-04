@@ -2,7 +2,6 @@
 
 import { CollegesResponseDTO } from "@/api/@types/college-list";
 import { getColleges } from "@/api/list/getColleges";
-import CollegeFilter from "@/components/filters/CollegeFilters";
 import CollegeSort from "@/components/filters/CollegeSort";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/components/utils/useMobile";
@@ -19,22 +18,27 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import { IoClose, IoFilter } from "react-icons/io5";
+import { Filter, X } from "lucide-react";
 
-// const sessionCache = {
-//   get: (key: string) => {
-//     const cached = sessionStorage.getItem(key);
-//     return cached ? JSON.parse(cached) : null;
-//   },
-//   set: (key: string, data: any) => {
-//     try {
-//       sessionStorage.setItem(key, JSON.stringify(data));
-//     } catch {
-//       sessionStorage.clear();
-//       sessionStorage.setItem(key, JSON.stringify(data));
-//     }
-//   },
-// };
+const CollegeFilter = dynamic(
+  () => import("@/components/filters/CollegeFilters"),
+  { ssr: false }
+);
+
+const sessionCache = {
+  get: (key: string) => {
+    const cached = sessionStorage.getItem(key);
+    return cached ? JSON.parse(cached) : null;
+  },
+  set: (key: string, data: any) => {
+    try {
+      sessionStorage.setItem(key, JSON.stringify(data));
+    } catch {
+      sessionStorage.clear();
+      sessionStorage.setItem(key, JSON.stringify(data));
+    }
+  },
+};
 
 const CollegeListCard = dynamic(
   () => import("@/components/cards/CollegeListCard"),
@@ -127,12 +131,12 @@ const CollegeList = () => {
     [loading, hasMore]
   );
 
-  // const generateCacheKey = (
-  //   page: number,
-  //   filters: Record<string, string | string[]>
-  // ) => {
-  //   return `colleges_${page}_${JSON.stringify(filters)}`;
-  // };
+  const generateCacheKey = (
+    page: number,
+    filters: Record<string, string | string[]>
+  ) => {
+    return `colleges_${page}_${JSON.stringify(filters)}`;
+  };
 
   const fetchColleges = useCallback(async () => {
     if (!hasMore) return;
@@ -147,31 +151,31 @@ const CollegeList = () => {
 
     console.log(filters);
 
-    // const cacheKey = generateCacheKey(page, apiFilters);
-    // const cachedData = sessionCache.get(cacheKey);
-    // if (cachedData) {
-    //   setTotalCollegesCount(cachedData.total_colleges_count);
-    //   setFilterSection(cachedData.filter_section);
-    //   setCollegesData((prev: CollegesResponseDTO["colleges"]) => {
-    //     const existingIds = new Set(
-    //       prev.map((c: CollegesResponseDTO["colleges"][0]) => c.college_id)
-    //     );
-    //     const newColleges = cachedData.colleges.filter(
-    //       (c: CollegesResponseDTO["colleges"][0]) =>
-    //         !existingIds.has(c.college_id)
-    //     );
-    //     return page === 1 ? cachedData.colleges : [...prev, ...newColleges];
-    //   });
-    //   setHasMore(cachedData.colleges.length > 0);
-    //   return;
-    // }
+    const cacheKey = generateCacheKey(page, apiFilters);
+    const cachedData = sessionCache.get(cacheKey);
+    if (cachedData) {
+      setTotalCollegesCount(cachedData.total_colleges_count);
+      setFilterSection(cachedData.filter_section);
+      setCollegesData((prev: CollegesResponseDTO["colleges"]) => {
+        const existingIds = new Set(
+          prev.map((c: CollegesResponseDTO["colleges"][0]) => c.college_id)
+        );
+        const newColleges = cachedData.colleges.filter(
+          (c: CollegesResponseDTO["colleges"][0]) =>
+            !existingIds.has(c.college_id)
+        );
+        return page === 1 ? cachedData.colleges : [...prev, ...newColleges];
+      });
+      setHasMore(cachedData.colleges.length > 0);
+      return;
+    }
 
     setLoading(true);
     try {
       const data = await getColleges({ page, limit: 10, filters: apiFilters });
       console.log({ data });
 
-      // sessionCache.set(cacheKey, data);
+      sessionCache.set(cacheKey, data);
       setTotalCollegesCount(data.total_colleges_count);
       setFilterSection(data.filter_section);
       setCollegesData((prev: CollegesResponseDTO["colleges"]) => {
@@ -322,7 +326,7 @@ const CollegeList = () => {
                 onClick={() => handleRemoveFilter("city_name")}
                 className="ml-2 text-xxs bg-[#1C252E] text-white rounded-full p-0.5"
               >
-                <IoClose />
+                <X />
               </button>
             </div>
           )}
@@ -333,7 +337,7 @@ const CollegeList = () => {
                 onClick={() => handleRemoveFilter("state_name")}
                 className="ml-2 text-xxs bg-[#1C252E] text-white rounded-full p-0.5"
               >
-                <IoClose />
+                <X />
               </button>
             </div>
           )}
@@ -344,7 +348,7 @@ const CollegeList = () => {
                 onClick={() => handleRemoveFilter("stream_name")}
                 className="ml-2 text-xxs bg-[#1C252E] text-white rounded-full p-0.5"
               >
-                <IoClose />
+                <X />
               </button>
             </div>
           )}
@@ -358,7 +362,7 @@ const CollegeList = () => {
                 onClick={() => handleRemoveFilter("type_of_institute", type)}
                 className="ml-2 text-xxs bg-[#1C252E] text-white rounded-full p-0.5"
               >
-                <IoClose />
+                <X />
               </button>
             </div>
           ))}
@@ -372,7 +376,7 @@ const CollegeList = () => {
                 onClick={() => handleRemoveFilter("fee_range", range)}
                 className="ml-2 text-xxs bg-[#1C252E] text-white rounded-full p-0.5"
               >
-                <IoClose />
+                <X />
               </button>
             </div>
           ))}
@@ -394,7 +398,7 @@ const CollegeList = () => {
                   <Sheet>
                     <SheetTrigger asChild>
                       <button className="md:hidden text-primary-main rounded-2xl">
-                        <IoFilter />
+                        <Filter />
                       </button>
                     </SheetTrigger>
                     <SheetContent
@@ -419,7 +423,7 @@ const CollegeList = () => {
                       onClick={() => handleRemoveFilter("city_name")}
                       className="ml-2 text-xxs bg-[#1C252E] text-white rounded-full p-0.5"
                     >
-                      <IoClose />
+                      <X />
                     </button>
                   </div>
                 )}
@@ -430,7 +434,7 @@ const CollegeList = () => {
                       onClick={() => handleRemoveFilter("state_name")}
                       className="ml-2 text-xxs bg-[#1C252E] text-white rounded-full p-0.5"
                     >
-                      <IoClose />
+                      <X />
                     </button>
                   </div>
                 )}
@@ -441,7 +445,7 @@ const CollegeList = () => {
                       onClick={() => handleRemoveFilter("stream_name")}
                       className="ml-2 text-xxs bg-[#1C252E] text-white rounded-full p-0.5"
                     >
-                      <IoClose />
+                      <X />
                     </button>
                   </div>
                 )}
@@ -457,7 +461,7 @@ const CollegeList = () => {
                       }
                       className="ml-2 text-xxs bg-[#1C252E] text-white rounded-full p-0.5"
                     >
-                      <IoClose />
+                      <X />
                     </button>
                   </div>
                 ))}
@@ -471,7 +475,7 @@ const CollegeList = () => {
                       onClick={() => handleRemoveFilter("fee_range", range)}
                       className="ml-2 text-xxs bg-[#1C252E] text-white rounded-full p-0.5"
                     >
-                      <IoClose />
+                      <X />
                     </button>
                   </div>
                 ))}

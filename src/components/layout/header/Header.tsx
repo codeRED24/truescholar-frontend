@@ -25,9 +25,13 @@ import {
   FaArrowLeft,
 } from "react-icons/fa";
 import SearchModal from "@/components/miscellaneous/SearchModal";
-import LeadModal from "@/components/modals/LeadModal";
 import { DialogTitle } from "@/components/ui/dialog";
 import { formatName } from "@/components/utils/utils";
+import dynamic from "next/dynamic";
+
+const LeadModal = dynamic(() => import("@/components/modals/LeadModal"), {
+  ssr: false,
+});
 
 const streamNames: Record<number, { name: string; icon: JSX.Element }> = {
   10: { name: "Engineering", icon: <FaUniversity /> },
@@ -41,7 +45,9 @@ type NavOption = (typeof navOptions)[number];
 
 const Header: React.FC = () => {
   const [loading, setLoading] = useState(false);
-  const [overStreamData, setOverStreamData] = useState<OverStreamSectionProps[]>([]);
+  const [overStreamData, setOverStreamData] = useState<
+    OverStreamSectionProps[]
+  >([]);
   const [citiesData, setCitiesData] = useState<HomeCity[]>([]);
   const [examsByStream, setExamsByStream] = useState<
     Record<number, { exam_id: number; slug: string; exam_name: string }[]>
@@ -50,7 +56,9 @@ const Header: React.FC = () => {
   const [currentStream, setCurrentStream] = useState<number | null>(null);
   const [scrolling, setScrolling] = useState(false);
   const [activeStream, setActiveStream] = useState<number | null>(null);
-  const [activeSubSection, setActiveSubSection] = useState<NavOption | null>(null);
+  const [activeSubSection, setActiveSubSection] = useState<NavOption | null>(
+    null
+  );
   const [showMoreStreams, setShowMoreStreams] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false); // State for mobile Sheet
   const isMobile = useIsMobile();
@@ -127,7 +135,9 @@ const Header: React.FC = () => {
               {stream.colleges.map((college) => (
                 <Link
                   key={college.college_id}
-                  href={`/colleges/${college.slug.replace(/-\d+$/, "")}-${college.college_id}`}
+                  href={`/colleges/${college.slug.replace(/-\d+$/, "")}-${
+                    college.college_id
+                  }`}
                   className="text-sm border-b block text-gray-600 py-3 hover:text-primary-main"
                   onClick={closeNavbar} // Close navbar on click
                 >
@@ -397,7 +407,9 @@ const Header: React.FC = () => {
                       <ul className="p-4 h-80 overflow-y-auto">
                         {additionalStreams.map((stream) => (
                           <Link
-                            href={`/college/${formatName(stream.stream_name)}-colleges`}
+                            href={`/college/${formatName(
+                              stream.stream_name
+                            )}-colleges`}
                             prefetch
                             key={stream.stream_id}
                             className="text-sm border-b block text-gray-600 py-3 hover:text-primary-main"

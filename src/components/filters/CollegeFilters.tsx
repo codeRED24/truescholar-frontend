@@ -3,7 +3,7 @@
 import { FilterSectionDTO } from "@/api/@types/college-list";
 import React, { useState, useCallback, useMemo, memo } from "react";
 import debounce from "lodash/debounce";
-import { IoReloadSharp, IoClose } from "react-icons/io5";
+import { RotateCcw, X } from "lucide-react";
 
 interface CollegeFilterProps {
   filterSection: FilterSectionDTO;
@@ -151,7 +151,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
               !areFiltersApplied() ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
-            <IoReloadSharp />
+            <RotateCcw />
           </button>
         </div>
         <div className="p-4 space-y-1 overflow-y-auto max-h-[90vh]">
@@ -172,7 +172,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
                   className="absolute right-3 top-[18px] transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
                   disabled={isLoading}
                 >
-                  <IoClose className="text-white bg-primary-main rounded-full p-0.5" />
+                  <X className="text-white bg-primary-main rounded-full p-0.5" />
                 </button>
               )}
             </div>
@@ -225,7 +225,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
                   className="absolute right-3 top-[18px] transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
                   disabled={isLoading}
                 >
-                  <IoClose className="text-white bg-primary-main rounded-full p-0.5" />
+                  <X className="text-white bg-primary-main rounded-full p-0.5" />
                 </button>
               )}
             </div>
@@ -280,7 +280,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
                   className="absolute right-3 top-[18px] transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
                   disabled={isLoading}
                 >
-                  <IoClose className="text-white bg-primary-main rounded-full p-0.5" />
+                  <X className="text-white bg-primary-main rounded-full p-0.5" />
                 </button>
               )}
             </div>
