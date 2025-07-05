@@ -158,7 +158,7 @@ const Header: React.FC = () => {
               ))}
             </div>
             <Link
-              href={`/college/${formattedStreamName}-colleges`}
+              href={`/colleges-stream-${formattedStreamName}`}
               className="text-sm font-semibold block text-primary-main py-3 hover:text-primary-main"
               onClick={closeNavbar} // Close navbar on click
             >
@@ -172,7 +172,7 @@ const Header: React.FC = () => {
             {citiesData.map((city) => (
               <Link
                 key={city.city_id}
-                href={`/college/${formattedStreamName}-colleges-in-${city.city_id}`}
+                href={`/colleges-city-${city.city_name}-stream-${formattedStreamName}`}
                 className="text-sm border-b block text-gray-600 py-3 hover:text-primary-main"
                 onClick={closeNavbar} // Close navbar on click
               >
@@ -197,7 +197,7 @@ const Header: React.FC = () => {
               ))}
             </div>
             <Link
-              href={`/exams`}
+              href={`/exams-stream-${stream.stream_name}`}
               className="text-sm font-semibold block text-primary-main py-3 hover:text-primary-main"
               onClick={closeNavbar} // Close navbar on click
             >
