@@ -36,20 +36,12 @@ const SkeletonExamCard: React.FC = () => (
 
 const ExamsList: React.FC = () => {
   const paramsRoute = useParams();
-  // console.log(paramsRoute);
 
   // Extract slug from the correct parameter
-  const rawSlug =
-    paramsRoute?.filterSlug ||
-    paramsRoute?.slug ||
-    paramsRoute?.slugAndId ||
-    "";
+  const rawSlug = paramsRoute?.filterSlug || "";
   const slug = Array.isArray(rawSlug) ? rawSlug.join("-") : rawSlug;
-  // Parse filters from slug
-  // console.log({ slug, rawSlug, paramsRoute });
 
   const parsedFilters = parseExamSlugToFilters(slug);
-  // console.log("Parsed filters from slug:", parsedFilters);
 
   const [exams, setExams] = useState<ExamInformationDTO[]>([]);
   const [page, setPage] = useState(1);
@@ -67,12 +59,12 @@ const ExamsList: React.FC = () => {
         setError(null);
 
         const selectedFilters: Record<string, string> = {};
-        // if (filters.category.length)
-        //   selectedFilters["exam_category"] = filters.category[0];
+        if (filters.mode.length)
+          selectedFilters["mode_of_exam"] = filters.mode.join(",");
         if (filters.streams.length)
-          selectedFilters["exam_streams"] = filters.streams[0];
+          selectedFilters["exam_streams"] = filters.streams.join(",");
         if (filters.level.length)
-          selectedFilters["exam_level"] = filters.level[0];
+          selectedFilters["exam_level"] = filters.level.join(",");
 
         const response: ExamsResponse = await getExams({
           page: pageNum,
@@ -130,15 +122,12 @@ const ExamsList: React.FC = () => {
   );
 
   const handleFilterChange = useCallback(
-    (newFilters: {
-      // category: string[];
-      streams: string[];
-      level: string[];
-    }) => {
+    (newFilters: { mode: string[]; streams: string[]; level: string[] }) => {
       setFilters(newFilters);
 
       // Build new slug from filters
       const newSlug = buildExamSlug({
+        mode: newFilters.mode,
         level: newFilters.level,
         streams: newFilters.streams,
       });
@@ -158,7 +147,10 @@ const ExamsList: React.FC = () => {
 
   const clearFilter = useCallback(
     (type: keyof typeof filters, value: string) => {
-      const newFilters = { ...filters, [type]: [] };
+      const newFilters = {
+        ...filters,
+        [type]: filters[type].filter((item) => item !== value),
+      };
       setFilters(newFilters);
       handleFilterChange(newFilters);
     },
@@ -179,9 +171,19 @@ const ExamsList: React.FC = () => {
         {allSelected.map(({ type, value }) => (
           <span
             key={`${type}-${value}`}
-            className="inline-flex items-center px-2 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
+            className="inline-flex items-center px-2 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 cursor-pointer hover:bg-blue-200"
+            onClick={() => clearFilter(type as keyof typeof filters, value)}
           >
             {value}
+            <button
+              className="ml-1 text-blue-600 hover:text-blue-800"
+              onClick={(e) => {
+                e.stopPropagation();
+                clearFilter(type as keyof typeof filters, value);
+              }}
+            >
+              ×
+            </button>
           </span>
         ))}
       </div>

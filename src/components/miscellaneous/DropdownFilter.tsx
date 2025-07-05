@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import clsx from "clsx";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface FilterOption {
   value: string;
@@ -81,9 +81,7 @@ const DropdownFilter: React.FC<DropdownFilterProps> = ({
             ? options.find((o) => o.value === selected)?.label || placeholder
             : placeholder}
         </span>
-        <span className="ml-2">
-          {open ? <IoIosArrowUp /> : <IoIosArrowDown />}
-        </span>
+        <span className="ml-2">{open ? <ChevronUp /> : <ChevronDown />}</span>
       </button>
       {open && (
         <div className={clsx(defaultDropdownClasses, dropdownClassName)}>

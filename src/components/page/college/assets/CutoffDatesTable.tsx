@@ -2,8 +2,8 @@ import { CollegeDateDTO } from "@/api/@types/college-info";
 import UpdateModal from "@/components/modals/UpdateModal";
 import { formatDate } from "@/components/utils/formatDate";
 import { formatDateYearMonth } from "@/components/utils/utils";
+import { BellRing } from "lucide-react";
 import React, { memo, useMemo } from "react";
-import { LuBellRing as BellRing } from "react-icons/lu";
 
 const getDateString = (date: string) => new Date(date).toDateString();
 const getMonthYear = (date: string) => {

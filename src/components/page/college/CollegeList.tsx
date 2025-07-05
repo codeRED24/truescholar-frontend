@@ -2,12 +2,14 @@
 
 import { CollegesResponseDTO } from "@/api/@types/college-list";
 import { getColleges } from "@/api/list/getColleges";
-import CollegeFilter from "@/components/filters/CollegeFilters";
 import CollegeSort from "@/components/filters/CollegeSort";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/components/utils/useMobile";
+import {
+  buildCollegeSlug,
+  parseCollegeSlugToFilters,
+} from "@/components/utils/slugFormat";
 import dynamic from "next/dynamic";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import React, {
   useEffect,
   useState,
@@ -15,7 +17,23 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import { IoClose, IoFilter } from "react-icons/io5";
+import { Filter, X } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const CollegeFilter = dynamic(
+  () => import("@/components/filters/CollegeFilters"),
+  { ssr: false }
+);
+
+const Sheet = dynamic(() =>
+  import("@/components/ui/sheet").then((mod) => mod.Sheet)
+);
+const SheetContent = dynamic(() =>
+  import("@/components/ui/sheet").then((mod) => mod.SheetContent)
+);
+const SheetTrigger = dynamic(() =>
+  import("@/components/ui/sheet").then((mod) => mod.SheetTrigger)
+);
 
 const sessionCache = {
   get: (key: string) => {
@@ -35,9 +53,7 @@ const sessionCache = {
 const CollegeListCard = dynamic(
   () => import("@/components/cards/CollegeListCard"),
   {
-    loading: () => (
-      <div className="animate-pulse p-4 bg-gray-200 rounded-2xl h-32" />
-    ),
+    loading: () => <Skeleton className="h-40 w-full" />,
     ssr: false,
   }
 );
@@ -53,7 +69,7 @@ type SortFunction = (
   b: CollegesResponseDTO["colleges"][0]
 ) => number;
 
-// Unified fee ranges with consistent labels
+// Fee ranges for label display
 const feeRanges = [
   { label: "Below 50K", value: "below_50k", min: 0, max: 50000 },
   { label: "50K - 1.5L", value: "50k_150k", min: 50000, max: 150000 },
@@ -73,7 +89,20 @@ const CollegeListItem = React.memo(
 const CollegeList = () => {
   const isMobile = useIsMobile();
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  // Parse initial filters from URL
+  const getInitialFilters = useCallback(() => {
+    const parsedFilters = parseCollegeSlugToFilters(pathname);
+
+    return {
+      city_name: parsedFilters.city ? parsedFilters.city[0] : "",
+      state_name: parsedFilters.state ? parsedFilters.state[0] : "",
+      stream_name: parsedFilters.stream ? parsedFilters.stream[0] : "",
+      type_of_institute: parsedFilters.type || [],
+      fee_range: parsedFilters.fee_range || [],
+    };
+  }, [pathname]);
 
   const [collegesData, setCollegesData] = useState<
     CollegesResponseDTO["colleges"]
@@ -92,22 +121,9 @@ const CollegeList = () => {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [filters, setFilters] = useState<Record<string, string | string[]>>({
-    city_id: searchParams.get("city") || "",
-    state_id: searchParams.get("state") || "",
-    stream_id: searchParams.get("stream") || "",
-    type_of_institute:
-      searchParams
-        .get("type")
-        ?.split(",")
-        .map((t) => t.trim()) || [],
-    fee_range: searchParams.get("fee_range")?.split(",") || [],
-    city_id_name: searchParams.get("city") || "",
-    state_id_name: searchParams.get("state") || "",
-    stream_id_name: searchParams.get("stream") || "",
-  });
+  const [filters, setFilters] =
+    useState<Record<string, string | string[]>>(getInitialFilters);
   const [sortFn, setSortFn] = useState<SortFunction | null>(null);
-
   const observer = useRef<IntersectionObserver | null>(null);
 
   const lastCollegeRef = useCallback(
@@ -122,7 +138,10 @@ const CollegeList = () => {
     [loading, hasMore]
   );
 
-  const generateCacheKey = (page: number, filters: Record<string, string>) => {
+  const generateCacheKey = (
+    page: number,
+    filters: Record<string, string | string[]>
+  ) => {
     return `colleges_${page}_${JSON.stringify(filters)}`;
   };
 
@@ -130,10 +149,15 @@ const CollegeList = () => {
     if (!hasMore) return;
 
     const apiFilters = {
-      city_id: filters.city_id as string,
-      state_id: filters.state_id as string,
-      stream_id: filters.stream_id as string,
+      city_name: filters.city_name as string,
+      state_name: filters.state_name as string,
+      stream_name: filters.stream_name as string,
+      type_of_institute: filters.type_of_institute as string[],
+      fee_range: filters.fee_range as string[],
     };
+
+    console.log(filters);
+
     const cacheKey = generateCacheKey(page, apiFilters);
     const cachedData = sessionCache.get(cacheKey);
     if (cachedData) {
@@ -156,6 +180,8 @@ const CollegeList = () => {
     setLoading(true);
     try {
       const data = await getColleges({ page, limit: 10, filters: apiFilters });
+      console.log({ data });
+
       sessionCache.set(cacheKey, data);
       setTotalCollegesCount(data.total_colleges_count);
       setFilterSection(data.filter_section);
@@ -167,108 +193,69 @@ const CollegeList = () => {
           (c: CollegesResponseDTO["colleges"][0]) =>
             !existingIds.has(c.college_id)
         );
-        return page === 1 ? data.colleges : [...prev, ...newColleges];
+        const updatedColleges =
+          page === 1 ? data.colleges : [...prev, ...newColleges];
+
+        // Check if we have reached the end based on total count
+        const hasMoreData = updatedColleges.length < data.total_colleges_count;
+        setHasMore(hasMoreData);
+
+        return updatedColleges;
       });
-      setHasMore(data.colleges.length > 0);
     } catch {
       setError("Failed to load colleges");
     } finally {
       setLoading(false);
     }
-  }, [page, filters.city_id, filters.state_id, filters.stream_id, hasMore]);
+  }, [
+    page,
+    filters.city_name,
+    filters.state_name,
+    filters.stream_name,
+    filters.type_of_institute,
+    filters.fee_range,
+    hasMore,
+  ]);
 
   useEffect(() => {
     fetchColleges();
   }, [fetchColleges]);
 
-  const sanitizeForUrl = useCallback((value: string) => {
-    return value
-      .replace(/[^a-zA-Z0-9\s]/g, "-")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .toLowerCase();
-  }, []);
-
   useEffect(() => {
-    const params = new URLSearchParams();
-    if (filters.city_id_name)
-      params.set("city", sanitizeForUrl(filters.city_id_name as string));
-    if (filters.state_id_name)
-      params.set("state", sanitizeForUrl(filters.state_id_name as string));
-    if (filters.stream_id_name)
-      params.set("stream", sanitizeForUrl(filters.stream_id_name as string));
-    if ((filters.type_of_institute as string[]).length > 0) {
-      const sanitizedTypes = (filters.type_of_institute as string[])
-        .map(sanitizeForUrl)
-        .join(",");
-      params.set("type", sanitizedTypes);
-    }
-    if ((filters.fee_range as string[]).length > 0) {
-      params.set("fee_range", (filters.fee_range as string[]).join(","));
-    }
-    router.push(`?${params.toString()}`, { scroll: false });
-  }, [filters, router, sanitizeForUrl]);
+    // Check if all filters are empty first
+    const hasAnyFilters =
+      filters.city_name ||
+      filters.state_name ||
+      filters.stream_name ||
+      (filters.type_of_institute as string[]).length > 0 ||
+      (filters.fee_range as string[]).length > 0;
 
-  const filteredColleges = useMemo(() => {
+    if (!hasAnyFilters) {
+      // Don't update URL if no filters - let handleRemoveFilter handle navigation
+      return;
+    }
+
+    // Build the slug using buildCollegeSlug function
+    const slugFilters = {
+      city: filters.city_name ? [filters.city_name as string] : undefined,
+      state: filters.state_name ? [filters.state_name as string] : undefined,
+      stream: filters.stream_name ? [filters.stream_name as string] : undefined,
+      type:
+        (filters.type_of_institute as string[]).length > 0
+          ? (filters.type_of_institute as string[])
+          : undefined,
+      fee_range:
+        (filters.fee_range as string[]).length > 0
+          ? (filters.fee_range as string[])
+          : undefined,
+    };
+
+    const collegeSlug = buildCollegeSlug(slugFilters);
+    router.replace(collegeSlug, { scroll: false });
+  }, [filters, router]);
+
+  const displayedColleges = useMemo(() => {
     let result = collegesData;
-
-    // Apply type_of_institute filter
-    const typeFilters = (filters.type_of_institute as string[]).map(
-      sanitizeForUrl
-    );
-    if (typeFilters.length > 0) {
-      const filterCacheKey = `filtered_${JSON.stringify(typeFilters)}_${
-        result.length
-      }`;
-      const cachedFiltered = sessionCache.get(filterCacheKey);
-      if (cachedFiltered) {
-        result = cachedFiltered;
-      } else {
-        result = result.filter(
-          (college: CollegesResponseDTO["colleges"][0]) => {
-            const collegeType = sanitizeForUrl(college.type_of_institute ?? "");
-            return typeFilters.includes(collegeType);
-          }
-        );
-        sessionCache.set(filterCacheKey, result);
-      }
-    }
-
-    // Apply fee range filter with improved logic
-    const feeRangeFilters = filters.fee_range as string[];
-    if (feeRangeFilters.length > 0) {
-      const feeCacheKey = `fee_filtered_${JSON.stringify(feeRangeFilters)}_${
-        result.length
-      }`;
-      const cachedFeeFiltered = sessionCache.get(feeCacheKey);
-      if (cachedFeeFiltered) {
-        result = cachedFeeFiltered;
-      } else {
-        result = result.filter(
-          (college: CollegesResponseDTO["colleges"][0]) => {
-            const minFees = Number(college.min_fees) || 0;
-            const maxFees = Number(college.max_fees) || minFees || 0; // Use minFees if maxFees is not available
-
-            return feeRangeFilters.some((range) => {
-              const rangeSpec = feeRanges.find((r) => r.value === range);
-              if (!rangeSpec) return false;
-
-              // Check if either minFees or maxFees falls within the range
-              // or if the college's range overlaps with the selected range
-              const minInRange =
-                minFees >= rangeSpec.min && minFees <= rangeSpec.max;
-              const maxInRange =
-                maxFees >= rangeSpec.min && maxFees <= rangeSpec.max;
-              const rangeOverlap =
-                minFees <= rangeSpec.min && maxFees >= rangeSpec.max;
-
-              return minInRange || maxInRange || rangeOverlap;
-            });
-          }
-        );
-        sessionCache.set(feeCacheKey, result);
-      }
-    }
 
     // Apply sorting if sort function exists
     if (sortFn) {
@@ -276,13 +263,7 @@ const CollegeList = () => {
     }
 
     return result;
-  }, [
-    collegesData,
-    filters.type_of_institute,
-    filters.fee_range,
-    sanitizeForUrl,
-    sortFn,
-  ]);
+  }, [collegesData, sortFn]);
 
   const handleFilterChange = useCallback(
     (newFilters: Record<string, string | string[]>) => {
@@ -313,54 +294,68 @@ const CollegeList = () => {
           );
         } else {
           updatedFilters[filterKey] = "";
-          updatedFilters[`${filterKey}_name`] = "";
         }
+
+        // Check if all filters are empty after removal
+        const hasAnyFilters =
+          updatedFilters.city_name ||
+          updatedFilters.state_name ||
+          updatedFilters.stream_name ||
+          (updatedFilters.type_of_institute as string[]).length > 0 ||
+          (updatedFilters.fee_range as string[]).length > 0;
+
+        if (!hasAnyFilters) {
+          // Navigate back to /exams if no filters remain
+          router.push("/colleges");
+          return updatedFilters;
+        }
+
         setPage(1);
         setCollegesData([]);
         setHasMore(true);
         return updatedFilters;
       });
     },
-    []
+    [router]
   );
 
   return (
     <div className="md:py-14 container-body">
       <div className="hidden md:flex sticky top-0 z-10 pb-4 bg-[#f4f6f8] inset-x-0 gap-8 items-center">
         <h1 className="text-2xl font-bold mb-2">
-          Colleges ({filteredColleges.length})
+          Colleges ({totalCollegesCount})
         </h1>
         <div className="flex flex-wrap gap-2 flex-1">
-          {filters.city_id_name && (
+          {filters.city_name && (
             <div className="flex items-center bg-[#919EAB1F] text-[#1C252E] text-sm font-medium capitalize px-3 py-1 rounded-2xl">
-              {filters.city_id_name}
+              {filters.city_name}
               <button
-                onClick={() => handleRemoveFilter("city_id")}
+                onClick={() => handleRemoveFilter("city_name")}
                 className="ml-2 text-xxs bg-[#1C252E] text-white rounded-full p-0.5"
               >
-                <IoClose />
+                <X />
               </button>
             </div>
           )}
-          {filters.state_id_name && (
+          {filters.state_name && (
             <div className="flex items-center bg-[#919EAB1F] text-[#1C252E] text-sm font-medium capitalize px-3 py-1 rounded-2xl">
-              {filters.state_id_name}
+              {filters.state_name}
               <button
-                onClick={() => handleRemoveFilter("state_id")}
+                onClick={() => handleRemoveFilter("state_name")}
                 className="ml-2 text-xxs bg-[#1C252E] text-white rounded-full p-0.5"
               >
-                <IoClose />
+                <X />
               </button>
             </div>
           )}
-          {filters.stream_id_name && (
+          {filters.stream_name && (
             <div className="flex items-center bg-[#919EAB1F] text-[#1C252E] text-sm font-medium capitalize px-3 py-1 rounded-2xl">
-              {filters.stream_id_name}
+              {filters.stream_name}
               <button
-                onClick={() => handleRemoveFilter("stream_id")}
+                onClick={() => handleRemoveFilter("stream_name")}
                 className="ml-2 text-xxs bg-[#1C252E] text-white rounded-full p-0.5"
               >
-                <IoClose />
+                <X />
               </button>
             </div>
           )}
@@ -374,7 +369,7 @@ const CollegeList = () => {
                 onClick={() => handleRemoveFilter("type_of_institute", type)}
                 className="ml-2 text-xxs bg-[#1C252E] text-white rounded-full p-0.5"
               >
-                <IoClose />
+                <X />
               </button>
             </div>
           ))}
@@ -388,7 +383,7 @@ const CollegeList = () => {
                 onClick={() => handleRemoveFilter("fee_range", range)}
                 className="ml-2 text-xxs bg-[#1C252E] text-white rounded-full p-0.5"
               >
-                <IoClose />
+                <X />
               </button>
             </div>
           ))}
@@ -403,14 +398,17 @@ const CollegeList = () => {
             <div className="sticky top-0 z-10 pb-2 bg-[#f4f6f8]">
               <div className="flex justify-between items-center">
                 <h1 className="text-base font-semibold font-public mb-2">
-                  Colleges ({filteredColleges.length})
+                  Colleges ({totalCollegesCount})
                 </h1>
                 <div className="flex gap-2">
                   <CollegeSort onSortChange={handleSortChange} />
                   <Sheet>
                     <SheetTrigger asChild>
-                      <button className="md:hidden text-primary-main rounded-2xl">
-                        <IoFilter />
+                      <button
+                        aria-label="Filter"
+                        className="md:hidden text-primary-main rounded-2xl"
+                      >
+                        <Filter />
                       </button>
                     </SheetTrigger>
                     <SheetContent
@@ -428,36 +426,36 @@ const CollegeList = () => {
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
-                {filters.city_id_name && (
+                {filters.city_name && (
                   <div className="flex items-center bg-[#919EAB1F] text-[#1C252E] text-sm font-medium capitalize px-3 py-1 rounded-2xl">
-                    {filters.city_id_name}
+                    {filters.city_name}
                     <button
-                      onClick={() => handleRemoveFilter("city_id")}
+                      onClick={() => handleRemoveFilter("city_name")}
                       className="ml-2 text-xxs bg-[#1C252E] text-white rounded-full p-0.5"
                     >
-                      <IoClose />
+                      <X />
                     </button>
                   </div>
                 )}
-                {filters.state_id_name && (
+                {filters.state_name && (
                   <div className="flex items-center bg-[#919EAB1F] text-[#1C252E] text-sm font-medium capitalize px-3 py-1 rounded-2xl">
-                    {filters.state_id_name}
+                    {filters.state_name}
                     <button
-                      onClick={() => handleRemoveFilter("state_id")}
+                      onClick={() => handleRemoveFilter("state_name")}
                       className="ml-2 text-xxs bg-[#1C252E] text-white rounded-full p-0.5"
                     >
-                      <IoClose />
+                      <X />
                     </button>
                   </div>
                 )}
-                {filters.stream_id_name && (
+                {filters.stream_name && (
                   <div className="flex items-center bg-[#919EAB1F] text-[#1C252E] text-sm font-medium capitalize px-3 py-1 rounded-2xl">
-                    {filters.stream_id_name}
+                    {filters.stream_name}
                     <button
-                      onClick={() => handleRemoveFilter("stream_id")}
+                      onClick={() => handleRemoveFilter("stream_name")}
                       className="ml-2 text-xxs bg-[#1C252E] text-white rounded-full p-0.5"
                     >
-                      <IoClose />
+                      <X />
                     </button>
                   </div>
                 )}
@@ -473,7 +471,7 @@ const CollegeList = () => {
                       }
                       className="ml-2 text-xxs bg-[#1C252E] text-white rounded-full p-0.5"
                     >
-                      <IoClose />
+                      <X />
                     </button>
                   </div>
                 ))}
@@ -487,7 +485,7 @@ const CollegeList = () => {
                       onClick={() => handleRemoveFilter("fee_range", range)}
                       className="ml-2 text-xxs bg-[#1C252E] text-white rounded-full p-0.5"
                     >
-                      <IoClose />
+                      <X />
                     </button>
                   </div>
                 ))}
@@ -507,24 +505,21 @@ const CollegeList = () => {
         <div className="w-full md:w-3/4">
           {error && <div className="text-red-500 mb-4">{error}</div>}
           <div className="space-y-4">
-            {filteredColleges.map(
+            {displayedColleges.map(
               (college: CollegesResponseDTO["colleges"][0], index: number) => (
                 <CollegeListItem
                   key={college.college_id}
                   college={college}
-                  isLast={index === filteredColleges.length - 1}
+                  isLast={index === displayedColleges.length - 1}
                   lastCollegeRef={lastCollegeRef}
                 />
               )
             )}
             {loading &&
               Array.from({ length: 5 }, (_, i) => (
-                <div
-                  key={i}
-                  className="animate-pulse p-4 bg-gray-200 rounded-2xl h-32"
-                />
+                <Skeleton key={i} className="h-40 w-full" />
               ))}
-            {!loading && filteredColleges.length === 0 && (
+            {!loading && displayedColleges.length === 0 && (
               <div className="text-center text-gray-500">
                 No colleges found with the applied filters.
               </div>

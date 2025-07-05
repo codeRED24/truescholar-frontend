@@ -15,7 +15,7 @@ export const getColleges = async ({
 }: {
   limit?: number;
   page: number;
-  filters?: Record<string, string>;
+  filters?: Record<string, string | string[]>;
 }): Promise<CollegesResponseDTO> => {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const BEARER_TOKEN = process.env.NEXT_PUBLIC_BEARER_TOKEN;
@@ -28,9 +28,26 @@ export const getColleges = async ({
   }
 
   const queryParams: Record<string, string | number> = { limit, page };
-  if (filters.city_id) queryParams.city_id = filters.city_id;
-  if (filters.state_id) queryParams.state_id = filters.state_id;
-  if (filters.stream_id) queryParams.stream_id = filters.stream_id;
+  if (filters.city_name && typeof filters.city_name === "string")
+    queryParams.city_name = filters.city_name;
+  if (filters.state_name && typeof filters.state_name === "string")
+    queryParams.state_name = filters.state_name;
+  if (filters.stream_name && typeof filters.stream_name === "string")
+    queryParams.stream_name = filters.stream_name;
+  if (
+    filters.type_of_institute &&
+    Array.isArray(filters.type_of_institute) &&
+    filters.type_of_institute.length > 0
+  ) {
+    queryParams.type_of_institute = filters.type_of_institute.join(",");
+  }
+  if (
+    filters.fee_range &&
+    Array.isArray(filters.fee_range) &&
+    filters.fee_range.length > 0
+  ) {
+    queryParams.fee_range = filters.fee_range.join(",");
+  }
 
   const requestUrl = `${API_URL}/college-info?${createQueryString(
     queryParams

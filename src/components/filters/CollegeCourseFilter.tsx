@@ -3,8 +3,8 @@
 import { getCollegeFilters } from "@/api/individual/getIndividualCollege";
 import { useRouter } from "next/navigation";
 import React, { useState, useMemo, useEffect, useCallback } from "react";
-import { LuX as X } from "react-icons/lu";
 import { FilterSection } from "@/api/@types/college-info";
+import { X } from "lucide-react";
 
 interface FilterItem {
   name: string;
@@ -19,7 +19,9 @@ interface CollegeCourseFilterProps {
   initialSelectedFilters: Record<string, string[]>;
   selectedCategory: string | null;
   collegeId: number;
-  setFiltersData: React.Dispatch<React.SetStateAction<Record<string, { label: string }[]>>>;
+  setFiltersData: React.Dispatch<
+    React.SetStateAction<Record<string, { label: string }[]>>
+  >;
   setSelectedFiltersCount: (count: number) => void;
 }
 
@@ -35,17 +37,24 @@ const CollegeCourseFilter: React.FC<CollegeCourseFilterProps> = ({
   setSelectedFiltersCount,
 }) => {
   const router = useRouter();
-  const [validCategories, setValidCategories] = useState<[string, FilterItem[]][]>([]);
+  const [validCategories, setValidCategories] = useState<
+    [string, FilterItem[]][]
+  >([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedOptions, setSelectedOptions] = useState<Set<string>>(new Set());
+  const [selectedOptions, setSelectedOptions] = useState<Set<string>>(
+    new Set()
+  );
   const [error, setError] = useState<string | null>(null);
 
   console.log("courseFilter in CollegeCourseFilter:", courseFilter);
   console.log("validCategories:", validCategories);
 
-  const transformFilterItems = useCallback((items: Array<{ label: string }>): FilterItem[] => {
-    return items.map((item) => ({ name: item.label, value: item.label }));
-  }, []);
+  const transformFilterItems = useCallback(
+    (items: Array<{ label: string }>): FilterItem[] => {
+      return items.map((item) => ({ name: item.label, value: item.label }));
+    },
+    []
+  );
 
   const getQueryParams = useCallback(() => {
     if (typeof window === "undefined") return {};
@@ -60,7 +69,9 @@ const CollegeCourseFilter: React.FC<CollegeCourseFilterProps> = ({
   useEffect(() => {
     const queryParams = getQueryParams();
     const initialOptions = new Set<string>();
-    Object.values(queryParams).forEach((options) => options.forEach((option) => initialOptions.add(option)));
+    Object.values(queryParams).forEach((options) =>
+      options.forEach((option) => initialOptions.add(option))
+    );
     Object.values(initialSelectedFilters).forEach((options) =>
       options.forEach((option) => initialOptions.add(option))
     );
@@ -78,7 +89,10 @@ const CollegeCourseFilter: React.FC<CollegeCourseFilterProps> = ({
         const dataFormatted = Object.entries(queryParams)
           .map(([key, values]) => `${key}=${values.join(",")}`)
           .join("&");
-        const output = (await getCollegeFilters(collegeId, dataFormatted)) as FilterSection;
+        const output = (await getCollegeFilters(
+          collegeId,
+          dataFormatted
+        )) as FilterSection;
 
         const transformedOutput: Record<string, { label: string }[]> = {};
         Object.entries(output.filter_section).forEach(([key, items]) => {
@@ -88,7 +102,10 @@ const CollegeCourseFilter: React.FC<CollegeCourseFilterProps> = ({
 
         const newValidCategories = Object.entries(output.filter_section)
           .filter(([_, items]) => items.length > 0)
-          .map(([category, items]) => [category, transformFilterItems(items)] as [string, FilterItem[]]);
+          .map(
+            ([category, items]) =>
+              [category, transformFilterItems(items)] as [string, FilterItem[]]
+          );
         setValidCategories(newValidCategories);
 
         if (!selectedCategory && newValidCategories.length > 0) {
@@ -114,7 +131,10 @@ const CollegeCourseFilter: React.FC<CollegeCourseFilterProps> = ({
 
     const validCategoriesFiltered = Object.entries(courseFilter)
       .filter(([_, items]) => Array.isArray(items) && items.length > 0)
-      .map(([category, items]) => [category, transformFilterItems(items)] as [string, FilterItem[]]);
+      .map(
+        ([category, items]) =>
+          [category, transformFilterItems(items)] as [string, FilterItem[]]
+      );
     setValidCategories(validCategoriesFiltered);
     if (!validCategoriesFiltered.some(([cat]) => cat === selectedCategory)) {
       setSelectedCategory(validCategoriesFiltered[0]?.[0] || null);
@@ -140,14 +160,20 @@ const CollegeCourseFilter: React.FC<CollegeCourseFilterProps> = ({
             .map((item) => item.name);
 
           if (selectedItems.length > 0) {
-            dataFormatted += `${index === 0 ? "" : "&"}${processedCategory}=${selectedItems.join(",")}`;
+            dataFormatted += `${
+              index === 0 ? "" : "&"
+            }${processedCategory}=${selectedItems.join(",")}`;
           }
         });
 
-        const output = (await getCollegeFilters(collegeId, dataFormatted)) as FilterSection;
+        const output = (await getCollegeFilters(
+          collegeId,
+          dataFormatted
+        )) as FilterSection;
         const updatedFilterSections = { ...output.filter_section };
         if (selectedCategory && courseFilter[selectedCategory]) {
-          updatedFilterSections[selectedCategory] = courseFilter[selectedCategory];
+          updatedFilterSections[selectedCategory] =
+            courseFilter[selectedCategory];
         }
 
         const transformedOutput: Record<string, { label: string }[]> = {};
@@ -158,7 +184,10 @@ const CollegeCourseFilter: React.FC<CollegeCourseFilterProps> = ({
 
         const newValidCategories = Object.entries(updatedFilterSections)
           .filter(([_, items]) => items.length > 0)
-          .map(([category, items]) => [category, transformFilterItems(items)] as [string, FilterItem[]]);
+          .map(
+            ([category, items]) =>
+              [category, transformFilterItems(items)] as [string, FilterItem[]]
+          );
         setValidCategories(newValidCategories);
 
         if (!newValidCategories.some(([cat]) => cat === selectedCategory)) {
@@ -169,7 +198,14 @@ const CollegeCourseFilter: React.FC<CollegeCourseFilterProps> = ({
         setError("Failed to update filters. Please try again.");
       }
     },
-    [collegeId, courseFilter, selectedCategory, setFiltersData, transformFilterItems, validCategories]
+    [
+      collegeId,
+      courseFilter,
+      selectedCategory,
+      setFiltersData,
+      transformFilterItems,
+      validCategories,
+    ]
   );
 
   const handleOptionChange = useCallback(
@@ -205,7 +241,10 @@ const CollegeCourseFilter: React.FC<CollegeCourseFilterProps> = ({
       setSelectedOptions(newSelection);
       try {
         setError(null);
-        const output = (await getCollegeFilters(collegeId, "")) as FilterSection;
+        const output = (await getCollegeFilters(
+          collegeId,
+          ""
+        )) as FilterSection;
 
         const transformedOutput: Record<string, { label: string }[]> = {};
         Object.entries(output.filter_section).forEach(([key, items]) => {
@@ -215,7 +254,10 @@ const CollegeCourseFilter: React.FC<CollegeCourseFilterProps> = ({
 
         const newValidCategories = Object.entries(output.filter_section)
           .filter(([_, items]) => items.length > 0)
-          .map(([category, items]) => [category, transformFilterItems(items)] as [string, FilterItem[]]);
+          .map(
+            ([category, items]) =>
+              [category, transformFilterItems(items)] as [string, FilterItem[]]
+          );
         setValidCategories(newValidCategories);
         setSelectedCategory(newValidCategories[0]?.[0] || null);
       } catch (err) {
@@ -239,7 +281,9 @@ const CollegeCourseFilter: React.FC<CollegeCourseFilterProps> = ({
           .map((item) => item.name);
 
         if (selectedItems.length > 0) {
-          dataFormatted += `${index === 0 ? "" : "&"}${processedCategory}=${selectedItems.join(",")}`;
+          dataFormatted += `${
+            index === 0 ? "" : "&"
+          }${processedCategory}=${selectedItems.join(",")}`;
           filtersByCategory[processedCategory] = selectedItems;
         }
       });
@@ -254,7 +298,10 @@ const CollegeCourseFilter: React.FC<CollegeCourseFilterProps> = ({
   const selectedCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     validCategories.forEach(([category, items]) => {
-      counts[category] = items.reduce((acc, item) => (selectedOptions.has(item.name) ? acc + 1 : acc), 0);
+      counts[category] = items.reduce(
+        (acc, item) => (selectedOptions.has(item.name) ? acc + 1 : acc),
+        0
+      );
     });
     return counts;
   }, [selectedOptions, validCategories]);
@@ -338,12 +385,16 @@ const CollegeCourseFilter: React.FC<CollegeCourseFilterProps> = ({
           <div className="w-2/3 max-h-[50vh] md:max-h-96 overflow-y-auto scrollbar-thin px-2">
             {selectedCategory &&
             validCategories.find(([cat]) => cat === selectedCategory)?.[1] ? (
-              validCategories.find(([cat]) => cat === selectedCategory)![1].length > 0 ? (
+              validCategories.find(([cat]) => cat === selectedCategory)![1]
+                .length > 0 ? (
                 validCategories
-                  .find(([cat]) => cat === selectedCategory)!
-                  [1].filter((item) => item.name !== "Others")
+                  .find(([cat]) => cat === selectedCategory)![1]
+                  .filter((item) => item.name !== "Others")
                   .map((item) => (
-                    <div key={item.name} className="my-3 flex items-center gap-2">
+                    <div
+                      key={item.name}
+                      className="my-3 flex items-center gap-2"
+                    >
                       <input
                         type="checkbox"
                         id={item.name}
@@ -351,16 +402,23 @@ const CollegeCourseFilter: React.FC<CollegeCourseFilterProps> = ({
                         onChange={(e) => handleOptionChange(item.name, e)}
                         className="form-checkbox h-5 w-5 text-primary-brand"
                       />
-                      <label htmlFor={item.name} className="text-sm md:text-md text-gray-700">
+                      <label
+                        htmlFor={item.name}
+                        className="text-sm md:text-md text-gray-700"
+                      >
                         {item.name.split("_")[0]}
                       </label>
                     </div>
                   ))
               ) : (
-                <p className="text-gray-500 text-sm md:text-md">No options available</p>
+                <p className="text-gray-500 text-sm md:text-md">
+                  No options available
+                </p>
               )
             ) : (
-              <p className="text-gray-500 text-sm md:text-md">Select a category to view options</p>
+              <p className="text-gray-500 text-sm md:text-md">
+                Select a category to view options
+              </p>
             )}
           </div>
         </div>

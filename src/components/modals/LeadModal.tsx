@@ -14,9 +14,13 @@ import { getColleges } from "@/api/list/getColleges";
 import { getCourses } from "@/api/list/getCourses";
 import { getCities } from "@/api/list/getCities";
 import { toast } from "sonner";
-import LeadForm from "../forms/LeadForm";
 import { CollegeDTO } from "@/api/@types/college-list";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+
+const LeadForm = dynamic(() => import("../forms/LeadForm"), {
+  ssr: false,
+});
 
 const getCookie = (name: string) => {
   const value = `; ${document.cookie}`;
@@ -34,14 +38,25 @@ type LeadModalProps = {
   btnMinWidth?: string;
   btnPadding?: string;
   btnHeight?: string;
-  btnVariant?: "default" | "link" | "ghost" | "destructive" | "outline" | "secondary" | null;
+  btnVariant?:
+    | "default"
+    | "link"
+    | "ghost"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | null;
   brochureUrl?: string;
 };
 
 const defaultHeader = (
   <div className="flex flex-col md:gap-4">
     <div className="flex items-center gap-2 md:gap-4">
-      <Link href="/" prefetch className="bg-[#141A21] text-white p-4 rounded-full font-bold font-public">
+      <Link
+        href="/"
+        prefetch
+        className="bg-[#141A21] text-white p-4 rounded-full font-bold font-public"
+      >
         True<span className="text-primary-main">Scholar</span>
       </Link>
       <div className="text-sm md:text-lg font-medium font-public leading-6 flex flex-col md:flex-row gap-2 items-center">
@@ -122,6 +137,7 @@ const LeadModal: React.FC<LeadModalProps> = ({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button
+          aria-label="Get Started"
           variant={btnVariant}
           style={{
             backgroundColor: btnColor,

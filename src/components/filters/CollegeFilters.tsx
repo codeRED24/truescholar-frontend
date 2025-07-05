@@ -3,7 +3,7 @@
 import { FilterSectionDTO } from "@/api/@types/college-list";
 import React, { useState, useCallback, useMemo, memo } from "react";
 import debounce from "lodash/debounce";
-import { IoReloadSharp, IoClose } from "react-icons/io5";
+import { RotateCcw, X } from "lucide-react";
 
 interface CollegeFilterProps {
   filterSection: FilterSectionDTO;
@@ -35,47 +35,54 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
       stream: "",
     });
 
-    const formatForUrl = useCallback(
-      (value: string): string => value.toLowerCase().replace(/\s+/g, ""),
+    // Helper function to normalize values for comparison
+    const normalizeValue = useCallback(
+      (val: string): string => val.toLowerCase().replace(/[^a-z0-9]/g, ""),
       []
     );
 
     const handleApiFilterChange = useCallback(
-      (filterType: string, value: string, name: string) => {
-        const newFilters = {
-          ...selectedFilters,
-          [filterType]: value === selectedFilters[filterType] ? "" : value,
-          [`${filterType}_name`]:
-            value === selectedFilters[filterType] ? "" : formatForUrl(name),
-        };
-        onFilterChange(newFilters);
-      },
-      [selectedFilters, onFilterChange, formatForUrl]
-    );
+      (filterType: string, value: string, name?: string) => {
+        const updatedFilters = { ...selectedFilters };
 
-    const handleLocalFilterChange = useCallback(
-      (filterType: string, value: string) => {
-        const currentValues = selectedFilters[filterType] as string[];
-        const formattedValue = formatForUrl(value);
-        const updatedValues = currentValues.includes(formattedValue)
-          ? currentValues.filter((v) => v !== formattedValue)
-          : [...currentValues, formattedValue];
-        const newFilters = { ...selectedFilters, [filterType]: updatedValues };
-        onFilterChange(newFilters);
+        if (
+          filterType === "city_name" ||
+          filterType === "state_name" ||
+          filterType === "stream_name"
+        ) {
+          // For single-select filters (radio buttons), replace the value
+          updatedFilters[filterType] = value;
+        } else if (
+          filterType === "type_of_institute" ||
+          filterType === "fee_range"
+        ) {
+          // For multi-select filters (checkboxes), toggle the value in array
+          const currentValues = updatedFilters[filterType] as string[];
+          const valueIndex = currentValues.indexOf(value);
+
+          if (valueIndex === -1) {
+            // Value not in array, add it
+            updatedFilters[filterType] = [...currentValues, value];
+          } else {
+            // Value in array, remove it
+            updatedFilters[filterType] = currentValues.filter(
+              (item) => item !== value
+            );
+          }
+        }
+
+        onFilterChange(updatedFilters);
       },
-      [selectedFilters, onFilterChange, formatForUrl]
+      [selectedFilters, onFilterChange]
     );
 
     const handleClearFilters = useCallback(() => {
       const clearedFilters = {
-        city_id: "",
-        state_id: "",
-        stream_id: "",
+        city_name: [],
+        state_name: [],
+        stream_name: [],
         type_of_institute: [],
-        fee_range: [], // Added fee_range to cleared filters
-        city_id_name: "",
-        state_id_name: "",
-        stream_id_name: "",
+        fee_range: [],
       };
       onFilterChange(clearedFilters);
       setSearchTerms({ city: "", state: "", stream: "" });
@@ -101,9 +108,9 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
 
     const areFiltersApplied = useCallback(
       () =>
-        selectedFilters.city_id !== "" ||
-        selectedFilters.state_id !== "" ||
-        selectedFilters.stream_id !== "" ||
+        selectedFilters.city_name !== "" ||
+        selectedFilters.state_name !== "" ||
+        selectedFilters.stream_name !== "" ||
         (selectedFilters.type_of_institute as string[]).length > 0 ||
         (selectedFilters.fee_range as string[]).length > 0,
       [selectedFilters]
@@ -111,7 +118,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
 
     const filteredCities = useMemo(
       () =>
-        filterSection.city_filter.filter((city) =>
+        filterSection.city_filter.filter((city: any) =>
           city.city_name?.toLowerCase().includes(searchTerms.city)
         ),
       [filterSection.city_filter, searchTerms.city]
@@ -119,7 +126,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
 
     const filteredStates = useMemo(
       () =>
-        filterSection.state_filter.filter((state) =>
+        filterSection.state_filter.filter((state: any) =>
           state.state_name?.toLowerCase().includes(searchTerms.state)
         ),
       [filterSection.state_filter, searchTerms.state]
@@ -127,7 +134,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
 
     const filteredStreams = useMemo(
       () =>
-        filterSection.stream_filter.filter((stream) =>
+        filterSection.stream_filter.filter((stream: any) =>
           stream.stream_name?.toLowerCase().includes(searchTerms.stream)
         ),
       [filterSection.stream_filter, searchTerms.stream]
@@ -138,13 +145,14 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
         <div className="flex justify-between items-center p-4 border-b">
           <h2 className="text-lg font-medium font-public">Filters</h2>
           <button
+            aria-label="Remove all filters"
             onClick={handleClearFilters}
             disabled={!areFiltersApplied()}
             className={`text-md text-blue-600 hover:underline focus:outline-none ${
               !areFiltersApplied() ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
-            <IoReloadSharp />
+            <RotateCcw />
           </button>
         </div>
         <div className="p-4 space-y-1 overflow-y-auto max-h-[90vh]">
@@ -165,7 +173,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
                   className="absolute right-3 top-[18px] transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
                   disabled={isLoading}
                 >
-                  <IoClose className="text-white bg-primary-main rounded-full p-0.5" />
+                  <X className="text-white bg-primary-main rounded-full p-0.5" />
                 </button>
               )}
             </div>
@@ -174,21 +182,22 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
                 ? Array.from({ length: 8 }, (_, index) => (
                     <SkeletonFilterItem key={index} />
                   ))
-                : filteredCities.map((city) => (
+                : filteredCities.map((city: any) => (
                     <label
                       key={city.city_id}
                       className="flex items-center space-x-2 text-sm font-public"
                     >
                       <input
                         type="radio"
-                        name="city_id"
+                        name="city_name"
                         checked={
-                          selectedFilters.city_id === String(city.city_id)
+                          normalizeValue(
+                            selectedFilters.city_name as string
+                          ) === normalizeValue(city.city_name || "")
                         }
                         onChange={() =>
                           handleApiFilterChange(
-                            "city_id",
-                            String(city.city_id ?? ""),
+                            "city_name",
                             city.city_name ?? ""
                           )
                         }
@@ -207,9 +216,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
                 type="text"
                 placeholder="Search states..."
                 value={searchTerms.state}
-                onChange={(e) =>
-                  debouncedSearchChange("state", e.target.value)
-                }
+                onChange={(e) => debouncedSearchChange("state", e.target.value)}
                 className="w-full p-2 mb-2 border rounded-xl h-9 pr-8"
                 disabled={isLoading}
               />
@@ -219,7 +226,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
                   className="absolute right-3 top-[18px] transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
                   disabled={isLoading}
                 >
-                  <IoClose className="text-white bg-primary-main rounded-full p-0.5" />
+                  <X className="text-white bg-primary-main rounded-full p-0.5" />
                 </button>
               )}
             </div>
@@ -228,21 +235,22 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
                 ? Array.from({ length: 8 }, (_, index) => (
                     <SkeletonFilterItem key={index} />
                   ))
-                : filteredStates.map((state) => (
+                : filteredStates.map((state: any) => (
                     <label
                       key={state.state_id}
                       className="flex items-center space-x-2 text-sm font-public"
                     >
                       <input
                         type="radio"
-                        name="state_id"
+                        name="state_name"
                         checked={
-                          selectedFilters.state_id === String(state.state_id)
+                          normalizeValue(
+                            selectedFilters.state_name as string
+                          ) === normalizeValue(state.state_name || "")
                         }
                         onChange={() =>
                           handleApiFilterChange(
-                            "state_id",
-                            String(state.state_id ?? ""),
+                            "state_name",
                             state.state_name ?? ""
                           )
                         }
@@ -273,7 +281,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
                   className="absolute right-3 top-[18px] transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
                   disabled={isLoading}
                 >
-                  <IoClose className="text-white bg-primary-main rounded-full p-0.5" />
+                  <X className="text-white bg-primary-main rounded-full p-0.5" />
                 </button>
               )}
             </div>
@@ -282,21 +290,22 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
                 ? Array.from({ length: 8 }, (_, index) => (
                     <SkeletonFilterItem key={index} />
                   ))
-                : filteredStreams.map((stream) => (
+                : filteredStreams.map((stream: any) => (
                     <label
                       key={stream.stream_id}
                       className="flex items-center space-x-2 text-sm font-public"
                     >
                       <input
                         type="radio"
-                        name="stream_id"
+                        name="stream_name"
                         checked={
-                          selectedFilters.stream_id === String(stream.stream_id)
+                          normalizeValue(
+                            selectedFilters.stream_name as string
+                          ) === normalizeValue(stream.stream_name || "")
                         }
                         onChange={() =>
                           handleApiFilterChange(
-                            "stream_id",
-                            String(stream.stream_id ?? ""),
+                            "stream_name",
                             stream.stream_name ?? ""
                           )
                         }
@@ -314,21 +323,22 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
               ? Array.from({ length: 8 }, (_, index) => (
                   <SkeletonFilterItem key={index} />
                 ))
-              : filterSection.type_of_institute_filter.map((type) => (
+              : filterSection.type_of_institute_filter.map((type: any) => (
                   <label
                     key={type.value}
                     className="flex items-center space-x-2 text-sm font-public"
                   >
                     <input
-                      type="checkbox"
-                      checked={(selectedFilters.type_of_institute as string[]).includes(
-                        formatForUrl(type.value ?? "")
+                      type="radio"
+                      checked={(
+                        selectedFilters.type_of_institute as string[]
+                      ).some(
+                        (selectedValue) =>
+                          normalizeValue(selectedValue) ===
+                          normalizeValue(type.value ?? "")
                       )}
                       onChange={() =>
-                        handleLocalFilterChange(
-                          "type_of_institute",
-                          type.value ?? ""
-                        )
+                        handleApiFilterChange("type_of_institute", type.value)
                       }
                     />
                     <span>
@@ -339,29 +349,27 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
           </>
           <>
             <h3 className="font-medium">Fee Range</h3>
-            {isLoading ? (
-              Array.from({ length: 5 }, (_, index) => (
-                <SkeletonFilterItem key={index} />
-              ))
-            ) : (
-              feeRanges.map((range) => (
-                <label
-                  key={range.value}
-                  className="flex items-center space-x-2 text-sm font-public"
-                >
-                  <input
-                    type="checkbox"
-                    checked={(selectedFilters.fee_range as string[]).includes(
-                      range.value
-                    )}
-                    onChange={() =>
-                      handleLocalFilterChange("fee_range", range.value)
-                    }
-                  />
-                  <span>{range.label}</span>
-                </label>
-              ))
-            )}
+            {isLoading
+              ? Array.from({ length: 5 }, (_, index) => (
+                  <SkeletonFilterItem key={index} />
+                ))
+              : feeRanges.map((range) => (
+                  <label
+                    key={range.value}
+                    className="flex items-center space-x-2 text-sm font-public"
+                  >
+                    <input
+                      type="radio"
+                      checked={(selectedFilters.fee_range as string[]).includes(
+                        range.value
+                      )}
+                      onChange={() =>
+                        handleApiFilterChange("fee_range", range.value)
+                      }
+                    />
+                    <span>{range.label}</span>
+                  </label>
+                ))}
           </>
         </div>
       </div>

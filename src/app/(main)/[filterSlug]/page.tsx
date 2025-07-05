@@ -1,6 +1,12 @@
-import ExamsList from "@/components/page/exam/ExamList";
 import React from "react";
 import { notFound } from "next/navigation";
+import dynamic from "next/dynamic";
+
+const ExamList = dynamic(() => import("@/components/wrapper/ExamListWrapper"));
+
+const CollegeList = dynamic(
+  () => import("@/components/wrapper/CollegeListWrapper")
+);
 
 interface PageProps {
   params: Promise<{
@@ -11,16 +17,13 @@ interface PageProps {
 const page = async ({ params }: PageProps) => {
   const { filterSlug } = await params;
 
-  // Check if filterSlug contains "exams"
-  if (!filterSlug.includes("exams-")) {
+  if (filterSlug.includes("exams-")) {
+    return <ExamList />;
+  } else if (filterSlug.includes("colleges-")) {
+    return <CollegeList />;
+  } else {
     notFound();
   }
-
-  return (
-    <div>
-      <ExamsList />
-    </div>
-  );
 };
 
 export default page;

@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import {
-  LuFacebook as Facebook,
-  LuInstagram as Instagram,
-  LuLinkedin as Linkedin,
-  LuMessageCircle as MessageCircle,
-  LuShare2 as Share2,
-} from "react-icons/lu";
 import Link from "next/link";
+import {
+  FacebookIcon as Facebook,
+  InstagramIcon as Instagram,
+  LinkedinIcon as Linkedin,
+  MessageCircle,
+  Share2Icon as Share2,
+} from "lucide-react";
 
 const ShareButton = ({
   href,

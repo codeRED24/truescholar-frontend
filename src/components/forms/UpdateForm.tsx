@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback, memo } from "react";
-import { LuMessageSquareOff, LuShieldCheck } from "react-icons/lu";
+import { MessageSquareOff, ShieldCheck } from "lucide-react";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { Button } from "@/components/ui/button";
@@ -84,7 +84,7 @@ const UpdateForm: React.FC = memo(() => {
           Mobile No.
         </label>
         <span className="absolute right-2 top-2 z-10 flex items-center rounded-full bg-[#30D289] px-3 py-1 text-xs italic text-white">
-          <LuShieldCheck strokeWidth={1.5} size={14} />
+          <ShieldCheck strokeWidth={1.5} size={14} />
           Secure
         </span>
         <PhoneInput
@@ -108,7 +108,7 @@ const UpdateForm: React.FC = memo(() => {
           Email
         </label>
         <span className="absolute right-2 top-2 flex items-center rounded-full bg-[#48ACE2] px-3 py-1 text-xs italic text-white">
-          <LuMessageSquareOff strokeWidth={1.5} size={14} />
+          <MessageSquareOff strokeWidth={1.5} size={14} />
           No spam
         </span>
         <input

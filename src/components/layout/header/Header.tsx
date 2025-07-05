@@ -13,27 +13,43 @@ import { OverStreamSectionProps, HomeCity } from "@/api/@types/header-footer";
 import { useIsMobile } from "@/components/utils/useMobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
-  FaUniversity,
-  FaBusinessTime,
-  FaUserMd,
-  FaPalette,
-  FaBars,
-  FaEllipsisH,
-  FaUser,
-  FaChevronDown,
-  FaChevronRight,
-  FaArrowLeft,
-} from "react-icons/fa";
-import SearchModal from "@/components/miscellaneous/SearchModal";
-import LeadModal from "@/components/modals/LeadModal";
-import { DialogTitle } from "@/components/ui/dialog";
+  BriefcaseBusiness,
+  BriefcaseMedical,
+  Palette,
+  University,
+  ArrowLeft,
+  ArrowDown,
+  ArrowRight,
+  Ellipsis,
+  User,
+  Menu,
+} from "lucide-react";
 import { formatName } from "@/components/utils/utils";
+import dynamic from "next/dynamic";
+
+const DialogTitle = dynamic(
+  () => import("@/components/ui/dialog").then((mod) => mod.DialogTitle),
+  {
+    ssr: false,
+  }
+);
+
+const SearchModal = dynamic(
+  () => import("@/components/miscellaneous/SearchModal"),
+  {
+    ssr: false,
+  }
+);
+
+const LeadModal = dynamic(() => import("@/components/modals/LeadModal"), {
+  ssr: false,
+});
 
 const streamNames: Record<number, { name: string; icon: JSX.Element }> = {
-  10: { name: "Engineering", icon: <FaUniversity /> },
-  21: { name: "Management", icon: <FaBusinessTime /> },
-  1: { name: "Medical", icon: <FaUserMd /> },
-  4: { name: "Design", icon: <FaPalette /> },
+  10: { name: "Engineering", icon: <University size={16} /> },
+  21: { name: "Management", icon: <BriefcaseBusiness size={16} /> },
+  1: { name: "Medical", icon: <BriefcaseMedical size={16} /> },
+  4: { name: "Design", icon: <Palette size={16} /> },
 };
 
 const navOptions = ["colleges", "collegesByCity", "exams"] as const;
@@ -41,7 +57,9 @@ type NavOption = (typeof navOptions)[number];
 
 const Header: React.FC = () => {
   const [loading, setLoading] = useState(false);
-  const [overStreamData, setOverStreamData] = useState<OverStreamSectionProps[]>([]);
+  const [overStreamData, setOverStreamData] = useState<
+    OverStreamSectionProps[]
+  >([]);
   const [citiesData, setCitiesData] = useState<HomeCity[]>([]);
   const [examsByStream, setExamsByStream] = useState<
     Record<number, { exam_id: number; slug: string; exam_name: string }[]>
@@ -50,7 +68,9 @@ const Header: React.FC = () => {
   const [currentStream, setCurrentStream] = useState<number | null>(null);
   const [scrolling, setScrolling] = useState(false);
   const [activeStream, setActiveStream] = useState<number | null>(null);
-  const [activeSubSection, setActiveSubSection] = useState<NavOption | null>(null);
+  const [activeSubSection, setActiveSubSection] = useState<NavOption | null>(
+    null
+  );
   const [showMoreStreams, setShowMoreStreams] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false); // State for mobile Sheet
   const isMobile = useIsMobile();
@@ -127,7 +147,9 @@ const Header: React.FC = () => {
               {stream.colleges.map((college) => (
                 <Link
                   key={college.college_id}
-                  href={`/colleges/${college.slug.replace(/-\d+$/, "")}-${college.college_id}`}
+                  href={`/colleges/${college.slug.replace(/-\d+$/, "")}-${
+                    college.college_id
+                  }`}
                   className="text-sm border-b block text-gray-600 py-3 hover:text-primary-main"
                   onClick={closeNavbar} // Close navbar on click
                 >
@@ -221,7 +243,7 @@ const Header: React.FC = () => {
                 className="menu-icon focus:outline-none"
                 aria-label="Open navigation menu"
               >
-                <FaBars />
+                <Menu />
               </button>
             </SheetTrigger>
             <SheetContent className="p-2 z-[101] w-[85%]">
@@ -256,7 +278,7 @@ const Header: React.FC = () => {
                           >
                             {icon} {name}
                           </div>
-                          <FaChevronDown
+                          <ArrowDown
                             className={`transition-transform ${
                               activeStream === Number(id) ? "rotate-180" : ""
                             }`}
@@ -271,7 +293,7 @@ const Header: React.FC = () => {
                                   onClick={() => setActiveSubSection(option)}
                                 >
                                   {getOptionLabel(option, name)}
-                                  <FaChevronRight />
+                                  <ArrowRight />
                                 </button>
                               </li>
                             ))}
@@ -286,9 +308,9 @@ const Header: React.FC = () => {
                           onClick={() => setShowMoreStreams(!showMoreStreams)}
                         >
                           <div className="flex items-center gap-3">
-                            <FaEllipsisH /> More
+                            <Ellipsis /> More
                           </div>
-                          <FaChevronDown
+                          <ArrowDown
                             className={`transition-transform ${
                               showMoreStreams ? "rotate-180" : ""
                             }`}
@@ -306,7 +328,7 @@ const Header: React.FC = () => {
                                   }}
                                 >
                                   {stream.stream_name}
-                                  <FaChevronRight />
+                                  <ArrowRight />
                                 </button>
                               </li>
                             ))}
@@ -324,7 +346,7 @@ const Header: React.FC = () => {
                           streamNames[activeStream!]?.name || "More"
                         )}
                       </h3>
-                      <FaArrowLeft
+                      <ArrowLeft
                         className="cursor-pointer"
                         onClick={() => setActiveSubSection(null)}
                       />
@@ -397,7 +419,9 @@ const Header: React.FC = () => {
                       <ul className="p-4 h-80 overflow-y-auto">
                         {additionalStreams.map((stream) => (
                           <Link
-                            href={`/college/${formatName(stream.stream_name)}-colleges`}
+                            href={`/college/${formatName(
+                              stream.stream_name
+                            )}-colleges`}
                             prefetch
                             key={stream.stream_id}
                             className="text-sm border-b block text-gray-600 py-3 hover:text-primary-main"
@@ -421,7 +445,7 @@ const Header: React.FC = () => {
             </NavigationMenu>
             <div className="bg-[#141A21] text-white rounded-full">
               <LeadModal
-                triggerText={<FaUser />}
+                triggerText={<User />}
                 btnColor="#141A21"
                 btnHeight="h-9"
               />

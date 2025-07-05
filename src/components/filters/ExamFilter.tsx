@@ -8,8 +8,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { FilterIcon } from "lucide-react";
-import { IoReloadSharp } from "react-icons/io5";
+import { FilterIcon, RotateCcw } from "lucide-react";
 import { useIsMobile } from "../utils/useMobile";
 
 interface FilterOption {
@@ -18,19 +17,19 @@ interface FilterOption {
 }
 
 interface FilterOptions {
-  exam_category: FilterOption[];
+  mode_of_exam: FilterOption[];
   exam_streams: FilterOption[];
   level_of_exam: FilterOption[];
 }
 
 interface ExamFiltersProps {
   onFilterChange: (filters: {
-    // category: string[];
+    mode: string[];
     streams: string[];
     level: string[];
   }) => void;
   initialFilters: {
-    // category: string[];
+    mode: string[];
     streams: string[];
     level: string[];
   };
@@ -40,7 +39,7 @@ const ExamFilters: React.FC<ExamFiltersProps> = React.memo(
   ({ onFilterChange, initialFilters }) => {
     const isMobile = useIsMobile();
     const [filterOptions, setFilterOptions] = useState<FilterOptions>({
-      exam_category: [],
+      mode_of_exam: [],
       exam_streams: [],
       level_of_exam: [],
     });
@@ -87,10 +86,22 @@ const ExamFilters: React.FC<ExamFiltersProps> = React.memo(
 
     const handleFilterChange = useCallback(
       (type: keyof typeof selectedFilters, value: string) => {
+        // Helper function to normalize values for comparison
+        const normalizeValue = (val: string) =>
+          val.toLowerCase().replace(/[^a-z0-9]/g, "");
+
         setSelectedFilters((prev) => {
-          const updatedValues = prev[type].includes(value)
-            ? prev[type].filter((item) => item !== value)
+          const normalizedValue = normalizeValue(value);
+          const isAlreadySelected = prev[type].some(
+            (selectedValue) => normalizeValue(selectedValue) === normalizedValue
+          );
+
+          const updatedValues = isAlreadySelected
+            ? prev[type].filter(
+                (item) => normalizeValue(item) !== normalizedValue
+              )
             : [...prev[type], value];
+
           return { ...prev, [type]: updatedValues };
         });
       },
@@ -99,7 +110,7 @@ const ExamFilters: React.FC<ExamFiltersProps> = React.memo(
 
     const clearAllFilters = useCallback(() => {
       setSelectedFilters({
-        // category: [],
+        mode: [],
         streams: [],
         level: [],
       });
@@ -156,7 +167,7 @@ const ExamFilters: React.FC<ExamFiltersProps> = React.memo(
             onClick={clearAllFilters}
             className="text-sm hover:text-primary-main"
           >
-            <IoReloadSharp />
+            <RotateCcw />
           </button>
         </div>
         {/* {renderFilterSection(
@@ -166,6 +177,7 @@ const ExamFilters: React.FC<ExamFiltersProps> = React.memo(
         )} */}
         {renderFilterSection("Streams", filterOptions.exam_streams, "streams")}
         {renderFilterSection("Level", filterOptions.level_of_exam, "level")}
+        {renderFilterSection("Mode", filterOptions.mode_of_exam, "mode")}
       </div>
     );
 

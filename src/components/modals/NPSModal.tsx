@@ -2,11 +2,11 @@
 import React, { useState, useEffect, useCallback, memo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Button } from "../ui/button";
-import { LuMessageSquareOff, LuShieldCheck } from "react-icons/lu";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { getCurrentLocation, getCurrentUrl } from "../utils/utils";
 import { toast } from "sonner";
+import { MessageCircleX, ShieldCheck } from "lucide-react";
 
 interface FormData {
   name: string;
@@ -122,7 +122,7 @@ const NPSModal: React.FC<NPSModalProps> = memo(({ open, onClose, rating }) => {
               Mobile No.
             </label>
             <span className="absolute top-8 right-2 bg-[#30D289] text-white text-xs italic px-2 py-1 rounded-full flex items-center gap-1 z-10">
-              <LuShieldCheck size={14} />
+              <ShieldCheck size={14} />
               Secure
             </span>
             <PhoneInput
@@ -149,7 +149,7 @@ const NPSModal: React.FC<NPSModalProps> = memo(({ open, onClose, rating }) => {
               Email
             </label>
             <span className="absolute top-8 right-2 bg-[#48ACE2] text-white text-xs italic px-2 py-1 rounded-full flex items-center gap-1">
-              <LuMessageSquareOff size={14} />
+              <MessageCircleX size={14} />
               No Spam
             </span>
             <input

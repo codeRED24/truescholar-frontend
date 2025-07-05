@@ -18,133 +18,114 @@ const parseMultiValues = (value: string): string[] =>
     .filter((v) => v.length > 0);
 
 export function buildCollegeSlug(filters: {
-  statename?: string;
-  coursename?: string;
-  streamname?: string;
-  min_fees?: number;
-  max_fees?: number;
-  searchquery?: string;
+  city?: string[];
+  state?: string[];
+  stream?: string[];
+  type?: string[];
+  fee_range?: string[];
 }) {
-  const parts = ["universities"];
+  const parts = ["colleges"];
 
-  if (filters.statename)
-    parts.push(
-      "state",
-      ...filters.statename
-        .toLowerCase()
-        .split(/\s+/)
-        .map((word) => word.replace(/[^a-z0-9-]/g, ""))
+  if (filters.city && filters.city.length > 0) {
+    const cityValues = Array.from(
+      new Set(
+        filters.city.map((v) => v.toLowerCase().replace(/[^a-z0-9]/g, ""))
+      )
     );
-  if (filters.coursename)
-    parts.push(
-      "for",
-      ...filters.coursename
-        .toLowerCase()
-        .split(/\s+/)
-        .map((word) => word.replace(/[^a-z0-9-]/g, ""))
-    );
-  if (filters.streamname)
-    parts.push(
-      "stream",
-      ...filters.streamname
-        .toLowerCase()
-        .split(/\s+/)
-        .map((word) => word.replace(/[^a-z0-9-]/g, ""))
-    );
-
-  if (filters.min_fees && filters.max_fees) {
-    parts.push(
-      "with",
-      "fees",
-      "between",
-      `${filters.min_fees / 100000}l`,
-      "and",
-      `${filters.max_fees / 100000}l`
-    );
-  } else if (filters.min_fees) {
-    parts.push("with", "fees", "from", `${filters.min_fees}k`);
-  } else if (filters.max_fees) {
-    parts.push("with", "fees", "upto", `${filters.max_fees}k`);
+    parts.push("city", cityValues.join("%2C"));
   }
 
-  if (filters.searchquery) {
-    parts.push(
-      "search",
-      ...filters.searchquery
-        .toLowerCase()
-        .split(/\s+/)
-        .map((word) => word.replace(/[^a-z0-9-]/g, ""))
+  if (filters.state && filters.state.length > 0) {
+    const stateValues = Array.from(
+      new Set(
+        filters.state.map((v) => v.toLowerCase().replace(/[^a-z0-9]/g, ""))
+      )
     );
+    parts.push("state", stateValues.join("%2C"));
   }
 
-  return `/university/${parts.join("-")}`;
+  if (filters.stream && filters.stream.length > 0) {
+    const streamValues = Array.from(
+      new Set(
+        filters.stream.map((v) => v.toLowerCase().replace(/[^a-z0-9]/g, ""))
+      )
+    );
+    parts.push("stream", streamValues.join("%2C"));
+  }
+
+  if (filters.type && filters.type.length > 0) {
+    const typeValues = Array.from(
+      new Set(
+        filters.type.map((v) => v.toLowerCase().replace(/[^a-z0-9]/g, ""))
+      )
+    );
+    parts.push("type", typeValues.join("%2C"));
+  }
+
+  if (filters.fee_range && filters.fee_range.length > 0) {
+    const feeRangeValues = Array.from(
+      new Set(
+        filters.fee_range.map((v) => v.toLowerCase().replace(/[^a-z0-9]/g, ""))
+      )
+    );
+    parts.push("fee_range", feeRangeValues.join("%2C"));
+  }
+
+  console.log({ parts });
+
+  return `/${parts.join("-")}`;
 }
 
-export function parseSlugToFilters(slug: string) {
-  const filters: Record<string, string | number> = {};
-  const words = slug.split("-");
+export function parseCollegeSlugToFilters(slug: string) {
+  const filters: {
+    city?: string[];
+    state?: string[];
+    stream?: string[];
+    type?: string[];
+    fee_range?: string[];
+  } = {};
 
-  // Define keywords that can appear in the slug
-  const keywords = [
-    "colleges",
-    "state",
-    "for",
-    "stream",
-    "with",
-    "fees",
-    "between",
-    "and",
-    "from",
-    "upto",
-    "search",
-  ];
+  // Remove leading slash and decode URL-encoded characters
+  const cleanSlug = decodeURIComponent(slug.replace(/^\//, ""));
+  const parts = cleanSlug.split("-");
 
-  for (let i = 0; i < words.length; i++) {
-    if (words[i] === "state") {
-      const stateWords = getValuesBetweenKeywords(i, words, keywords);
-      if (stateWords.length > 0) {
-        filters.statename = stateWords.join("-");
-      }
-    }
-    if (words[i] === "for") {
-      const courseWords = getValuesBetweenKeywords(i, words, keywords);
-      if (courseWords.length > 0) {
-        filters.coursename = courseWords.join("-");
-      }
-    }
-    if (words[i] === "stream") {
-      const streamWords = getValuesBetweenKeywords(i, words, keywords);
-      if (streamWords.length > 0) {
-        filters.streamname = streamWords.join("-");
-      }
-    }
-    if (words[i] === "search") {
-      const searchWords = getValuesBetweenKeywords(i, words, keywords);
-      if (searchWords.length > 0) {
-        filters.searchquery = searchWords.join("-");
-      }
-    }
-    if (words[i] === "with" && words[i + 1] === "fees") {
-      if (words[i + 2] === "between") {
-        const minMatch = words[i + 3];
-        const maxMatch = words[i + 5];
-        if (minMatch?.endsWith("k") && maxMatch?.endsWith("k")) {
-          filters.min_fees = parseInt(minMatch.replace("k", ""));
-          filters.max_fees = parseInt(maxMatch.replace("k", ""));
-        }
-      } else if (words[i + 2] === "from") {
-        const minMatch = words[i + 3];
-        if (minMatch?.endsWith("k")) {
-          filters.min_fees = parseInt(minMatch.replace("k", ""));
-        }
-      } else if (words[i + 2] === "upto") {
-        const maxMatch = words[i + 3];
-        if (maxMatch?.endsWith("k")) {
-          filters.max_fees = parseInt(maxMatch.replace("k", ""));
-        }
-      }
+  // Find the starting index after "colleges"
+  const collegesIndex = parts.indexOf("colleges");
+  if (collegesIndex === -1) return filters;
+
+  // Parse the parts after "colleges"
+  for (let i = collegesIndex + 1; i < parts.length; i += 2) {
+    const keyword = parts[i];
+    const values = parts[i + 1];
+
+    if (!values) continue;
+
+    // Split by URL-encoded comma (%2C) or regular comma
+    const valueArray = values
+      .split(/[,%2C]/)
+      .map((v) => v.trim())
+      .filter((v) => v.length > 0);
+
+    switch (keyword) {
+      case "city":
+        filters.city = valueArray;
+        break;
+      case "state":
+        filters.state = valueArray;
+        break;
+      case "stream":
+        filters.stream = valueArray;
+        break;
+      case "type":
+        filters.type = valueArray;
+        break;
+      case "fee_range":
+        filters.fee_range = valueArray;
+        break;
     }
   }
+
+  console.log({ filters });
 
   return filters;
 }
@@ -153,9 +134,11 @@ export function parseExamSlugToFilters(slug: string) {
   const filters: {
     streams: string[];
     level: string[];
+    mode: string[];
   } = {
     streams: [],
     level: [],
+    mode: [],
   };
 
   // Decode URL-encoded characters first
@@ -163,7 +146,7 @@ export function parseExamSlugToFilters(slug: string) {
 
   const words = decodedSlug.split("-");
 
-  const keywords = ["exams", "level", "stream"];
+  const keywords = ["exams", "level", "stream", "mode"];
 
   for (let i = 0; i < words.length; i++) {
     if (words[i] === "level") {
@@ -180,6 +163,14 @@ export function parseExamSlugToFilters(slug: string) {
         filters.streams = parseMultiValues(joinedStreamWords);
       }
     }
+
+    if (words[i] === "mode") {
+      const modeWords = getValuesBetweenKeywords(i, words, keywords);
+      if (modeWords.length > 0) {
+        const joinedModeWords = modeWords.join("-");
+        filters.mode = parseMultiValues(joinedModeWords);
+      }
+    }
   }
 
   return filters;
@@ -188,23 +179,36 @@ export function parseExamSlugToFilters(slug: string) {
 export function buildExamSlug(filters: {
   level?: string[];
   streams?: string[];
+  mode?: string[];
 }) {
   const parts = ["exams"];
 
   if (filters.level && filters.level.length > 0) {
-    const levelValues = filters.level.map((v) =>
-      v.toLowerCase().replace(/[^a-z0-9]/g, "")
+    const levelValues = Array.from(
+      new Set(
+        filters.level.map((v) => v.toLowerCase().replace(/[^a-z0-9]/g, ""))
+      )
     );
     parts.push("level", levelValues.join("%2C"));
   }
 
   if (filters.streams && filters.streams.length > 0) {
-    const streamValues = filters.streams.map((v) =>
-      v.toLowerCase().replace(/[^a-z0-9]/g, "")
+    const streamValues = Array.from(
+      new Set(
+        filters.streams.map((v) => v.toLowerCase().replace(/[^a-z0-9]/g, ""))
+      )
     );
     parts.push("stream", streamValues.join("%2C"));
   }
 
-  // Always return at least "/exams" if no filters are applied
+  if (filters.mode && filters.mode.length > 0) {
+    const modeValues = Array.from(
+      new Set(
+        filters.mode.map((v) => v.toLowerCase().replace(/[^a-z0-9]/g, ""))
+      )
+    );
+    parts.push("mode", modeValues.join("%2C"));
+  }
+
   return `/${parts.join("-")}`;
 }

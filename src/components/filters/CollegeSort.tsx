@@ -1,5 +1,5 @@
+import { ChevronDown } from "lucide-react";
 import React, { useState } from "react";
-import { IoChevronDown } from "react-icons/io5";
 
 type SortOption = {
   label: string;
@@ -56,7 +56,7 @@ const CollegeSort: React.FC<CollegeSortProps> = ({ onSortChange }) => {
             ? sortOptions.find((opt) => opt.value === selectedSort)?.label ||
               "Sort By"
             : "Sort By"}
-          <IoChevronDown className="-mr-1 ml-2 h-5 w-5" />
+          <ChevronDown className="-mr-1 ml-2 h-5 w-5" />
         </button>
       </div>
 

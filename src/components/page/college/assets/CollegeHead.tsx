@@ -3,12 +3,9 @@ import LeadModal from "@/components/modals/LeadModal";
 import { Button } from "@/components/ui/button";
 import { trimText } from "@/components/utils/utils";
 import StoryWrapper from "@/components/vid/StoryWrapper";
-import { LucideArrowDownUp } from "lucide-react";
+import { Headset, LucideArrowDownUp } from "lucide-react";
 import React from "react";
 import { GrCatalog } from "react-icons/gr";
-import { RiCustomerService2Fill } from "react-icons/ri";
-// import Image from "next/image";
-// import { IoHeart, IoShareSocial } from "react-icons/io5";
 
 const sampleVideoUrls = [
   "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
@@ -51,7 +48,11 @@ const CollegeHead = ({
           aria-label="college logo"
         /> */}
         <div>
-          <StoryWrapper videoUrls={videoUrls} initialState={initialState} collegeLogo={data.college_logo} />
+          <StoryWrapper
+            videoUrls={videoUrls}
+            initialState={initialState}
+            collegeLogo={data.college_logo}
+          />
         </div>
         <div className="w-full">
           <div className="flex items-center justify-between md:gap-4 flex-wrap">
@@ -105,7 +106,7 @@ const CollegeHead = ({
               triggerText={
                 <span className="flex items-center gap-2">
                   Enquire Now
-                  <RiCustomerService2Fill />
+                  <Headset />
                 </span>
               }
             />

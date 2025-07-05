@@ -7,12 +7,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { LuSearch as Search } from "react-icons/lu";
 import { FaClock } from "react-icons/fa";
 import { PopularCourse } from "@/api/@types/college-info";
 import { formatDuration } from "@/components/utils/utils";
 import CourseCard from "@/components/cards/CourseCard";
 import CollegeCourseFilter from "@/components/filters/CollegeCourseFilter";
+import { Search } from "lucide-react";
 
 interface CollegeCourseListProps {
   courseData: { groups: PopularCourse[] };
@@ -27,15 +27,23 @@ const NewCollegeCourseList: React.FC<CollegeCourseListProps> = ({
   paramsFilter,
   collegeId,
 }) => {
-  const [filteredData, setFilteredData] = useState<PopularCourse[]>(courseData.groups || []);
+  const [filteredData, setFilteredData] = useState<PopularCourse[]>(
+    courseData.groups || []
+  );
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [filters, setFilters] = useState<Record<string, string[]>>(paramsFilter || {});
-  const [filtersData, setFiltersData] = useState<Record<string, { label: string }[]>>(courseFilter);
+  const [filters, setFilters] = useState<Record<string, string[]>>(
+    paramsFilter || {}
+  );
+  const [filtersData, setFiltersData] =
+    useState<Record<string, { label: string }[]>>(courseFilter);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFiltersCount, setSelectedFiltersCount] = useState<number>(0);
 
   const defaultOpenGroup = useMemo(
-    () => (courseData.groups.length > 0 ? `group-${courseData.groups[0].course_group_id}` : ""),
+    () =>
+      courseData.groups.length > 0
+        ? `group-${courseData.groups[0].course_group_id}`
+        : "",
     [courseData.groups]
   );
 
@@ -44,7 +52,10 @@ const NewCollegeCourseList: React.FC<CollegeCourseListProps> = ({
   }, [paramsFilter]);
 
   useEffect(() => {
-    const count = Object.values(filters).reduce((acc, curr) => acc + curr.length, 0);
+    const count = Object.values(filters).reduce(
+      (acc, curr) => acc + curr.length,
+      0
+    );
     setSelectedFiltersCount(count);
   }, [filters]);
 
@@ -52,7 +63,9 @@ const NewCollegeCourseList: React.FC<CollegeCourseListProps> = ({
     let filtered = [...(courseData.groups || [])];
 
     if (filters.stream?.length) {
-      filtered = filtered.filter((group) => filters.stream.includes(String(group.stream_id)));
+      filtered = filtered.filter((group) =>
+        filters.stream.includes(String(group.stream_id))
+      );
     }
 
     if (filters.duration?.length) {
@@ -78,7 +91,9 @@ const NewCollegeCourseList: React.FC<CollegeCourseListProps> = ({
     }
 
     if (filters.level?.length) {
-      filtered = filtered.filter((group) => filters.level.includes(group.level || ""));
+      filtered = filtered.filter((group) =>
+        filters.level.includes(group.level || "")
+      );
     }
 
     setFilteredData(filtered);
@@ -103,9 +118,12 @@ const NewCollegeCourseList: React.FC<CollegeCourseListProps> = ({
     []
   );
 
-  const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-  }, []);
+  const handleSearchChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchTerm(event.target.value);
+    },
+    []
+  );
 
   const handleClear = useCallback(() => setSearchTerm(""), []);
 
@@ -202,7 +220,12 @@ const NewCollegeCourseList: React.FC<CollegeCourseListProps> = ({
 
       {searchTerm === "" ? (
         filteredData.length > 0 ? (
-          <Accordion type="single" defaultValue={defaultOpenGroup} collapsible className="w-full">
+          <Accordion
+            type="single"
+            defaultValue={defaultOpenGroup}
+            collapsible
+            className="w-full"
+          >
             {filteredData.map((group) => (
               <AccordionItem
                 key={group.course_group_id}
@@ -213,7 +236,10 @@ const NewCollegeCourseList: React.FC<CollegeCourseListProps> = ({
                   <div className="w-full text-left">
                     <h3 className="text-lg font-semibold">
                       {group.course_group_full_name}{" "}
-                      <span className="font-normal"> ({group.course_group_name})</span>
+                      <span className="font-normal">
+                        {" "}
+                        ({group.course_group_name})
+                      </span>
                     </h3>
                     <div className="flex items-center gap-2 mt-1 text-gray-600">
                       <FaClock />
@@ -224,10 +250,15 @@ const NewCollegeCourseList: React.FC<CollegeCourseListProps> = ({
                 <AccordionContent className="p-4">
                   {group.courses.length > 0 ? (
                     group.courses.map((course, index) => (
-                      <CourseCard key={course.college_wise_course_id || index} course={course} />
+                      <CourseCard
+                        key={course.college_wise_course_id || index}
+                        course={course}
+                      />
                     ))
                   ) : (
-                    <p className="text-gray-500">No courses available in this group</p>
+                    <p className="text-gray-500">
+                      No courses available in this group
+                    </p>
                   )}
                 </AccordionContent>
               </AccordionItem>
@@ -239,7 +270,10 @@ const NewCollegeCourseList: React.FC<CollegeCourseListProps> = ({
       ) : filteredCourses.length > 0 ? (
         <div className="flex flex-col gap-3 mt-2">
           {filteredCourses.map((course, index) => (
-            <CourseCard key={course.college_wise_course_id || index} course={course} />
+            <CourseCard
+              key={course.college_wise_course_id || index}
+              course={course}
+            />
           ))}
         </div>
       ) : (
