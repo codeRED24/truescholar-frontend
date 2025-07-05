@@ -1,11 +1,10 @@
 import { CollegeDTO } from "@/api/@types/college-list";
 import Image from "next/image";
 import React, { useMemo } from "react";
-import { GrCatalog } from "react-icons/gr";
-import { RiCustomerService2Fill } from "react-icons/ri";
 import { TiStarFullOutline } from "react-icons/ti";
 import { formatFeeRange } from "../utils/utils";
 import Link from "next/link";
+import { Headset, Notebook } from "lucide-react";
 
 interface CollegeListCardProps {
   college: CollegeDTO;
@@ -82,16 +81,18 @@ const CollegeListCard: React.FC<CollegeListCardProps> = React.memo(
 
     return (
       <div className="flex flex-col md:flex-row gap-4 items-center p-4 bg-white rounded-3xl shadow-card1 w-full">
-        <Image
-          src={
-            college_logo ||
-            "https://d28xcrw70jd98d.cloudfront.net/allCollegeLogo/defaultLogo1.webp"
-          }
-          width={70}
-          height={70}
-          alt={college_name}
-          className="aspect-square rounded-full object-cover p-1.5 bg-white"
-        />
+        <div className="overflow-hidden relative h-[70px] w-[70px]">
+          <Image
+            src={
+              college_logo ||
+              "https://d28xcrw70jd98d.cloudfront.net/allCollegeLogo/defaultLogo1.webp"
+            }
+            fill
+            alt={college_name}
+            className="aspect-square size-[70px] rounded-full object-cover p-1.5 bg-white"
+            loading="lazy"
+          />
+        </div>
 
         <div className="flex-1">
           <div className="flex flex-col md:flex-row justify-between items-center border-b border-dashed pb-4">
@@ -111,10 +112,10 @@ const CollegeListCard: React.FC<CollegeListCardProps> = React.memo(
                 Compare <span className="text-md font-light">↑↓</span>
               </button>
               <button className="px-3 py-1.5 border border-[#919EAB52] hover:border-[#DFE3E8] hover:bg-[#F4F6F8] rounded-full font-semibold text-xxs md:text-sm flex items-center gap-1">
-                Brochure <GrCatalog className="text-xs" />
+                Brochure <Notebook className="text-xs" />
               </button>
               <button className="px-3 py-1.5 border rounded-full font-semibold text-xxs md:text-sm flex items-center gap-1 bg-primary-main hover:bg-primary-3 text-white">
-                Enquire <RiCustomerService2Fill />
+                Enquire <Headset />
               </button>
             </div>
           </div>

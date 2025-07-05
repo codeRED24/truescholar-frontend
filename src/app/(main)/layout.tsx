@@ -16,11 +16,11 @@ export default function MainLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <main>
+    <div className="min-h-screen flex flex-col">
       <Header />
-      {children}
+      <main className="flex-grow">{children}</main>
       <Toaster />
       <Footer />
-    </main>
+    </div>
   );
 }

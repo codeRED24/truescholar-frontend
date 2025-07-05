@@ -3,14 +3,13 @@
 import { CollegesResponseDTO } from "@/api/@types/college-list";
 import { getColleges } from "@/api/list/getColleges";
 import CollegeSort from "@/components/filters/CollegeSort";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/components/utils/useMobile";
 import {
   buildCollegeSlug,
   parseCollegeSlugToFilters,
 } from "@/components/utils/slugFormat";
 import dynamic from "next/dynamic";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import React, {
   useEffect,
   useState,
@@ -19,10 +18,21 @@ import React, {
   useMemo,
 } from "react";
 import { Filter, X } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const CollegeFilter = dynamic(
   () => import("@/components/filters/CollegeFilters"),
   { ssr: false }
+);
+
+const Sheet = dynamic(() =>
+  import("@/components/ui/sheet").then((mod) => mod.Sheet)
+);
+const SheetContent = dynamic(() =>
+  import("@/components/ui/sheet").then((mod) => mod.SheetContent)
+);
+const SheetTrigger = dynamic(() =>
+  import("@/components/ui/sheet").then((mod) => mod.SheetTrigger)
 );
 
 const sessionCache = {
@@ -43,9 +53,7 @@ const sessionCache = {
 const CollegeListCard = dynamic(
   () => import("@/components/cards/CollegeListCard"),
   {
-    loading: () => (
-      <div className="animate-pulse p-4 bg-gray-200 rounded-2xl h-32" />
-    ),
+    loading: () => <Skeleton className="h-40 w-full" />,
     ssr: false,
   }
 );
@@ -81,7 +89,6 @@ const CollegeListItem = React.memo(
 const CollegeList = () => {
   const isMobile = useIsMobile();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const pathname = usePathname();
 
   // Parse initial filters from URL
@@ -397,7 +404,10 @@ const CollegeList = () => {
                   <CollegeSort onSortChange={handleSortChange} />
                   <Sheet>
                     <SheetTrigger asChild>
-                      <button className="md:hidden text-primary-main rounded-2xl">
+                      <button
+                        aria-label="Filter"
+                        className="md:hidden text-primary-main rounded-2xl"
+                      >
                         <Filter />
                       </button>
                     </SheetTrigger>
@@ -507,10 +517,7 @@ const CollegeList = () => {
             )}
             {loading &&
               Array.from({ length: 5 }, (_, i) => (
-                <div
-                  key={i}
-                  className="animate-pulse p-4 bg-gray-200 rounded-2xl h-32"
-                />
+                <Skeleton key={i} className="h-40 w-full" />
               ))}
             {!loading && displayedColleges.length === 0 && (
               <div className="text-center text-gray-500">

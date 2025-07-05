@@ -3,15 +3,17 @@ import { Barlow, Public_Sans } from "next/font/google";
 import Script from "next/script";
 
 const publicSans = Public_Sans({
+  weight: ["300", "400", "500", "600", "700"],
   variable: "--font-public-sans",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
 });
 
 const barlow = Barlow({
+  weight: ["300", "400", "500", "600", "700"],
   variable: "--font-barlow",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
 });
 
 function GTMScript({ gtmId }: { gtmId: string }) {
@@ -21,7 +23,7 @@ function GTMScript({ gtmId }: { gtmId: string }) {
       <Script
         async
         src={`https://www.googletagmanager.com/gtag/js?id=${gtmId}`}
-        strategy="lazyOnload"
+        strategy="afterInteractive"
       />
       <Script
         id="gtag-init"
@@ -33,7 +35,7 @@ function GTMScript({ gtmId }: { gtmId: string }) {
             gtag('config', '${gtmId}');
           `,
         }}
-        strategy="lazyOnload"
+        strategy="afterInteractive"
       />
     </>
   );

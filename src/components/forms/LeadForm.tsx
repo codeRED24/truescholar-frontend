@@ -4,13 +4,13 @@ import React, { useState, useEffect, useCallback } from "react";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { Button } from "../ui/button";
-import { LuMessageSquareOff, LuShieldCheck } from "react-icons/lu";
 import { CourseDTO } from "@/api/@types/course-type";
 import { HomeCity } from "@/api/@types/home-datatype";
 import { toast } from "sonner";
 import { getCurrentLocation } from "../utils/utils";
 import DropdownFilter from "../miscellaneous/DropdownFilter";
 import { CollegeDTO } from "@/api/@types/college-list";
+import { MessageSquareOff, ShieldCheck } from "lucide-react";
 
 type LeadFormData = {
   name: string;
@@ -52,7 +52,9 @@ const LeadForm: React.FC<LeadFormProps> = ({
     location: "",
     preferred_city: null,
   });
-  const [errors, setErrors] = useState<Partial<Record<keyof LeadFormData, string>>>({});
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof LeadFormData, string>>
+  >({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const courseOptions = courseData.map((course) => ({
@@ -86,10 +88,13 @@ const LeadForm: React.FC<LeadFormProps> = ({
     fetchLocation();
   }, []);
 
-  const handleChange = useCallback((key: keyof LeadFormData, value: unknown) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
-    setErrors((prev) => ({ ...prev, [key]: undefined }));
-  }, []);
+  const handleChange = useCallback(
+    (key: keyof LeadFormData, value: unknown) => {
+      setFormData((prev) => ({ ...prev, [key]: value }));
+      setErrors((prev) => ({ ...prev, [key]: undefined }));
+    },
+    []
+  );
 
   const validateForm = useCallback(() => {
     const newErrors: Partial<Record<keyof LeadFormData, string>> = {};
@@ -115,7 +120,11 @@ const LeadForm: React.FC<LeadFormProps> = ({
   const handleBrochureDownload = useCallback(() => {
     if (brochureUrl) {
       const newWindow = window.open(brochureUrl, "_blank");
-      if (!newWindow || newWindow.closed || typeof newWindow.closed === "undefined") {
+      if (
+        !newWindow ||
+        newWindow.closed ||
+        typeof newWindow.closed === "undefined"
+      ) {
         window.location.href = brochureUrl;
       }
     }
@@ -148,7 +157,8 @@ const LeadForm: React.FC<LeadFormProps> = ({
           college_id: null,
           city_id: null,
           not_sure: false,
-          response_url: typeof window !== "undefined" ? window.location.href : "",
+          response_url:
+            typeof window !== "undefined" ? window.location.href : "",
           location: formData.location,
           preferred_city: null,
         };
@@ -175,14 +185,22 @@ const LeadForm: React.FC<LeadFormProps> = ({
               <label className="text-sm text-[#344054]">Course</label>
               <DropdownFilter
                 options={courseOptions}
-                selected={formData.course_group_id ? String(formData.course_group_id) : null}
+                selected={
+                  formData.course_group_id
+                    ? String(formData.course_group_id)
+                    : null
+                }
                 placeholder="Select a course"
                 searchable={true}
-                onSelect={(value) => handleChange("course_group_id", value ? Number(value) : null)}
+                onSelect={(value) =>
+                  handleChange("course_group_id", value ? Number(value) : null)
+                }
                 className="bg-gray-50 text-gray-800 max-w-80 rounded-2xl"
               />
               {errors.course_group_id && (
-                <span className="text-red-500 text-sm">{errors.course_group_id}</span>
+                <span className="text-red-500 text-sm">
+                  {errors.course_group_id}
+                </span>
               )}
             </div>
 
@@ -190,14 +208,20 @@ const LeadForm: React.FC<LeadFormProps> = ({
               <label className="text-sm text-[#344054]">College</label>
               <DropdownFilter
                 options={collegeOptions}
-                selected={formData.college_id ? String(formData.college_id) : null}
+                selected={
+                  formData.college_id ? String(formData.college_id) : null
+                }
                 placeholder="Select a college"
                 searchable={true}
-                onSelect={(value) => handleChange("college_id", value ? Number(value) : null)}
+                onSelect={(value) =>
+                  handleChange("college_id", value ? Number(value) : null)
+                }
                 className="bg-gray-50 text-gray-800 max-w-80 rounded-2xl"
               />
               {errors.college_id && (
-                <span className="text-red-500 text-sm">{errors.college_id}</span>
+                <span className="text-red-500 text-sm">
+                  {errors.college_id}
+                </span>
               )}
             </div>
 
@@ -208,7 +232,9 @@ const LeadForm: React.FC<LeadFormProps> = ({
                 selected={formData.city_id ? String(formData.city_id) : null}
                 placeholder="Select your city"
                 searchable={true}
-                onSelect={(value) => handleChange("city_id", value ? Number(value) : null)}
+                onSelect={(value) =>
+                  handleChange("city_id", value ? Number(value) : null)
+                }
                 className="bg-gray-50 text-gray-800 max-w-80 rounded-2xl"
               />
               {errors.city_id && (
@@ -220,10 +246,16 @@ const LeadForm: React.FC<LeadFormProps> = ({
               <label className="text-sm text-[#344054]">Preferred City</label>
               <DropdownFilter
                 options={cityOptions}
-                selected={formData.preferred_city ? String(formData.preferred_city) : null}
+                selected={
+                  formData.preferred_city
+                    ? String(formData.preferred_city)
+                    : null
+                }
                 placeholder="Select your preferred city"
                 searchable={true}
-                onSelect={(value) => handleChange("preferred_city", value ? Number(value) : null)}
+                onSelect={(value) =>
+                  handleChange("preferred_city", value ? Number(value) : null)
+                }
                 className="bg-gray-50 text-gray-800 max-w-80 rounded-2xl"
               />
             </div>
@@ -261,7 +293,7 @@ const LeadForm: React.FC<LeadFormProps> = ({
             <div className="w-full flex flex-col gap-1 relative">
               <label className="text-sm text-[#344054]">Mobile No.</label>
               <span className="absolute top-3 right-2 bg-[#30D289] text-white text-xs italic px-2 py-1 rounded-full flex items-center gap-1 z-10">
-                <LuShieldCheck size={14} />
+                <ShieldCheck size={14} />
                 Secure
               </span>
               <PhoneInput
@@ -286,7 +318,7 @@ const LeadForm: React.FC<LeadFormProps> = ({
             <div className="w-full flex flex-col gap-1 relative">
               <label className="text-sm text-[#344054]">Email</label>
               <span className="absolute top-3 right-2 bg-[#48ACE2] text-white text-xs italic px-2 py-1 rounded-full flex items-center gap-1">
-                <LuMessageSquareOff size={14} />
+                <MessageSquareOff size={14} />
                 No Spam
               </span>
               <input

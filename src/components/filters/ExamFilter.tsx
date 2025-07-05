@@ -8,8 +8,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { FilterIcon } from "lucide-react";
-import { IoReloadSharp } from "react-icons/io5";
+import { FilterIcon, RotateCcw } from "lucide-react";
 import { useIsMobile } from "../utils/useMobile";
 
 interface FilterOption {
@@ -168,7 +167,7 @@ const ExamFilters: React.FC<ExamFiltersProps> = React.memo(
             onClick={clearAllFilters}
             className="text-sm hover:text-primary-main"
           >
-            <IoReloadSharp />
+            <RotateCcw />
           </button>
         </div>
         {/* {renderFilterSection(

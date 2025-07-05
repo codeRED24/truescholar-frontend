@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { LuMail, LuPhone, LuMapPin } from "react-icons/lu";
 import Link from "next/link";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
@@ -10,6 +9,7 @@ import { useIsMobile } from "../utils/useMobile";
 import { toast } from "sonner";
 import DropdownFilter from "../miscellaneous/DropdownFilter";
 import { CourseDTO } from "@/api/@types/course-type";
+import { Mail, MapPin, Phone } from "lucide-react";
 
 interface FormData {
   name: string;
@@ -186,7 +186,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ courseData }) => {
                     }
                     required
                   />
-                  <LuMail className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 </div>
               </div>
             </div>
@@ -271,7 +271,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ courseData }) => {
             </h2>
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <LuMail className="text-primary-main" size={20} />
+                <Mail className="text-primary-main" size={20} />
                 <div>
                   <h5 className="text-sm font-medium text-gray-700">Email</h5>
                   <Link
@@ -283,7 +283,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ courseData }) => {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <LuPhone className="text-primary-main" size={20} />
+                <Phone className="text-primary-main" size={20} />
                 <div>
                   <h5 className="text-sm font-medium text-gray-700">Phone</h5>
                   <Link href="tel:+919876543201" className="text-gray-600">
@@ -292,7 +292,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ courseData }) => {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <LuMapPin className="text-primary-main" size={20} />
+                <MapPin className="text-primary-main" size={20} />
                 <div>
                   <h5 className="text-sm font-medium text-gray-700">
                     Location

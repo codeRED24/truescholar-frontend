@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { SearchResultDTO } from "@/api/@types/search-type";
 import { getSearchData } from "@/api/individual/getSearchData";
-import { MdOutlineSearch, MdClose, MdDelete } from "react-icons/md";
+import { Delete, Search } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -254,7 +254,7 @@ const SearchModal: React.FC = () => {
                         onClick={() => clearSingleSearch(item.slug)}
                         className="text-gray-500 hover:text-red-500"
                       >
-                        <MdDelete className="w-5 h-5" />
+                        <Delete className="w-5 h-5" />
                       </Button>
                     )}
                   </li>
@@ -280,10 +280,10 @@ const SearchModal: React.FC = () => {
         >
           {isMobile ? (
             <div className="flex items-center font-semibold gap-3">
-              <MdOutlineSearch className="w-9 h-9" /> Search
+              <Search className="w-9 h-9" /> Search
             </div>
           ) : (
-            <MdOutlineSearch className="w-10 h-10 text-[#919EAB]" />
+            <Search className="w-10 h-10 text-[#919EAB]" />
           )}
         </Button>
       </DialogTrigger>
@@ -299,7 +299,7 @@ const SearchModal: React.FC = () => {
 
         <div className="">
           <div className="relative">
-            <MdOutlineSearch className="absolute w-5 h-5 text-gray-400 transform -translate-y-1/2 left-3 top-1/2" />
+            <Search className="absolute w-5 h-5 text-gray-400 transform -translate-y-1/2 left-3 top-1/2" />
             <Input
               type="text"
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>

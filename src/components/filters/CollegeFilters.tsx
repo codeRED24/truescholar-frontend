@@ -145,6 +145,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
         <div className="flex justify-between items-center p-4 border-b">
           <h2 className="text-lg font-medium font-public">Filters</h2>
           <button
+            aria-label="Remove all filters"
             onClick={handleClearFilters}
             disabled={!areFiltersApplied()}
             className={`text-md text-blue-600 hover:underline focus:outline-none ${

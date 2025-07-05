@@ -7,13 +7,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { LuStar as Star, LuSearch as Search } from "react-icons/lu";
 import { FaClock } from "react-icons/fa";
 import { TiStarFullOutline } from "react-icons/ti";
 import { PopularCourse } from "@/api/@types/college-info";
 import { formatDuration, formatFeeRange } from "@/components/utils/utils";
 import CourseCard from "@/components/cards/CourseCard";
 import CourseFilter from "@/components/filters/CourseFIlter";
+import { Search } from "lucide-react";
 
 interface CollegeCourseListProps {
   courseData: {

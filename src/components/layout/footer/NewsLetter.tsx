@@ -1,6 +1,6 @@
+import { Headset } from "lucide-react";
 import dynamic from "next/dynamic";
 import React from "react";
-import { RiCustomerService2Fill } from "react-icons/ri";
 const LeadModal = dynamic(() => import("@/components/modals/LeadModal"));
 
 const NewsLetter = () => {
@@ -14,7 +14,7 @@ const NewsLetter = () => {
         <LeadModal
           triggerText={
             <span className="flex items-center gap-2">
-              <RiCustomerService2Fill /> Get FREE counselling!
+              <Headset /> Get FREE counselling!
             </span>
           }
         />
