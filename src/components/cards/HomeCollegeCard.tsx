@@ -1,9 +1,9 @@
 import React, { useMemo } from "react";
 import { HomeCollege } from "@/api/@types/home-datatype";
 import Image from "next/image";
-import { TiStarFullOutline } from "react-icons/ti";
 import { trimText } from "../utils/utils";
 import Link from "next/link";
+import { Star } from "lucide-react";
 
 const SkeletonLoader = () => (
   <div className="bg-gray-300 h-72 rounded-2xl animate-pulse" />
@@ -18,7 +18,7 @@ const HomeCollegeCard: React.FC<{ college?: HomeCollege; isLoading: boolean }> =
   const renderCollegeStats = useMemo(() => (
     <div className="border-dashed border-y border-[#DFE3E8] p-4 flex justify-around">
       {[
-        { label: "Rating", value: kapp_rating, icon: <TiStarFullOutline className="inline-block text-primary-3 mr-1" />, className: "text-primary-3 bg-[#22C55E29] px-3 py-0.5 rounded-full" },
+        { label: "Rating", value: kapp_rating, icon: <Star  className="size-3 inline-block text-primary-3 fill-primary-3 mr-1" />, className: "text-primary-3 bg-[#22C55E29] px-3 py-0.5 rounded-full" },
         { label: "No of courses", value: course_count ? `${course_count}+`:"-", className: "text-[#00B8D9]" },
         { label: "Ranking", value: NIRF_ranking ? `#${NIRF_ranking} NIRF` : null }
       ]
@@ -45,7 +45,7 @@ const HomeCollegeCard: React.FC<{ college?: HomeCollege; isLoading: boolean }> =
           width={70}
           height={70}
           alt={college_name}
-          className="aspect-square rounded-full object-cover p-1.5 bg-white -mt-10"
+          className="aspect-square size-16 rounded-full object-cover p-1.5 bg-white -mt-10"
         />
         <Link href={`/colleges/${slug.replace(/-\d+$/, "")}-${college_id}`} className="font-public font-bold text-md text-center">{trimText(college_name, 46)}</Link>
         <p className="text-sm text-[#637381]">{city_name}</p>

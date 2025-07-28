@@ -4,7 +4,6 @@ import { HomeStream } from "@/api/@types/home-datatype";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { formatName } from "@/components/utils/utils";
-import { Stream } from "stream";
 import { StreamFilter } from "@/components/filters/StreamFilter";
 
 const HomeCollegeCard = dynamic(

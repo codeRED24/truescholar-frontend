@@ -4,8 +4,8 @@ import { HomeCollege, HomeStream } from "@/api/@types/home-datatype";
 import Link from "next/link";
 import Image from "next/image";
 import { formatFeeRange, formatName } from "@/components/utils/utils";
-import { TiStarFullOutline } from "react-icons/ti";
 import { StreamFilter } from "@/components/filters/StreamFilter";
+import { Star } from "lucide-react";
 
 interface PrivateCollegeProps {
   data: HomeStream[];
@@ -54,8 +54,8 @@ const CollegeRow: React.FC<{ college: HomeCollege }> = memo(({ college }) => {
       <td className="p-3">{formatFeeRange(min_tution_fees, max_tution_fees)}</td>
       <td className="p-3 text-center">
         {kapp_rating && kapp_rating > 0 ? (
-          <span className="text-primary-3 bg-[#22C55E29] font-semibold px-3 py-0.5 rounded-full flex items-center gap-1 w-fit">
-            <TiStarFullOutline className="inline-block text-primary-3" /> {kapp_rating}
+          <span className="text-primary-3 bg-[#22C55E29] font-semibold px-3 py-0.5 rounded-full flex justify-center items-center gap-1 w-fit">
+            <Star className="size-4 inline-block fill-primary-3 text-primary-3" /> <span>{kapp_rating}</span>
           </span>
         ) : (
           "-"

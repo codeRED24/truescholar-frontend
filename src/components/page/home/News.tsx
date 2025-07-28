@@ -28,10 +28,10 @@ const NewsComponent: React.FC<NewsProps> = ({ data }) => {
             key={article_id}
             className="grid sm:grid-cols-12 gap-6 items-center border-dashed border-b border-[#C4CDD5] py-6"
           >
-            <div className="col-span-1">
+            <div className="hidden sm:col-span-1">
               <Image src="/svg/right.svg" alt="icon" width={60} height={60} />
             </div>
-            <div className="col-span-9">
+            <div className="sm:col-span-9 ">
               <p className="text-[#00B8D9] font-semibold text-xs">
                 {formatDate(updated_at)}
               </p>
