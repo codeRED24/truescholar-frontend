@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -15,6 +13,43 @@ import {
 import { RiCustomerService2Fill } from "react-icons/ri";
 import { SiSimplelogin } from "react-icons/si";
 import LeadModal from "@/components/modals/LeadModal";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "About Us | TrueScholar - Your Guide to Academic Success",
+  description:
+    "Learn more about TrueScholar, our mission, vision, and how we help students find the best colleges, programs, and scholarships to achieve their academic goals.",
+  keywords:
+    "About TrueScholar, education platform, college guidance, scholarship platform, student success, academic resources",
+  metadataBase: new URL("https://www.truescholar.in"),
+  alternates: {
+    canonical: "https://www.truescholar.in/about-us",
+  },
+  openGraph: {
+    title: "About TrueScholar - Your Guide to Academic Success",
+    description:
+      "Discover TrueScholar's mission and how we help students find the perfect college, courses, and scholarships for a brighter future.",
+    url: "https://www.truescholar.in/about-us",
+    siteName: "TrueScholar",
+    images: [
+      {
+        url: "https://www.truescholar.in/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "About TrueScholar",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "About TrueScholar - Your Guide to Academic Success",
+    description:
+      "Learn about TrueScholar's mission to empower students with the best academic opportunities.",
+    images: ["https://www.truescholar.in/og-image.png"],
+  },
+};
 
 const AboutUs: React.FC = () => {
   return (
@@ -186,7 +221,7 @@ const AboutUs: React.FC = () => {
           <LeadModal
             triggerText={
               <span className="flex items-center gap-2">
-               <SiSimplelogin /> Sign Up Now
+                <SiSimplelogin /> Sign Up Now
               </span>
             }
           />
