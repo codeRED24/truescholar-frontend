@@ -31,6 +31,7 @@ const CarouselItem = memo(({ image, isActive, onLoad }: {
       className="object-cover"
       sizes="100vw"
       onLoad={onLoad}
+      fetchPriority='high'
     />
   </div>
 ));

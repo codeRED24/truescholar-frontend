@@ -1,14 +1,21 @@
 import { getHomeData } from "@/api/list/getHomeData";
 import dynamic from "next/dynamic";
 
-const Hero = dynamic(() => import("@/components/page/home/Hero"));
 const TopColleges = dynamic(() => import("@/components/page/home/TopColleges"));
+
+const Hero = dynamic(() => import("@/components/page/home/Hero"));
 const Cities = dynamic(() => import("@/components/page/home/Cities"));
 const News = dynamic(() => import("@/components/page/home/News"));
-const TrendingCourse = dynamic(() => import("@/components/page/home/TrendingCourse"));
-const PrivateCollege = dynamic(() => import("@/components/page/home/PrivateCollege"));
+const TrendingCourse = dynamic(
+  () => import("@/components/page/home/TrendingCourse")
+);
+const PrivateCollege = dynamic(
+  () => import("@/components/page/home/PrivateCollege")
+);
 const Exams = dynamic(() => import("@/components/page/home/Exams"));
-const DistanceCollege = dynamic(() => import("@/components/page/home/DistanceCollege"));
+const DistanceCollege = dynamic(
+  () => import("@/components/page/home/DistanceCollege")
+);
 
 export default async function Home() {
   const {

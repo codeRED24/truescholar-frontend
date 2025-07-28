@@ -50,11 +50,15 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${publicSans.variable} ${barlow.variable} antialiased`}>
         <Script
+          id="org-schema"
           type="application/ld+json"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLD) }}
         />
         <Script
+          id="website-schema"
           type="application/ld+json"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteLD) }}
         />
         <GTMScript gtmId="G-5CMGT07LVZ" />
