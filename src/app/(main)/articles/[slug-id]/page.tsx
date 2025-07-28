@@ -15,77 +15,78 @@ const parseSlugId = (slugId: string): { slug: string; id: number } | null => {
 const generateCorrectSlugId = (article: ArticleDataPropsDTO): string =>
   `${article.slug.replace(/\s+/g, "-").toLowerCase()}-${article.article_id}`;
 
-const generateSchema = (article: ArticleDataPropsDTO, correctSlugId: string) => {
+const generateSchema = (
+  article: ArticleDataPropsDTO,
+  correctSlugId: string
+) => {
   const articleUrl = `${BASE_URL}/articles/${correctSlugId}`;
 
-  return [
-    {
-      "@context": "https://schema.org",
-      "@type": "WebPage",
-      name: article.title,
-      description: article.meta_desc,
-      url: articleUrl,
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "Article",
-      inLanguage: "en",
-      headline: article.title,
-      description: article.meta_desc || "Details of article",
-      author: {
-        "@type": "Person",
-        name: article.author?.author_name || "Unknown Author",
-        url: article.author?.author_id
-          ? `${BASE_URL}/team/${article.author.author_id}`
-          : undefined,
-      },
-      datePublished: article.created_at,
-      dateModified: article.updated_at,
-      image:
-        article.img1_url || article.img2_url
-          ? {
-              "@type": "ImageObject",
-              url: article.img1_url || article.img2_url,
-              height: 800,
-              width: 800,
-            }
-          : undefined,
-      mainEntityOfPage: {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
         "@type": "WebPage",
-        "@id": articleUrl,
+        name: article.title,
+        description: article.meta_desc,
+        url: articleUrl,
       },
-      publisher: {
-        "@type": "Organization",
-        name: "truescholar.in",
-        logo: {
-          "@type": "ImageObject",
-          name: "truescholar.in",
-          url: `${BASE_URL}/logo-dark.webp`,
-          height: 100,
-          width: 600,
+      {
+        "@type": "BlogPosting", // ✅ Better than generic Article
+        headline: article.title,
+        description: article.meta_desc || "Details of article",
+        author: {
+          "@type": "Person",
+          name: article.author?.author_name || "Unknown Author",
+          url: article.author?.author_id
+            ? `${BASE_URL}/team/${article.author.author_id}`
+            : undefined,
+        },
+        datePublished: article.created_at,
+        dateModified: article.updated_at,
+        image:
+          article.img1_url || article.img2_url
+            ? {
+                "@type": "ImageObject",
+                url: article.img1_url || article.img2_url,
+                width: 1200, // ✅ Recommended by Google
+                height: 1200,
+              }
+            : undefined,
+        mainEntityOfPage: {
+          "@type": "WebPage",
+          "@id": articleUrl,
+        },
+        publisher: {
+          "@type": "Organization",
+          name: "TrueScholar",
+          logo: {
+            "@type": "ImageObject",
+            url: `${BASE_URL}/logo-dark.webp`,
+            width: 600,
+            height: 100,
+          },
         },
       },
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Home", item: BASE_URL },
-        {
-          "@type": "ListItem",
-          position: 2,
-          name: "Articles",
-          item: `${BASE_URL}/articles`,
-        },
-        {
-          "@type": "ListItem",
-          position: 3,
-          name: article.title,
-          item: articleUrl,
-        },
-      ],
-    },
-  ];
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: BASE_URL },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Articles",
+            item: `${BASE_URL}/articles`,
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: article.title,
+            item: articleUrl,
+          },
+        ],
+      },
+    ],
+  };
 };
 
 export async function generateMetadata({
@@ -125,17 +126,14 @@ export default async function ArticleIndividual({
     redirect(`/articles/${correctSlugId}`);
   }
 
-  const schemas = generateSchema(article, correctSlugId);
+  const schemaData = generateSchema(article, correctSlugId);
 
   return (
     <>
-      {schemas.map((schema, index) => (
-        <Script
-          key={index}
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
-      ))}
+      <Script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+      />
       <ArticleContent article={article} />
     </>
   );
