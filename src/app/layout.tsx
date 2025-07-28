@@ -74,6 +74,22 @@ function OrganizationSchema({
   return <JsonLd data={organizationData} />;
 }
 
+function WebsiteSchema({
+  name = "PickMyUni",
+  url = "https://pickmyuni.com",
+  description = "Discover and compare top Indian colleges",
+}: any) {
+  const websiteData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name,
+    url,
+    description,
+  };
+
+  return <JsonLd data={websiteData} />;
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -83,6 +99,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <OrganizationSchema />
+        <WebsiteSchema />
         <Script
           id="website-schema"
           type="application/ld+json"
