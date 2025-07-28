@@ -15,6 +15,32 @@ export const metadata: Metadata = {
     canonical: "https://www.truescholar.in/articles",
     languages: { "en-US": "/en-US", "de-DE": "/de-DE" },
   },
+  openGraph: {
+    title:
+      "Articles | TrueScholar.in - College Admission Tips, Career Guidance & Education Insights",
+    description:
+      "Explore expert articles on college admissions, scholarships, career planning, and higher education insights. Stay informed with TrueScholar's guides for students and professionals.",
+    url: "https://www.truescholar.in/articles",
+    siteName: "TrueScholar",
+    images: [
+      {
+        url: "https://www.truescholar.in/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Articles | TrueScholar.in - College Admission Tips, Career Guidance & Education Insights",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title:
+      "Articles | TrueScholar.in - College Admission Tips, Career Guidance & Education Insights",
+    description:
+      "Explore expert articles on college admissions, scholarships, career planning, and higher education insights. Stay informed with TrueScholar's guides for students and professionals.",
+    images: ["https://www.truescholar.in/og-image.png"],
+  },
 };
 
 export default async function Articles() {
