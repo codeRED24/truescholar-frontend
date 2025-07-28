@@ -1,3 +1,4 @@
+import JsonLd from "@/lib/jsonld";
 import { orgLD, websiteLD } from "@/lib/schema";
 import { Barlow, Public_Sans } from "next/font/google";
 import Script from "next/script";
@@ -41,6 +42,38 @@ function GTMScript({ gtmId }: { gtmId: string }) {
   );
 }
 
+function OrganizationSchema({
+  name = "TrueScholar",
+  url = "https://truescholar.in",
+  logo = "https://truescholar.in/favicon.ico",
+  description = "Find and compare the best colleges in India",
+  sameAs = [
+    "https://facebook.com/truescholar",
+    "https://twitter.com/truescholar",
+    "https://linkedin.com/company/truescholar",
+  ],
+  contactPoint = {
+    contactType: "customer service",
+    availableLanguage: "English",
+  },
+}: any) {
+  const organizationData = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name,
+    url,
+    logo,
+    description,
+    sameAs,
+    contactPoint: {
+      "@type": "ContactPoint",
+      ...contactPoint,
+    },
+  };
+
+  return <JsonLd data={organizationData} />;
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -48,19 +81,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${publicSans.variable} ${barlow.variable} antialiased`}>
-        <Script
-          id="org-schema"
-          type="application/ld+json"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLD) }}
-        />
+      <head>
+        <OrganizationSchema />
         <Script
           id="website-schema"
           type="application/ld+json"
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteLD) }}
         />
+      </head>
+      <body className={`${publicSans.variable} ${barlow.variable} antialiased`}>
         <GTMScript gtmId="G-5CMGT07LVZ" />
         {children}
       </body>
