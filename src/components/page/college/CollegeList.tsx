@@ -156,7 +156,7 @@ const CollegeList = () => {
       fee_range: filters.fee_range as string[],
     };
 
-    console.log(filters);
+    // console.log(filters);
 
     const cacheKey = generateCacheKey(page, apiFilters);
     const cachedData = sessionCache.get(cacheKey);
@@ -180,7 +180,7 @@ const CollegeList = () => {
     setLoading(true);
     try {
       const data = await getColleges({ page, limit: 10, filters: apiFilters });
-      console.log({ data });
+      // console.log({ data });
 
       sessionCache.set(cacheKey, data);
       setTotalCollegesCount(data.total_colleges_count);

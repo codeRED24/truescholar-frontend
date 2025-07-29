@@ -69,26 +69,34 @@ const HomeCollegeCard: React.FC<{ college?: HomeCollege; isLoading: boolean }> =
     );
 
     return (
-      <div className="bg-white rounded-2xl">
-        <div className="bg-black h-12 rounded-t-2xl"></div>
-        <div className="flex items-center justify-center flex-col py-2">
-          <Image
-            src={
-              logo_img ||
-              "https://d28xcrw70jd98d.cloudfront.net/allCollegeLogo/defaultLogo1.webp"
-            }
-            width={70}
-            height={70}
-            alt={college_name}
-            className="aspect-square size-16 rounded-full object-cover p-1.5 bg-white -mt-10"
-          />
+      <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+        {/* Top black bar */}
+        <div className="bg-black h-12 w-full relative flex justify-center items-center">
+          {/* Centered logo, overlapping the black bar */}
+          <div className="absolute left-1/2 top-full -translate-x-1/2 -translate-y-1/2 z-10">
+            <Image
+              src={
+                logo_img ||
+                "https://d28xcrw70jd98d.cloudfront.net/allCollegeLogo/defaultLogo1.webp"
+              }
+              width={70}
+              height={70}
+              alt={college_name}
+              className="aspect-square size-16 rounded-full object-cover p-1.5 bg-white border border-[#E0E0E0] shadow-md"
+            />
+          </div>
+        </div>
+        {/* Heading and city */}
+        <div className="flex flex-col items-center justify-center pt-10 pb-2 px-2">
           <Link
             href={`/colleges/${slug.replace(/-\d+$/, "")}-${college_id}`}
-            className="font-public font-bold text-md text-center"
+            className="font-public font-bold text-base text-center leading-tight my-1"
           >
             {trimText(college_name, 46)}
           </Link>
-          <p className="text-sm text-[#637381]">{city_name}</p>
+          {city_name && (
+            <p className="text-xs text-[#637381] mt-0.5">{city_name}</p>
+          )}
         </div>
         {renderCollegeStats}
         <div className="flex justify-center items-center gap-4 py-4">
