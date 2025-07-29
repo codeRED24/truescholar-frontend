@@ -71,7 +71,7 @@ export function buildCollegeSlug(filters: {
     parts.push("fee_range", feeRangeValues.join("%2C"));
   }
 
-  console.log({ parts });
+  // console.log({ parts });
 
   return `/${parts.join("-")}`;
 }
@@ -125,7 +125,7 @@ export function parseCollegeSlugToFilters(slug: string) {
     }
   }
 
-  console.log({ filters });
+  // console.log({ filters });
 
   return filters;
 }

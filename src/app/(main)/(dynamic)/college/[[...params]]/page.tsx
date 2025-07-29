@@ -135,95 +135,95 @@ const DynamicCollegeList = () => {
     const joinedParams = paramArray.join("-").toLowerCase();
     const parts = joinedParams.split("-");
 
-    console.log("Joined params:", joinedParams);
-    console.log("Parts:", parts);
+    // console.log("Joined params:", joinedParams);
+    // console.log("Parts:", parts);
 
     if (joinedParams.startsWith("college-")) {
       const cleanParts = joinedParams.replace("college-", "").split("-");
-      console.log("Clean parts (college-):", cleanParts);
+      // console.log("Clean parts (college-):", cleanParts);
 
       if (cleanParts.includes("colleges")) {
         const collegesIndex = cleanParts.indexOf("colleges");
         if (collegesIndex > 0) {
           const stream = cleanParts.slice(0, collegesIndex).join("-");
           stream_id = streamNameToId[stream] || stream;
-          console.log("Stream detected:", stream_id);
+          // console.log("Stream detected:", stream_id);
         }
         if (collegesIndex < cleanParts.length - 1) {
           const afterColleges = cleanParts.slice(collegesIndex + 1).join("-");
-          console.log("After colleges:", afterColleges);
+          // console.log("After colleges:", afterColleges);
 
           if (afterColleges.startsWith("in-")) {
             const location = afterColleges.replace("in-", "");
-            console.log("Location:", location);
+            // console.log("Location:", location);
 
             if (cityNameToId[location]) {
               city_id = cityNameToId[location];
-              console.log("City ID from cityNameToId:", city_id);
+              // console.log("City ID from cityNameToId:", city_id);
             } else if (stateNameToId[location]) {
               state_id = stateNameToId[location];
-              console.log("State ID from stateNameToId:", state_id);
+              // console.log("State ID from stateNameToId:", state_id);
             } else if (!isNaN(Number(location))) {
               if (location.length === 2) {
                 state_id = location;
-                console.log("2-char State ID:", state_id);
+                // console.log("2-char State ID:", state_id);
               } else if (location.length === 6) {
                 city_id = location;
-                console.log("6-char City ID:", city_id);
+                // console.log("6-char City ID:", city_id);
               } else if (cityMap[location]) city_id = location;
               else if (stateMap[location]) state_id = location;
               else if (streamMap[location]) stream_id = location;
             } else {
               if (stream_id && location !== stream_id) city_id = location;
               else state_id = location;
-              console.log("Fallback - City/State:", city_id, state_id);
+              // console.log("Fallback - City/State:", city_id, state_id);
             }
           }
         }
       }
     } else if (parts.includes("colleges")) {
       const collegesIndex = parts.indexOf("colleges");
-      console.log("Colleges index:", collegesIndex);
+      // console.log("Colleges index:", collegesIndex);
 
       if (collegesIndex > 0) {
         const stream = parts.slice(0, collegesIndex).join("-");
         stream_id = streamNameToId[stream] || stream;
-        console.log("Stream detected:", stream_id);
+        // console.log("Stream detected:", stream_id);
       }
       if (collegesIndex < parts.length - 1) {
         const afterColleges = parts.slice(collegesIndex + 1).join("-");
-        console.log("After colleges:", afterColleges);
+        // console.log("After colleges:", afterColleges);
 
         if (afterColleges.startsWith("in-")) {
           const location = afterColleges.replace("in-", "");
-          console.log("Location:", location);
+          // console.log("Location:", location);
 
           if (cityNameToId[location]) {
             city_id = cityNameToId[location];
-            console.log("City ID from cityNameToId:", city_id);
+            // console.log("City ID from cityNameToId:", city_id);
           } else if (stateNameToId[location]) {
             state_id = stateNameToId[location];
-            console.log("State ID from stateNameToId:", state_id);
+            // console.log("State ID from stateNameToId:", state_id);
           } else if (!isNaN(Number(location))) {
             if (location.length === 2) {
               state_id = location;
-              console.log("2-char State ID:", state_id);
+              // console.log("2-char State ID:", state_id);
             } else if (location.length === 6) {
               city_id = location;
-              console.log("6-char City ID:", city_id);
+              // console.log("6-char City ID:", city_id);
             } else if (cityMap[location]) city_id = location;
             else if (stateMap[location]) state_id = location;
             else if (streamMap[location] && !stream_id) stream_id = location;
           } else {
             if (stream_id && location !== stream_id) city_id = location;
             else state_id = location;
-            console.log("Fallback - City/State:", city_id, state_id);
+            // console.log("Fallback - City/State:", city_id, state_id);
           }
         }
       }
     }
 
-    console.log("Final result:", { stream_id, city_id, state_id });
+    // console.log("Final result:", { stream_id, city_id, state_id });
     return { stream_id, city_id, state_id };
   };
 

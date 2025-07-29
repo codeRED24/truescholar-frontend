@@ -26,7 +26,7 @@ const generateJSONLD = (type: string, data: object) => ({
 
 const getCollegeData = async (collegeId: number) => {
   const data = await getCollegeAdmissionProcess(collegeId);
-  console.log(data);
+  // console.log(data);
 
   // if (!data?.college_information?.dynamic_fields?.admission) return null;
   return data;

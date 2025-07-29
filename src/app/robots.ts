@@ -10,10 +10,11 @@ export default function robots(): MetadataRoute.Robots {
       },
     ],
     sitemap: [
-      `${baseUrl}/sitemap.xml`,
-      // `${baseUrl}/index-updates.xml`,
-      // `${baseUrl}/news.xml`,
-      // `${baseUrl}/latest-updates.xml`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}/sitemap.xml`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}/sitemap-static.xml`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}/sitemap-colleges.xml`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}/sitemap-exams.xml`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}/sitemap-articles.xml`,
     ],
   };
 }
