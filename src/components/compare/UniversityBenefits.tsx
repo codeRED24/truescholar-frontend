@@ -39,7 +39,7 @@ export default function UniversityBenefits() {
   return (
     <div>
       <div className="mb-12 text-center">
-        <h3 className="mb-12 text-3xl font-bold text-blue-600">
+        <h3 className="mb-12 text-3xl font-bold text-primary-main">
           Key Benefits of Comparing Universities
         </h3>
       </div>
@@ -57,7 +57,7 @@ export default function UniversityBenefits() {
                   quality={25}
                 />
               </div>
-              <h4 className="mb-3 font-bold text-blue-600">{benefit.title}</h4>
+              <h4 className="mb-3 font-bold text-black">{benefit.title}</h4>
               <p className="text-sm text-gray-600">{benefit.description}</p>
             </CardContent>
           </Card>
