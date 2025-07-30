@@ -10,40 +10,40 @@ import { formatFeeRange } from "@/components/utils/utils";
 import "@/app/styles/tables.css";
 import RatingComponent from "@/components/miscellaneous/RatingComponent";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ "slug-id": string; "silos-slug-id": string }>;
-}): Promise<{ title: string; description?: string }> {
-  const resolvedParams = await params;
-  let { "silos-slug-id": courseSlugCourseId } = resolvedParams;
+// export async function generateMetadata({
+//   params,
+// }: {
+//   params: Promise<{ "slug-id": string; "silos-slug-id": string }>;
+// }): Promise<{ title: string; description?: string }> {
+//   const resolvedParams = await params;
+//   let { "silos-slug-id": courseSlugCourseId } = resolvedParams;
 
-  const dynamicParam = courseSlugCourseId.split("-");
-  courseSlugCourseId = dynamicParam.join("-");
+//   const dynamicParam = courseSlugCourseId.split("-");
+//   courseSlugCourseId = dynamicParam.join("-");
 
-  const courseMatch = courseSlugCourseId.match(/(.+)-(\d+)$/);
-  if (!courseMatch) return { title: "Page Not Found" };
+//   const courseMatch = courseSlugCourseId.match(/(.+)-(\d+)$/);
+//   if (!courseMatch) return { title: "Page Not Found" };
 
-  const courseId = Number(courseMatch[2]);
-  if (isNaN(courseId)) return { title: "Invalid Course ID" };
+//   const courseId = Number(courseMatch[2]);
+//   if (isNaN(courseId)) return { title: "Invalid Course ID" };
 
-  const courseDetails = await getCourseByCollegeId(courseId);
-  if (!courseDetails || !courseDetails.college_information) {
-    return { title: "Course Not Found" };
-  }
+//   const courseDetails = await getCourseByCollegeId(courseId);
+//   if (!courseDetails || !courseDetails.college_information) {
+//     return { title: "Course Not Found" };
+//   }
 
-  const collegeName =
-    courseDetails.college_information?.college_name || "Unknown College";
-  const courseName =
-    courseDetails.college_wise_course?.name || "Unknown Course";
+//   const collegeName =
+//     courseDetails.college_information?.college_name || "Unknown College";
+//   const courseName =
+//     courseDetails.college_wise_course?.name || "Unknown Course";
 
-  return {
-    title: `${courseName} - ${collegeName} Details` || "College Courses",
-    description:
-      courseDetails.college_information?.meta_desc ||
-      `Explore details about ${collegeName} and its courses.`,
-  };
-}
+//   return {
+//     title: `${courseName} - ${collegeName} Details` || "College Courses",
+//     description:
+//       courseDetails.college_information?.meta_desc ||
+//       `Explore details about ${collegeName} and its courses.`,
+//   };
+// }
 
 export default async function CoursesByClg({
   params,
@@ -51,7 +51,8 @@ export default async function CoursesByClg({
   params: Promise<{ "slug-id": string; "silos-slug-id": string }>;
 }) {
   const resolvedParams = await params;
-  let { "slug-id": slugId, "silos-slug-id": courseSlugCourseId } = resolvedParams;
+  let { "slug-id": slugId, "silos-slug-id": courseSlugCourseId } =
+    resolvedParams;
 
   if (courseSlugCourseId === "admission-process") {
     redirect(`/colleges/${slugId}/admission`);
@@ -92,7 +93,9 @@ export default async function CoursesByClg({
     .toLowerCase();
   const correctSlugId = `${trimmedCollegeName}-${collegeId}`;
 
-  const courseSlug = (college_wise_course?.name || course_group_section.full_name)
+  const courseSlug = (
+    college_wise_course?.name || course_group_section.full_name
+  )
     .replace(/[^a-zA-Z0-9\s-]/g, "")
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
@@ -117,7 +120,11 @@ export default async function CoursesByClg({
       label: "Eligibility",
       available: !!college_wise_course?.eligibility_description,
     },
-    { id: "course-fees", label: "Fees", available: !!Object.keys(feesInfo).length },
+    {
+      id: "course-fees",
+      label: "Fees",
+      available: !!Object.keys(feesInfo).length,
+    },
     {
       id: "course-admission-process",
       label: "Admission Process",
@@ -153,7 +160,10 @@ export default async function CoursesByClg({
   return (
     <div className="bg-gray-2">
       <CollegeHead data={extractedData} />
-      <CollegeNav data={courseDetails.college_information} activeTab="Courses" />
+      <CollegeNav
+        data={courseDetails.college_information}
+        activeTab="Courses"
+      />
       <section className="container-body md:grid grid-cols-4 gap-4 py-4">
         <div className="col-span-3 order-none md:order-1">
           <div className="article-content-body mb-6">
@@ -171,7 +181,8 @@ export default async function CoursesByClg({
           <section className="article-content-body">
             <h2 className="text-2xl font-semibold" id="course-highlights">
               {college_wise_course.name} at{" "}
-              {college_information?.short_name || college_information?.college_name}
+              {college_information?.short_name ||
+                college_information?.college_name}
               <span className="text-primary-main"> Highlights</span>
             </h2>
             <p>{college_wise_course.description}</p>
@@ -258,7 +269,8 @@ export default async function CoursesByClg({
             <div className="article-content-body">
               <h2 className="text-2xl font-semibold" id="course-eligibility">
                 {college_wise_course.name} at{" "}
-                {college_information?.short_name || college_information?.college_name}
+                {college_information?.short_name ||
+                  college_information?.college_name}
                 <span className="text-primary-main"> Eligibility</span>
               </h2>
               <div
@@ -269,10 +281,14 @@ export default async function CoursesByClg({
             </div>
           )}
           {feesInfo && Object.keys(feesInfo).length > 0 && (
-            <div className="mb-6 article-content-body" id={`pdf-table-${feesInfo.collegewise_fees_id}`}>
+            <div
+              className="mb-6 article-content-body"
+              id={`pdf-table-${feesInfo.collegewise_fees_id}`}
+            >
               <h2 className="text-2xl font-semibold" id="course-fees">
                 {college_wise_course.name} at{" "}
-                {college_information?.short_name || college_information?.college_name}
+                {college_information?.short_name ||
+                  college_information?.college_name}
                 <span className="text-primary-main"> Fees 2025</span>
               </h2>
               <div className="flex justify-between items-center flex-wrap mb-2">
@@ -294,27 +310,45 @@ export default async function CoursesByClg({
                     {[
                       {
                         label: "Tuition",
-                        feeRange: formatFeeRange(feesInfo.tution_fees_min_amount, feesInfo.tution_fees_max_amount),
-                        description: "Tuition fee is calculated on the basis of 1st year/semester. Actual amount may vary.",
+                        feeRange: formatFeeRange(
+                          feesInfo.tution_fees_min_amount,
+                          feesInfo.tution_fees_max_amount
+                        ),
+                        description:
+                          "Tuition fee is calculated on the basis of 1st year/semester. Actual amount may vary.",
                       },
                       {
                         label: "One Time Payment",
-                        feeRange: formatFeeRange(feesInfo.min_one_time_fees, feesInfo.max_one_time_fees),
-                        description: "Includes Admission fees, Student welfare fund, Institute Security Deposits, etc.",
+                        feeRange: formatFeeRange(
+                          feesInfo.min_one_time_fees,
+                          feesInfo.max_one_time_fees
+                        ),
+                        description:
+                          "Includes Admission fees, Student welfare fund, Institute Security Deposits, etc.",
                       },
                       {
                         label: "Hostel",
-                        feeRange: formatFeeRange(feesInfo.min_hostel_fees, feesInfo.max_hostel_fees),
-                        description: "Fees include components other than hostel fees like Meal Plan.",
+                        feeRange: formatFeeRange(
+                          feesInfo.min_hostel_fees,
+                          feesInfo.max_hostel_fees
+                        ),
+                        description:
+                          "Fees include components other than hostel fees like Meal Plan.",
                       },
                       {
                         label: "Other Fees",
-                        feeRange: formatFeeRange(feesInfo.min_other_fees, feesInfo.max_other_fees),
+                        feeRange: formatFeeRange(
+                          feesInfo.min_other_fees,
+                          feesInfo.max_other_fees
+                        ),
                         description: "Includes other fees which may vary.",
                       },
                       {
                         label: "Total Fees",
-                        feeRange: formatFeeRange(feesInfo.total_min_fees, feesInfo.total_max_fees),
+                        feeRange: formatFeeRange(
+                          feesInfo.total_min_fees,
+                          feesInfo.total_max_fees
+                        ),
                       },
                     ].map((fee, index) => (
                       <tr key={index}>
@@ -336,9 +370,13 @@ export default async function CoursesByClg({
           )}
           {college_wise_course?.admission_process && (
             <div className="mb-6 article-content-body">
-              <h2 className="text-2xl font-semibold" id="course-admission-process">
+              <h2
+                className="text-2xl font-semibold"
+                id="course-admission-process"
+              >
                 {college_wise_course.name} at{" "}
-                {college_information?.short_name || college_information?.college_name}
+                {college_information?.short_name ||
+                  college_information?.college_name}
                 <span className="text-primary-main"> Admission Process</span>
               </h2>
               <div
@@ -351,16 +389,26 @@ export default async function CoursesByClg({
           {groupedRankings.length > 0 && (
             <div>
               {Object.entries(
-                groupedRankings.reduce((map: Record<string, CollegeRanking[]>, ranking: CollegeRanking) => {
-                  const agency = ranking.ranking_agency_name || "Unknown Agency";
-                  map[agency] = map[agency] || [];
-                  map[agency].push(ranking);
-                  return map;
-                }, {})
+                groupedRankings.reduce(
+                  (
+                    map: Record<string, CollegeRanking[]>,
+                    ranking: CollegeRanking
+                  ) => {
+                    const agency =
+                      ranking.ranking_agency_name || "Unknown Agency";
+                    map[agency] = map[agency] || [];
+                    map[agency].push(ranking);
+                    return map;
+                  },
+                  {}
+                )
               ).map(([agency, rankings]) => {
                 const agencyLogo = rankings[0]?.ranking_agency_image || "";
                 return (
-                  <div key={agency} className="agency-section mb-6 article-content-body">
+                  <div
+                    key={agency}
+                    className="agency-section mb-6 article-content-body"
+                  >
                     <div className="flex justify-between items-center mb-2">
                       <div className="flex items-center gap-1">
                         {agencyLogo && (
@@ -373,10 +421,15 @@ export default async function CoursesByClg({
                             loading="lazy"
                           />
                         )}
-                        <h6 className="text-sm text-gray-700 font-semibold">{agency}</h6>
+                        <h6 className="text-sm text-gray-700 font-semibold">
+                          {agency}
+                        </h6>
                       </div>
                     </div>
-                    <div className="table-container-ranking" id={`pdf-table-${agency}`}>
+                    <div
+                      className="table-container-ranking"
+                      id={`pdf-table-${agency}`}
+                    >
                       <table className="bg-white w-full">
                         <thead>
                           <tr>
@@ -388,14 +441,25 @@ export default async function CoursesByClg({
                         </thead>
                         <tbody>
                           {rankings.map((ranking: CollegeRanking) => (
-                            <tr key={`${ranking.college_ranking_id}-${ranking.year}`}>
+                            <tr
+                              key={`${ranking.college_ranking_id}-${ranking.year}`}
+                            >
                               <td>{ranking.year}</td>
-                              <td>{ranking.rank_title || `${agency}-${ranking.year}`}</td>
+                              <td>
+                                {ranking.rank_title ||
+                                  `${agency}-${ranking.year}`}
+                              </td>
                               <td className="font-medium flex items-center gap-1">
                                 #<span>{ranking.rank}</span>
-                                {ranking.rank === 1 && <span className="text-[17px]">🥇</span>}
-                                {ranking.rank === 2 && <span className="text-[17px]">🥈</span>}
-                                {ranking.rank === 3 && <span className="text-[17px]">🥉</span>}
+                                {ranking.rank === 1 && (
+                                  <span className="text-[17px]">🥇</span>
+                                )}
+                                {ranking.rank === 2 && (
+                                  <span className="text-[17px]">🥈</span>
+                                )}
+                                {ranking.rank === 3 && (
+                                  <span className="text-[17px]">🥉</span>
+                                )}
                               </td>
                               <td>{ranking.category}</td>
                             </tr>
@@ -412,7 +476,8 @@ export default async function CoursesByClg({
             <div className="mb-6 article-content-body">
               <h2 className="text-2xl font-semibold" id="course-overview">
                 {college_wise_course.name} at{" "}
-                {college_information?.short_name || college_information?.college_name}
+                {college_information?.short_name ||
+                  college_information?.college_name}
                 <span className="text-primary-main"> Overview</span>
               </h2>
               <div
@@ -426,7 +491,8 @@ export default async function CoursesByClg({
             <div className="mb-6 article-content-body">
               <h2 className="text-2xl font-semibold" id="course-syllabus">
                 {college_wise_course.name} at{" "}
-                {college_information?.short_name || college_information?.college_name}
+                {college_information?.short_name ||
+                  college_information?.college_name}
                 <span className="text-primary-main"> Syllabus</span>
               </h2>
               <div
@@ -437,10 +503,14 @@ export default async function CoursesByClg({
             </div>
           )}
           {sortedPlacementData.length > 0 && (
-            <section className="article-content-body mb-6" id="course-placement">
+            <section
+              className="article-content-body mb-6"
+              id="course-placement"
+            >
               <h2 className="text-2xl font-semibold">
                 {college_wise_course.name} at{" "}
-                {college_information?.short_name || college_information?.college_name}
+                {college_information?.short_name ||
+                  college_information?.college_name}
                 <span className="text-primary-main"> Placement Section</span>
               </h2>
               <div className="table-container-p">
