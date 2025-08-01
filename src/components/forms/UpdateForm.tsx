@@ -52,11 +52,14 @@ const UpdateForm: React.FC = memo(() => {
       };
 
       try {
-        const response = await fetch("/api/post/newsletter", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newsletterData),
-        });
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/newsletter`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(newsletterData),
+          }
+        );
 
         if (!response.ok) {
           const errorData = await response.json();
