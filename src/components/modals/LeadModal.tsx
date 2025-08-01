@@ -83,7 +83,9 @@ const LeadModal: React.FC<LeadModalProps> = ({
   const [courseData, setCourseData] = useState<CourseDTO[]>([]);
   const [cityData, setCityData] = useState<HomeCity[]>([]);
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingColleges, setIsLoadingColleges] = useState(false);
+  const [isLoadingCourses, setIsLoadingCourses] = useState(false);
+  const [isLoadingCities, setIsLoadingCities] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -94,8 +96,10 @@ const LeadModal: React.FC<LeadModalProps> = ({
   }, []);
 
   const fetchData = useCallback(async () => {
+    setIsLoadingColleges(true);
+    setIsLoadingCourses(true);
+    setIsLoadingCities(true);
     try {
-      setIsLoading(true);
       const [colleges, courses, cities] = await Promise.all([
         getColleges({ limit: 500, page: 1 }),
         getCourses(),
@@ -110,15 +114,23 @@ const LeadModal: React.FC<LeadModalProps> = ({
         description: "There was a problem loading the form data.",
       });
     } finally {
-      setIsLoading(false);
+      setIsLoadingColleges(false);
+      setIsLoadingCourses(false);
+      setIsLoadingCities(false);
     }
   }, []);
 
   useEffect(() => {
-    if (isOpen && !getCookie("leadFormSubmitted")) {
+    if (
+      isOpen &&
+      !getCookie("leadFormSubmitted") &&
+      clgData.length === 0 &&
+      courseData.length === 0 &&
+      cityData.length === 0
+    ) {
       fetchData();
     }
-  }, [fetchData, isOpen]);
+  }, [fetchData, isOpen, clgData.length, courseData.length, cityData.length]);
 
   const handleFormSubmitSuccess = useCallback((formData: any) => {
     setIsFormSubmitted(true);
@@ -159,9 +171,7 @@ const LeadModal: React.FC<LeadModalProps> = ({
           <DialogHeader>
             <DialogTitle>{headerTitle || defaultHeader}</DialogTitle>
           </DialogHeader>
-          {isLoading ? (
-            <div className="animate-pulse rounded-2xl h-[60vh]"></div>
-          ) : isFormSubmitted ? (
+          {isFormSubmitted ? (
             <div className="py-10 text-center">
               <p className="text-green-600 font-semibold text-lg">
                 Thank you! Your request has been submitted.
@@ -175,6 +185,9 @@ const LeadModal: React.FC<LeadModalProps> = ({
               collegeData={clgData}
               courseData={courseData}
               cityData={cityData}
+              loadingColleges={isLoadingColleges}
+              loadingCourses={isLoadingCourses}
+              loadingCities={isLoadingCities}
               brochureUrl={brochureUrl}
               onFormSubmitSuccess={handleFormSubmitSuccess}
             />
