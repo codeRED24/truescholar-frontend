@@ -57,9 +57,8 @@ input:focus {
   height: 0px;
 }
 
-
 /********* Tel **********/
-.react-tel-input .form-control{
+.react-tel-input .form-control {
   border-radius: 16px !important;
 }
 .react-tel-input .flag-dropdown ul li {
@@ -75,7 +74,7 @@ input:focus {
   border-radius: 16px 0 0 16px !important;
 }
 .react-tel-input .flag-dropdown.open .selected-flag,
-.react-tel-input .flag-dropdown.open{
+.react-tel-input .flag-dropdown.open {
   border-radius: 16px 0 0 16px !important;
 }
 /********* something else **********/

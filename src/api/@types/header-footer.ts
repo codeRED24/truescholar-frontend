@@ -6,6 +6,7 @@ export interface HeaderCollege {
   city_name: string | null;
   kapp_score: string | null;
   short_name: string | null;
+  logo_img?: string | null;
 }
 export interface SectionProps {
   stream_id: number;

@@ -35,11 +35,11 @@ const fetchData = async (
 };
 
 export const getNavData = async (): Promise<HeaderProps> => {
-  if (!API_URL || !BEARER_TOKEN) {
-    throw new Error(
-      "API URL or Bearer token is missing from environment variables."
-    );
-  }
+  // if (!API_URL || !BEARER_TOKEN) {
+  //   throw new Error(
+  //     "API URL or Bearer token is missing from environment variables."
+  //   );
+  // }
 
   const response = await fetchData(`${API_URL}/home-page/header-footer`, {
     method: "GET",

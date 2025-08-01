@@ -3,11 +3,11 @@ import dynamic from "next/dynamic";
 import React from "react";
 const LeadModal = dynamic(() => import("@/components/modals/LeadModal"));
 
-const NewsLetter = () => {
+const Words = () => {
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 py-6">
       <div className="col-span-1">
-        <p className="text-white font-sans font-bold text-7xl">
+        <p className="text-white font-sans font-bold text-7xl leading-[55px] mb-4 text-center sm:text-start">
           Confusion chhodo, <span className="text-primary-1">EXPERT</span> ki
           suno
         </p>
@@ -19,7 +19,7 @@ const NewsLetter = () => {
           }
         />
       </div>
-      <div className="col-span-1 font-semibold text-white text-lg space-y-4 flex justify-center flex-col">
+      <div className="col-span-1 font-semibold text-white text-lg space-y-4 flex justify-center flex-col text-center sm:text-start">
         <p>
           <span className="text-primary-1">Personalized </span> College & Course
           Recommendations
@@ -38,4 +38,4 @@ const NewsLetter = () => {
   );
 };
 
-export default NewsLetter;
+export default Words;
