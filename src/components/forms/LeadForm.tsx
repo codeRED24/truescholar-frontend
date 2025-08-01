@@ -29,6 +29,9 @@ interface LeadFormProps {
   collegeData: CollegeDTO[];
   courseData: CourseDTO[];
   cityData: HomeCity[];
+  loadingColleges?: boolean;
+  loadingCourses?: boolean;
+  loadingCities?: boolean;
   brochureUrl?: string;
   onFormSubmitSuccess?: (formData: LeadFormData) => void;
 }
@@ -37,6 +40,9 @@ const LeadForm: React.FC<LeadFormProps> = ({
   collegeData,
   courseData,
   cityData,
+  loadingColleges = false,
+  loadingCourses = false,
+  loadingCities = false,
   brochureUrl,
   onFormSubmitSuccess,
 }) => {
@@ -190,7 +196,9 @@ const LeadForm: React.FC<LeadFormProps> = ({
                     ? String(formData.course_group_id)
                     : null
                 }
-                placeholder="Select a course"
+                placeholder={
+                  loadingCourses ? "Loading courses..." : "Select a course"
+                }
                 searchable={true}
                 onSelect={(value) =>
                   handleChange("course_group_id", value ? Number(value) : null)
@@ -211,7 +219,9 @@ const LeadForm: React.FC<LeadFormProps> = ({
                 selected={
                   formData.college_id ? String(formData.college_id) : null
                 }
-                placeholder="Select a college"
+                placeholder={
+                  loadingColleges ? "Loading colleges..." : "Select a college"
+                }
                 searchable={true}
                 onSelect={(value) =>
                   handleChange("college_id", value ? Number(value) : null)
@@ -230,7 +240,9 @@ const LeadForm: React.FC<LeadFormProps> = ({
               <DropdownFilter
                 options={cityOptions}
                 selected={formData.city_id ? String(formData.city_id) : null}
-                placeholder="Select your city"
+                placeholder={
+                  loadingCities ? "Loading cities..." : "Select your city"
+                }
                 searchable={true}
                 onSelect={(value) =>
                   handleChange("city_id", value ? Number(value) : null)
@@ -251,7 +263,11 @@ const LeadForm: React.FC<LeadFormProps> = ({
                     ? String(formData.preferred_city)
                     : null
                 }
-                placeholder="Select your preferred city"
+                placeholder={
+                  loadingCities
+                    ? "Loading cities..."
+                    : "Select your preferred city"
+                }
                 searchable={true}
                 onSelect={(value) =>
                   handleChange("preferred_city", value ? Number(value) : null)

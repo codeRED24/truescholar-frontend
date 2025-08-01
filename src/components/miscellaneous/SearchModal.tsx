@@ -2,9 +2,15 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
-import { SearchResultDTO } from "@/api/@types/search-type";
+import {
+  SearchResultDTO,
+  SearchCollegeDTO,
+  SearchExamDTO,
+  SearchCourseGroupDTO,
+  SearchArticleDTO,
+} from "@/api/@types/search-type";
 import { getSearchData } from "@/api/individual/getSearchData";
-import { Delete, Search } from "lucide-react";
+import { Clock, Delete, History, Search, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -24,17 +30,28 @@ const debounce = (func: (...args: any[]) => void, wait: number) => {
   };
 };
 
-interface SearchItem {
-  slug: string;
-  college_name?: string;
-  exam_name?: string;
-  full_name?: string;
-  title?: string;
-  college_id?: number;
-  exam_id?: number;
-  course_group_id?: number;
-  article_id?: number;
-}
+type SearchItem =
+  | SearchCollegeDTO
+  | SearchExamDTO
+  | SearchCourseGroupDTO
+  | SearchArticleDTO;
+
+// Type guard functions
+const isCollegeItem = (item: SearchItem): item is SearchCollegeDTO => {
+  return "college_id" in item && "college_name" in item;
+};
+
+const isExamItem = (item: SearchItem): item is SearchExamDTO => {
+  return "exam_id" in item && "exam_name" in item;
+};
+
+const isCourseGroupItem = (item: SearchItem): item is SearchCourseGroupDTO => {
+  return "course_group_id" in item && "full_name" in item;
+};
+
+const isArticleItem = (item: SearchItem): item is SearchArticleDTO => {
+  return "article_id" in item && "title" in item;
+};
 
 const SearchModal: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -93,7 +110,7 @@ const SearchModal: React.FC = () => {
         )
         .slice(0, 4);
 
-    const results = {
+    return {
       college_search: filterItems(searchData.college_search, [
         "college_name",
         "short_name",
@@ -115,13 +132,6 @@ const SearchModal: React.FC = () => {
         "slug",
       ]),
     };
-
-    if (Object.values(results).some((arr) => arr.length > 0)) {
-      localStorage.setItem("recentSearches", JSON.stringify(results));
-      setRecentSearches(results);
-    }
-
-    return results;
   }, [searchData, searchTerm]);
 
   const mixedResults = useMemo(
@@ -180,6 +190,64 @@ const SearchModal: React.FC = () => {
     setRecentSearches(null);
   }, []);
 
+  const handleResultClick = useCallback(
+    (item: SearchItem) => {
+      const type = isCollegeItem(item)
+        ? "college_search"
+        : isExamItem(item)
+        ? "exam_search"
+        : isCourseGroupItem(item)
+        ? "course_group_search"
+        : "articles_search";
+
+      setRecentSearches((prev) => {
+        const newSearches = prev
+          ? { ...prev }
+          : {
+              college_search: [],
+              exam_search: [],
+              course_group_search: [],
+              articles_search: [],
+            };
+
+        // Prevent duplicates
+        if (!newSearches[type].some((i) => i.slug === item.slug)) {
+          // Use type guards to properly assign items to their respective arrays
+          if (type === "college_search" && isCollegeItem(item)) {
+            newSearches.college_search = [
+              item,
+              ...newSearches.college_search,
+            ].slice(0, 8);
+          } else if (type === "exam_search" && isExamItem(item)) {
+            newSearches.exam_search = [item, ...newSearches.exam_search].slice(
+              0,
+              8
+            );
+          } else if (
+            type === "course_group_search" &&
+            isCourseGroupItem(item)
+          ) {
+            newSearches.course_group_search = [
+              item,
+              ...newSearches.course_group_search,
+            ].slice(0, 8);
+          } else if (type === "articles_search" && isArticleItem(item)) {
+            newSearches.articles_search = [
+              item,
+              ...newSearches.articles_search,
+            ].slice(0, 8);
+          }
+          localStorage.setItem("recentSearches", JSON.stringify(newSearches));
+        }
+
+        return newSearches;
+      });
+
+      closeModal();
+    },
+    [closeModal]
+  );
+
   const RenderSection = useMemo(
     () =>
       React.memo(
@@ -209,54 +277,71 @@ const SearchModal: React.FC = () => {
           };
 
           return (
-            <ul className="space-y-2">
+            <ul className="divide-y divide-gray-200">
               {items.map((item) => {
-                const type = item.college_name
-                  ? "colleges"
-                  : item.exam_name
-                  ? "exams"
-                  : item.full_name
-                  ? "courses"
-                  : "articles";
-                const labelKey = item.college_name
-                  ? "college_name"
-                  : item.exam_name
-                  ? "exam_name"
-                  : item.full_name
-                  ? "full_name"
-                  : "title";
-                const idKey = item.college_id
-                  ? "college_id"
-                  : item.exam_id
-                  ? "exam_id"
-                  : item.course_group_id
-                  ? "course_group_id"
-                  : "article_id";
+                let type: string;
+                let labelKey: string;
+                let idKey: string;
+                let displayName: string;
+                let itemId: number;
+
+                if (isCollegeItem(item)) {
+                  type = "colleges";
+                  labelKey = "college_name";
+                  idKey = "college_id";
+                  displayName = item.college_name;
+                  itemId = item.college_id;
+                } else if (isExamItem(item)) {
+                  type = "exams";
+                  labelKey = "exam_name";
+                  idKey = "exam_id";
+                  displayName = item.exam_name;
+                  itemId = item.exam_id;
+                } else if (isCourseGroupItem(item)) {
+                  type = "courses";
+                  labelKey = "full_name";
+                  idKey = "course_group_id";
+                  displayName = item.full_name;
+                  itemId = item.course_group_id;
+                } else {
+                  type = "articles";
+                  labelKey = "title";
+                  idKey = "article_id";
+                  displayName = item.title;
+                  itemId = item.article_id;
+                }
 
                 return (
-                  <li
-                    key={item.slug}
-                    className="flex items-center justify-between"
-                  >
-                    <Link
-                      href={`/${type}/${item.slug.replace(/-\d+$/, "")}-${
-                        item[idKey]
-                      }`}
-                      className="flex-1 p-2 hover:bg-primary-1 transition-colors rounded-full px-4"
-                      onClick={closeModal}
-                    >
-                      {highlightText(item[labelKey] || "", searchTerm)}
-                    </Link>
-                    {showDelete && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => clearSingleSearch(item.slug)}
-                        className="text-gray-500 hover:text-red-500"
-                      >
-                        <Delete className="w-5 h-5" />
-                      </Button>
-                    )}
+                  <li key={item.slug} className="py-3 px-1 hover:bg-gray-1">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-start flex-1 gap-3 text-[15px]">
+                        <span className="pt-1">
+                          <Clock className="w-3 h-3 text-gray-500 shrink-0" />
+                        </span>
+                        <Link
+                          href={`/${type}/${item.slug.replace(
+                            /-\d+$/,
+                            ""
+                          )}-${itemId}`}
+                          className="flex-1 leading-snug text-gray-900 line-clamp-2"
+                          onClick={() => handleResultClick(item)}
+                        >
+                          {highlightText(displayName || "", searchTerm)}
+                        </Link>
+                      </div>
+                      {showDelete && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => clearSingleSearch(item.slug)}
+                          className="text-gray-500 hover:text-red-500 ml-2"
+                          tabIndex={0}
+                          aria-label="Remove search from history"
+                        >
+                          <X className="w-5 h-5" />
+                        </Button>
+                      )}
+                    </div>
                   </li>
                 );
               })}
@@ -264,16 +349,27 @@ const SearchModal: React.FC = () => {
           );
         }
       ),
-    [closeModal, clearSingleSearch]
+    [closeModal, clearSingleSearch, handleResultClick]
+  );
+
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      if (open) {
+        setIsOpen(true);
+      } else {
+        closeModal();
+      }
+    },
+    [closeModal]
   );
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button
           variant="ghost"
           onClick={openModal}
-          className={`rounded-full  hover:text-primary-main hover:bg-gray-100 ${
+          className={`rounded-full hover:text-primary-main hover:bg-gray-100 ${
             isMobile ? "p-0" : ""
           }`}
           aria-label="Open search"
@@ -287,17 +383,12 @@ const SearchModal: React.FC = () => {
           )}
         </Button>
       </DialogTrigger>
-      <DialogContent className="z-[102]">
-        <DialogHeader className="flex flex-row items-center justify-between">
-          <DialogTitle className="text-lg font-semibold text-gray-800 mt-4 md:mt-0">
-            Discover <span className="text-primary-main">Colleges</span>,
-            <span className="text-primary-main"> Exams</span>,
-            <span className="text-primary-main"> Articles</span> and
-            <span className="text-primary-main"> Courses</span>
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="z-[102] min-h-[400px] max-w-[95vw] md:max-w-[60vw] max-h-[90vh] rounded-lg">
+        <DialogTitle className="text-2xl font-bold mt-4 md:mt-0">
+          <span className="text-primary-main">Discover</span> Colleges
+        </DialogTitle>
 
-        <div className="">
+        <div className="relative">
           <div className="relative">
             <Search className="absolute w-5 h-5 text-gray-400 transform -translate-y-1/2 left-3 top-1/2" />
             <Input
@@ -306,48 +397,121 @@ const SearchModal: React.FC = () => {
                 debouncedSearch(e.target.value)
               }
               value={searchTerm}
-              placeholder="Search colleges, exams, courses, articles..."
-              className="pl-10 rounded-full"
+              placeholder="Search colleges, courses, exams"
+              className="pl-10 rounded-full text-gray-900 placeholder:text-gray-400"
               autoFocus
             />
           </div>
+          {searchTerm && (
+            <div className="absolute left-0 right-0 mt-2 bg-white overflow-y-scroll max-h-[250px] rounded-2xl shadow-lg border border-gray-100 z-50">
+              {mixedResults.length > 0 ? (
+                <ul>
+                  {mixedResults.map((item) => {
+                    let title = "";
+                    let subtitle = "";
+                    let href = "#";
+
+                    if (isCollegeItem(item)) {
+                      title = item.college_name;
+                      subtitle = "UNIVERSITY";
+                      href = `/colleges/${item.slug.replace(/-\d+$/, "")}-${
+                        item.college_id
+                      }`;
+                    } else if (isExamItem(item)) {
+                      title = item.exam_name;
+                      subtitle = "EXAM";
+                      href = `/exams/${item.slug.replace(/-\d+$/, "")}-${
+                        item.exam_id
+                      }`;
+                    } else if (isCourseGroupItem(item)) {
+                      title = item.full_name;
+                      subtitle = "SPECIALISATION";
+                      href = `/courses/${item.slug.replace(/-\d+$/, "")}-${
+                        item.course_group_id
+                      }`;
+                    } else if (isArticleItem(item)) {
+                      title = item.title;
+                      subtitle = "ARTICLE";
+                      href = `/articles/${item.slug.replace(/-\d+$/, "")}-${
+                        item.article_id
+                      }`;
+                    }
+
+                    return (
+                      <li
+                        key={item.slug}
+                        className="flex items-center px-5 py-3 hover:bg-gray-50 transition-colors cursor-pointer"
+                      >
+                        <Search className="w-4 h-4 text-gray-400 mr-3" />
+                        <div className="flex flex-col flex-1 min-w-0">
+                          <Link
+                            href={href}
+                            className="font-medium text-[16px] text-gray-900 truncate"
+                            onClick={() => handleResultClick(item)}
+                          >
+                            {title}
+                          </Link>
+                          <span className="text-xs text-gray-400 font-semibold tracking-wide mt-0.5 uppercase">
+                            {subtitle}
+                          </span>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <div className="px-5 py-4 text-center text-gray-500">
+                  No results found for '{searchTerm}'.
+                </div>
+              )}
+              <div className="bg-green-100 text-center py-3 rounded-b-2xl text-[16px] font-medium text-gray-700">
+                Not listed?{" "}
+                <Link href="/request" className="text-green-600 underline">
+                  Request it!
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className="md:p-4 overflow-y-auto max-h-[80vh] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+        <div className="md:p-4">
           {error ? (
             <p className="text-center text-red-500">{error}</p>
           ) : !searchData ? (
             <p className="text-center text-gray-500">Loading...</p>
-          ) : searchTerm && !mixedResults.length ? (
-            <p className="text-center text-gray-500">
-              No results found for {searchTerm}.
-            </p>
-          ) : searchTerm ? (
-            <RenderSection items={mixedResults} searchTerm={searchTerm} />
-          ) : mixedRecentSearches.length > 0 ? (
-            <>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold tracking-wide text-gray-700 uppercase">
-                  Recent Searches
-                </h3>
-                <Button
-                  variant="ghost"
-                  onClick={clearAllSearches}
-                  className="text-sm text-red-500 hover:text-red-700"
-                >
-                  Clear All
-                </Button>
-              </div>
-              <RenderSection
-                items={mixedRecentSearches}
-                searchTerm=""
-                showDelete
-              />
-            </>
           ) : (
-            <p className="text-center text-gray-500">
-              Start typing to search...
-            </p>
+            <>
+              {mixedRecentSearches.length > 0 && (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-md font-bold tracking-wide text-gray-700">
+                      Recent Searches
+                    </h3>
+                    <Button
+                      variant="ghost"
+                      onClick={clearAllSearches}
+                      className="text-sm text-red-500 hover:text-red-700"
+                    >
+                      Clear All
+                    </Button>
+                  </div>
+                  <div className="overflow-y-auto max-h-[60vh] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                    <RenderSection
+                      items={mixedRecentSearches}
+                      searchTerm=""
+                      showDelete
+                    />
+                  </div>
+                </>
+              )}
+              {mixedRecentSearches && mixedRecentSearches.length === 0 && (
+                <div className="flex items-center justify-center h-48">
+                  <p className="text-center text-gray-500">
+                    No Recent Searches Found.
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </DialogContent>

@@ -6,6 +6,7 @@ import {
   HeaderExam,
 } from "@/api/@types/header-footer";
 import { getNavData } from "@/api/list/getNavData";
+import { FacebookIcon, Instagram, LinkedinIcon } from "lucide-react";
 import Link from "next/link";
 import React, { useEffect, useState, useMemo } from "react";
 
@@ -20,11 +21,15 @@ const FooterSection = ({
   keyExtractor: (item: any) => string;
   getUrl: (item: any) => string;
 }) => (
-  <section className="space-y-2">
+  <section className="space-y-2 text-center sm:text-start">
     <h3 className="font-medium text-white text-base">{title}</h3>
     <div className="text-[#637381] space-y-1 text-md flex flex-col">
       {data.map((item) => (
-        <Link href={getUrl(item)} key={keyExtractor(item)} className="line-clamp-1">
+        <Link
+          href={getUrl(item)}
+          key={keyExtractor(item)}
+          className="line-clamp-1"
+        >
           {item.name || item.college_name || item.exam_shortname}
         </Link>
       ))}
@@ -76,7 +81,7 @@ const FooterList = () => {
   );
 
   const responsiveGridClasses = useMemo(() => {
-    return "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8 py-6";
+    return "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-8 py-6";
   }, []);
 
   if (loading) {
@@ -110,13 +115,41 @@ const FooterList = () => {
         keyExtractor={(item) => item.exam_id}
         getUrl={(item) => `/exams/${item.slug}-${item.exam_id}`}
       />
-      <section className="col-span-1 xl:col-span-1">
+      <section className="col-span-1 xl:col-span-1 flex flex-col items-center sm:items-start">
         <h3 className="font-medium text-white text-base">Navigations</h3>
-        <div className="text-[#637381] space-y-1 text-md flex flex-col">
+        <div className="text-[#637381] space-y-1 text-md  flex flex-col items-center sm:items-start">
           <Link href="/contact-us">Contact Us</Link>
           <Link href="/about-us">About Us</Link>
           <Link href="/privacy-policy">Privacy Policy</Link>
           <Link href="/terms-and-conditions">Terms & Condiitions</Link>
+        </div>
+      </section>
+      <section>
+        <h3 className="font-medium text-white text-base mb-2 flex flex-col items-center sm:items-start">
+          Social Media
+        </h3>
+        <div className="flex flex-wrap justify-center space-x-4 sm:justify-start text-white">
+          <Link
+            href="https://www.facebook.com/profile.php?id=61578705477317"
+            className="rounded-full bg-gray-700 p-2 transition-colors hover:bg-gray-600"
+            target="_blank"
+          >
+            <FacebookIcon size={20} />
+          </Link>
+          <Link
+            href="https://www.instagram.com/truescholar_india/"
+            className="rounded-full bg-gray-700 p-2 transition-colors hover:bg-gray-600"
+            target="_blank"
+          >
+            <Instagram size={20} />
+          </Link>
+          <Link
+            href="https://www.linkedin.com/in/truescholar-pvt-25b1a7376/"
+            className="rounded-full bg-gray-700 p-2 transition-colors hover:bg-gray-600"
+            target="_blank"
+          >
+            <LinkedinIcon size={20} />
+          </Link>
         </div>
       </section>
     </div>

@@ -1,11 +1,18 @@
 "use client";
-import { useState, useEffect, useCallback, memo } from 'react';
-import Image from 'next/image';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useEffect, useCallback, memo } from "react";
+import Image from "next/image";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { AvatarCircles } from "@/components/magicui/avatar-circles";
+import Link from "next/link";
 
 interface ImageType {
   src: string;
   alt: string;
+}
+
+interface Avatar {
+  imageUrl: string;
+  profileUrl: string;
 }
 
 const IMAGES: ImageType[] = [
@@ -14,45 +21,74 @@ const IMAGES: ImageType[] = [
   { src: "/hero.webp", alt: "Hero background image 3" },
 ] as const;
 
+const avatars: Avatar[] = [
+  { imageUrl: "/hero.webp", profileUrl: "colleges" },
+  { imageUrl: "/hero.webp", profileUrl: "colleges" },
+  { imageUrl: "/hero.webp", profileUrl: "colleges" },
+  { imageUrl: "/hero.webp", profileUrl: "colleges" },
+];
+
 const AUTO_ROTATE_INTERVAL = 5000;
 
-const CarouselItem = memo(({ image, isActive, onLoad }: {
-  image: ImageType;
-  isActive: boolean;
-  onLoad: () => void;
-}) => (
-  <div className={`absolute inset-0 transition-opacity duration-1000 ${isActive ? 'opacity-100' : 'opacity-0'}`}>
-    <Image
-      src={image.src}
-      alt={image.alt}
-      fill
-      quality={75}
-      priority={isActive}
-      className="object-cover"
-      sizes="100vw"
-      onLoad={onLoad}
-      fetchPriority='high'
-    />
-  </div>
-));
-CarouselItem.displayName = 'CarouselItem';
+const CarouselItem = memo(
+  ({
+    image,
+    isActive,
+    onLoad,
+  }: {
+    image: ImageType;
+    isActive: boolean;
+    onLoad: () => void;
+  }) => (
+    <div
+      className={`absolute inset-0 transition-opacity duration-1000 ${
+        isActive ? "opacity-100" : "opacity-0"
+      }`}
+    >
+      <Image
+        src={image.src}
+        alt={image.alt}
+        fill
+        quality={75}
+        priority={isActive}
+        className="object-cover"
+        sizes="100vw"
+        onLoad={onLoad}
+        fetchPriority="high"
+      />
+    </div>
+  )
+);
+CarouselItem.displayName = "CarouselItem";
 
-const NavButton = memo(({ direction, onClick, ariaLabel }: {
-  direction: 'prev' | 'next';
-  onClick: () => void;
-  ariaLabel: string;
-}) => (
-  <button
-    onClick={onClick}
-    className={`absolute ${direction === 'prev' ? 'left-4' : 'right-4'} top-1/2 -translate-y-1/2 z-[3]
+const NavButton = memo(
+  ({
+    direction,
+    onClick,
+    ariaLabel,
+  }: {
+    direction: "prev" | "next";
+    onClick: () => void;
+    ariaLabel: string;
+  }) => (
+    <button
+      onClick={onClick}
+      className={`absolute ${
+        direction === "prev" ? "left-4" : "right-4"
+      } top-1/2 -translate-y-1/2 z-[3]
               bg-black/30 hover:bg-black/50 text-white rounded-full p-2 transition-colors
               focus:outline-none focus:ring-2 focus:ring-primary-1 hidden md:block`}
-    aria-label={ariaLabel}
-  >
-    {direction === 'prev' ? <ChevronLeft size={24} /> : <ChevronRight size={24} />}
-  </button>
-));
-NavButton.displayName = 'NavButton';
+      aria-label={ariaLabel}
+    >
+      {direction === "prev" ? (
+        <ChevronLeft size={24} />
+      ) : (
+        <ChevronRight size={24} />
+      )}
+    </button>
+  )
+);
+NavButton.displayName = "NavButton";
 
 const Hero = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -90,11 +126,12 @@ const Hero = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') goToPrevious();
-      if (e.key === 'ArrowRight') goToNext();
+      if (e.key === "ArrowLeft") goToPrevious();
+      if (e.key === "ArrowRight") goToNext();
     };
-    window.addEventListener('keydown', handleKeyDown as EventListener);
-    return () => window.removeEventListener('keydown', handleKeyDown as EventListener);
+    window.addEventListener("keydown", handleKeyDown as EventListener);
+    return () =>
+      window.removeEventListener("keydown", handleKeyDown as EventListener);
   }, [goToPrevious, goToNext]);
 
   return (
@@ -118,16 +155,28 @@ const Hero = () => {
 
       <div className="absolute inset-0 z-[1] bg-[#141a218e]" />
 
-      <div className="absolute inset-0 z-[2] flex items-center justify-center text-center px-4 md:px-8 lg:px-16">
-        <h1 className="text-[#919EAB] text-lg sm:text-xl md:text-3xl lg:text-5xl font-barlow font-medium leading-tight md:leading-veryWide max-w-4xl">
-          <span className="text-primary-1 font-public font-bold">Find, Compare, Apply </span>
+      <div className="absolute inset-0 z-[2] flex flex-col gap-6 items-center justify-center text-center px-4 md:px-8 lg:px-16">
+        <h1 className="text-[#919EAB] text-xl md:text-3xl lg:text-5xl font-barlow font-medium leading-5 md:leading-wide max-w-4xl">
+          <span className="text-primary-1 font-family font-extrabold">
+            Find, Compare, Apply{" "}
+          </span>
           Plus Access
-          <span className="text-white block font-public font-bold my-1 md:my-2">Career Guidance & Financial Aid</span>
+          <span className="text-white block font-barlow text-2xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold my-1 md:my-2">
+            Career Guidance & Financial Aid
+          </span>
           All in One Place!
         </h1>
+        <div className="flex items-center text-sm sm:text-base md:text-lg text-[#00B8D9] underline gap-2">
+          <AvatarCircles className="" avatarUrls={avatars} />
+          <Link href={"/colleges"}>30,000+ Colleges</Link>
+        </div>
       </div>
 
-      <NavButton direction="prev" onClick={goToPrevious} ariaLabel="Previous slide" />
+      <NavButton
+        direction="prev"
+        onClick={goToPrevious}
+        ariaLabel="Previous slide"
+      />
       <NavButton direction="next" onClick={goToNext} ariaLabel="Next slide" />
 
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[3] flex gap-2">
@@ -136,9 +185,9 @@ const Hero = () => {
             key={index}
             onClick={() => goToSlide(index)}
             className={`h-2 rounded-full transition-all ${
-              index === currentIndex 
-                ? 'bg-white w-4' 
-                : 'bg-white/50 hover:bg-white/80 w-2'
+              index === currentIndex
+                ? "bg-white w-4"
+                : "bg-white/50 hover:bg-white/80 w-2"
             }`}
             aria-label={`Go to slide ${index + 1}`}
             aria-current={index === currentIndex}

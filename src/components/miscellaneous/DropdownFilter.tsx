@@ -63,7 +63,7 @@ const DropdownFilter: React.FC<DropdownFilterProps> = ({
   const defaultButtonClasses =
     "w-full px-3 md:px-4 py-1.5 md:py-2 text-sm rounded-full border border-gray-300 bg-white text-gray-700 flex justify-between items-center";
   const defaultDropdownClasses =
-    "absolute mt-2 min-w-64 bg-white border border-gray-300 rounded-md shadow-lg z-10";
+    "absolute mt-2 min-w-64 bg-white border border-gray-300 rounded-md shadow-lg z-20";
   const defaultInputClasses =
     "w-full px-3 py-2 border-b border-gray-200 focus:outline-none focus:ring-1 focus:ring-primary-main";
 

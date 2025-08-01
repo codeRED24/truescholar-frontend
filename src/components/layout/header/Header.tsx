@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useCallback, JSX } from "react";
+import React, { useEffect, useState, useCallback, JSX, useRef } from "react";
 import Link from "next/link";
 import {
   NavigationMenu,
@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/navigation-menu";
 import { getNavData } from "@/api/list/getNavData";
 import { OverStreamSectionProps, HomeCity } from "@/api/@types/header-footer";
-import { useIsMobile } from "@/components/utils/useMobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   BriefcaseBusiness,
@@ -23,9 +22,21 @@ import {
   Ellipsis,
   User,
   Menu,
+  ChevronRight,
+  Search,
+  ArrowUpDown,
 } from "lucide-react";
 import { formatName } from "@/components/utils/utils";
 import dynamic from "next/dynamic";
+import { Button } from "@/components/ui/button";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
+import Image from "next/image";
+import { useIsTablet } from "@/components/utils/useTablet";
 
 const DialogTitle = dynamic(
   () => import("@/components/ui/dialog").then((mod) => mod.DialogTitle),
@@ -73,7 +84,8 @@ const Header: React.FC = () => {
   );
   const [showMoreStreams, setShowMoreStreams] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false); // State for mobile Sheet
-  const isMobile = useIsMobile();
+  const isTablet = useIsTablet();
+  const searchModalRef = useRef<HTMLDivElement>(null);
 
   const additionalStreams = overStreamData.filter(
     (stream) => !Object.keys(streamNames).includes(stream.stream_id.toString())
@@ -128,6 +140,14 @@ const Header: React.FC = () => {
     setShowMoreStreams(false); // Reset more streams
   }, []);
 
+  // Function to trigger search modal
+  const triggerSearch = useCallback(() => {
+    const searchButton = searchModalRef.current?.querySelector("button");
+    if (searchButton) {
+      searchButton.click();
+    }
+  }, []);
+
   const renderOptions = (
     type: NavOption,
     streamId: number | null,
@@ -142,15 +162,15 @@ const Header: React.FC = () => {
     switch (type) {
       case "colleges":
         return (
-          <div>
-            <div className="h-80 overflow-y-auto">
+          <div className="bg-gray-2 rounded-[42px] p-4">
+            <div className="h-80 overflow-y-auto mb-4">
               {stream.colleges.map((college) => (
                 <Link
                   key={college.college_id}
                   href={`/colleges/${college.slug.replace(/-\d+$/, "")}-${
                     college.college_id
                   }`}
-                  className="text-sm border-b block text-gray-600 py-3 hover:text-primary-main"
+                  className="text-sm block text-gray-600 py-3 hover:text-primary-main"
                   onClick={closeNavbar} // Close navbar on click
                 >
                   {college.college_name} ({college.city_name})
@@ -159,37 +179,40 @@ const Header: React.FC = () => {
             </div>
             <Link
               href={`/colleges-stream-${formattedStreamName}`}
-              className="text-sm font-semibold block text-primary-main py-3 hover:text-primary-main"
               onClick={closeNavbar} // Close navbar on click
             >
-              View All {stream.stream_name} Colleges
+              <Button className="bg-gray-8">
+                View All {stream.stream_name} Colleges <ChevronRight />
+              </Button>
             </Link>
           </div>
         );
       case "collegesByCity":
         return (
-          <div className="h-80 overflow-y-auto">
-            {citiesData.map((city) => (
-              <Link
-                key={city.city_id}
-                href={`/colleges-city-${city.city_name}-stream-${formattedStreamName}`}
-                className="text-sm border-b block text-gray-600 py-3 hover:text-primary-main"
-                onClick={closeNavbar} // Close navbar on click
-              >
-                {stream.stream_name} Colleges in {city.city_name}
-              </Link>
-            ))}
+          <div className="bg-gray-2 rounded-[42px] p-4">
+            <div className="h-80 overflow-y-auto mb-4">
+              {citiesData.map((city) => (
+                <Link
+                  key={city.city_id}
+                  href={`/colleges-city-${city.city_name}-stream-${formattedStreamName}`}
+                  className="text-sm block text-gray-600 py-3 hover:text-primary-main"
+                  onClick={closeNavbar} // Close navbar on click
+                >
+                  {stream.stream_name} Colleges in {city.city_name}
+                </Link>
+              ))}
+            </div>
           </div>
         );
       case "exams":
         return (
-          <div>
-            <div className="h-80 overflow-y-auto">
+          <div className="bg-gray-2 rounded-[42px] p-4">
+            <div className="h-80 overflow-y-auto mb-4">
               {examsByStream[streamId]?.map((exam) => (
                 <Link
                   key={exam.exam_id}
                   href={`/exams/${exam.slug}-${exam.exam_id}`}
-                  className="text-sm border-b block text-gray-600 py-3 hover:text-primary-main"
+                  className="text-sm  block text-gray-600 py-3 hover:text-primary-main"
                   onClick={closeNavbar} // Close navbar on click
                 >
                   {exam.exam_name}
@@ -210,6 +233,52 @@ const Header: React.FC = () => {
     }
   };
 
+  const featureColleges = (streamId: number | null, streamName?: string) => {
+    if (!streamId || !streamName) return null;
+    const stream = overStreamData.find((s) => s.stream_id === streamId);
+    console.log({ overStreamData });
+
+    if (!stream) return null;
+
+    return (
+      <Carousel
+        plugins={[
+          Autoplay({
+            delay: 2000,
+          }),
+        ]}
+        className="w-3/4"
+      >
+        <CarouselContent>
+          {stream.colleges.map((college, index) => (
+            <CarouselItem key={index}>
+              <Link
+                key={college.college_id}
+                href={`/colleges/${college.slug.replace(/-\d+$/, "")}-${
+                  college.college_id
+                }`}
+                onClick={closeNavbar}
+              >
+                <div className=" flex flex-col items-center justify-center min-h-[281px] bg-[#00A76F14] rounded-3xl p-4">
+                  <Image
+                    src={college.logo_img || "/sample_college.png"}
+                    alt={college.college_short_name || "Featured College"}
+                    className="object-cover rounded-md"
+                    height={200}
+                    width={200}
+                  />
+                  <span className="text-center mt-2 font-bold text-primary-3 line-clamp-2">
+                    {college.college_name}
+                  </span>
+                </div>
+              </Link>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
+    );
+  };
+
   const getOptionLabel = (option: NavOption, streamName: string) => {
     switch (option) {
       case "colleges":
@@ -225,7 +294,7 @@ const Header: React.FC = () => {
 
   return (
     <>
-      {isMobile ? (
+      {isTablet ? (
         <div className="flex justify-between items-center p-2">
           <Link
             href="/"
@@ -237,136 +306,167 @@ const Header: React.FC = () => {
             True<span className="text-primary-main">Scholar</span>
           </Link>
 
-          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-            <SheetTrigger asChild>
-              <button
-                className="menu-icon focus:outline-none"
-                aria-label="Open navigation menu"
-              >
-                <Menu />
-              </button>
-            </SheetTrigger>
-            <SheetContent className="p-2 z-[101] w-[85%]">
-              <DialogTitle
-                asChild
-                className="flex justify-between items-center bg-[#141A21] rounded-full w-fit text-white px-4 py-2.5 shadow-md"
-              >
-                <Link href="/" prefetch onClick={closeNavbar}>
-                  True<span className="text-primary-main">Scholar</span>
-                </Link>
-              </DialogTitle>
+          <div className="flex items-center gap-2">
+            {/* Simple search icon button for header */}
+            <button
+              className="focus:outline-none p-2 hover:bg-gray-100 rounded-full"
+              aria-label="Open search"
+              onClick={triggerSearch}
+            >
+              <Search className="w-6 h-6 text-gray-700" />
+            </button>
 
-              <nav className="overflow-y-auto h-full">
-                {!activeSubSection ? (
-                  <ul className="space-y-2">
-                    {Object.entries(streamNames).map(([id, { name, icon }]) => (
-                      <li key={id}>
-                        <button
-                          className="flex items-center justify-between w-full text-gray-700 font-semibold py-3 hover:text-primary-main"
-                          onClick={() =>
-                            setActiveStream(
-                              activeStream === Number(id) ? null : Number(id)
-                            )
-                          }
-                        >
-                          <div
-                            className={`flex items-center gap-3 ${
-                              activeStream === Number(id)
-                                ? "text-primary-main"
-                                : "text-gray-700"
-                            }`}
-                          >
-                            {icon} {name}
-                          </div>
-                          <ArrowDown
-                            className={`transition-transform ${
-                              activeStream === Number(id) ? "rotate-180" : ""
-                            }`}
-                          />
-                        </button>
-                        {activeStream === Number(id) && (
-                          <ul className="space-y-2 mt-2 animate-fadeIn">
-                            {navOptions.map((option) => (
-                              <li key={option}>
-                                <button
-                                  className="flex justify-between border-b font-medium text-gray-600 w-full text-left py-2 hover:text-primary-main"
-                                  onClick={() => setActiveSubSection(option)}
-                                >
-                                  {getOptionLabel(option, name)}
-                                  <ArrowRight />
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </li>
-                    ))}
-                    {additionalStreams.length > 0 && (
-                      <li>
-                        <button
-                          className="flex items-center justify-between w-full text-gray-700 font-semibold py-3 hover:text-primary-main"
-                          onClick={() => setShowMoreStreams(!showMoreStreams)}
-                        >
-                          <div className="flex items-center gap-3">
-                            <Ellipsis /> More
-                          </div>
-                          <ArrowDown
-                            className={`transition-transform ${
-                              showMoreStreams ? "rotate-180" : ""
-                            }`}
-                          />
-                        </button>
-                        {showMoreStreams && (
-                          <ul className="space-y-2 mt-2 animate-fadeIn">
-                            {additionalStreams.map((stream) => (
-                              <li key={stream.stream_id}>
-                                <button
-                                  className="flex justify-between border-b font-medium text-gray-600 w-full text-left py-2 hover:text-primary-main"
-                                  onClick={() => {
-                                    setActiveStream(stream.stream_id);
-                                    setActiveSubSection("colleges");
-                                  }}
-                                >
-                                  {stream.stream_name}
-                                  <ArrowRight />
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </li>
-                    )}
-                  </ul>
-                ) : (
-                  <div className="animate-slideIn">
-                    <div className="flex items-center gap-2 py-3 text-primary-main px-2">
-                      <h3 className="font-semibold uppercase text-sm">
-                        {getOptionLabel(
-                          activeSubSection,
-                          streamNames[activeStream!]?.name || "More"
-                        )}
-                      </h3>
-                      <ArrowLeft
-                        className="cursor-pointer"
-                        onClick={() => setActiveSubSection(null)}
-                      />
-                    </div>
-                    <div className="px-2">
-                      {renderOptions(
-                        activeSubSection,
-                        activeStream,
-                        streamNames[activeStream!]?.name ||
-                          overStreamData.find(
-                            (s) => s.stream_id === activeStream
-                          )?.stream_name
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+              <SheetTrigger asChild>
+                <button
+                  className="text-primary-5 focus:outline-none p-2"
+                  aria-label="Open navigation menu"
+                >
+                  <Menu className="w-6 h-6 text-gray-700" />
+                </button>
+              </SheetTrigger>
+              <SheetContent className="p-2 z-[101] w-[85%]">
+                <DialogTitle
+                  asChild
+                  className="flex justify-between items-center bg-[#141A21] rounded-full w-fit text-white px-4 py-2.5 shadow-md"
+                >
+                  <Link href="/" prefetch onClick={closeNavbar}>
+                    True<span className="text-primary-main">Scholar</span>
+                  </Link>
+                </DialogTitle>
+
+                <nav className="overflow-y-auto h-full">
+                  {!activeSubSection ? (
+                    <ul className="space-y-2">
+                      {Object.entries(streamNames).map(
+                        ([id, { name, icon }]) => (
+                          <li key={id}>
+                            <button
+                              className="flex items-center justify-between w-full text-gray-700 font-semibold py-3 hover:text-primary-main"
+                              onClick={() =>
+                                setActiveStream(
+                                  activeStream === Number(id)
+                                    ? null
+                                    : Number(id)
+                                )
+                              }
+                            >
+                              <div
+                                className={`flex items-center gap-3 ${
+                                  activeStream === Number(id)
+                                    ? "text-primary-main"
+                                    : "text-gray-700"
+                                }`}
+                              >
+                                {icon} {name}
+                              </div>
+                              <ArrowDown
+                                className={`transition-transform ${
+                                  activeStream === Number(id)
+                                    ? "rotate-180"
+                                    : ""
+                                }`}
+                              />
+                            </button>
+                            {activeStream === Number(id) && (
+                              <ul className="space-y-2 mt-2 animate-fadeIn">
+                                {navOptions.map((option) => (
+                                  <li key={option}>
+                                    <button
+                                      className="flex justify-between border-b font-medium text-gray-600 w-full text-left py-2 hover:text-primary-main"
+                                      onClick={() =>
+                                        setActiveSubSection(option)
+                                      }
+                                    >
+                                      {getOptionLabel(option, name)}
+                                      <ArrowRight />
+                                    </button>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </li>
+                        )
                       )}
+                      {additionalStreams.length > 0 && (
+                        <li>
+                          <button
+                            className="flex items-center justify-between w-full text-gray-700 font-semibold py-3 hover:text-primary-main"
+                            onClick={() => setShowMoreStreams(!showMoreStreams)}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Ellipsis /> More
+                            </div>
+                            <ArrowDown
+                              className={`transition-transform ${
+                                showMoreStreams ? "rotate-180" : ""
+                              }`}
+                            />
+                          </button>
+                          {showMoreStreams && (
+                            <ul className="space-y-2 mt-2 animate-fadeIn">
+                              {additionalStreams.map((stream) => (
+                                <li key={stream.stream_id}>
+                                  <button
+                                    className="flex justify-between border-b font-medium text-gray-600 w-full text-left py-2 hover:text-primary-main"
+                                    onClick={() => {
+                                      setActiveStream(stream.stream_id);
+                                      setActiveSubSection("colleges");
+                                    }}
+                                  >
+                                    {stream.stream_name}
+                                    <ArrowRight />
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </li>
+                      )}
+                    </ul>
+                  ) : (
+                    <div className="animate-slideIn">
+                      <div className="flex items-center gap-2 py-3 text-primary-main px-2">
+                        <h3 className="font-semibold uppercase text-sm">
+                          {getOptionLabel(
+                            activeSubSection,
+                            streamNames[activeStream!]?.name || "More"
+                          )}
+                        </h3>
+                        <ArrowLeft
+                          className="cursor-pointer"
+                          onClick={() => setActiveSubSection(null)}
+                        />
+                      </div>
+                      <div className="px-2">
+                        {renderOptions(
+                          activeSubSection,
+                          activeStream,
+                          streamNames[activeStream!]?.name ||
+                            overStreamData.find(
+                              (s) => s.stream_id === activeStream
+                            )?.stream_name
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
-                <SearchModal />
-              </nav>
-            </SheetContent>
-          </Sheet>
+                  )}
+                  {/* Compare Colleges link for mobile nav */}
+                  <ul className="">
+                    <li>
+                      <Link
+                        href="/compare-colleges"
+                        className="flex items-center gap-2 text-[#374151] font-semibold  py-3 hover:underline"
+                        onClick={closeNavbar}
+                      >
+                        <ArrowUpDown className="w-4 h-4" /> Compare Colleges
+                      </Link>
+                    </li>
+                  </ul>
+                  {/* <SearchModal /> */}
+                </nav>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       ) : (
         <div
@@ -394,22 +494,50 @@ const Header: React.FC = () => {
                     <NavigationMenuTrigger className="gap-2">
                       {icon} {name}
                     </NavigationMenuTrigger>
-                    <NavigationMenuContent className="grid grid-cols-2 gap-6 p-0">
+                    <NavigationMenuContent className="grid grid-cols-[1fr_450px_300px] gap-2 p-0 lg:w-[1000px]">
                       <ul className="p-4">
                         {navOptions.map((option) => (
                           <li
                             key={option}
                             onMouseEnter={() => setHoveredOption(option)}
-                            className="hover:bg-gray-100 p-2 rounded-md cursor-pointer"
+                            className={`flex items-center hover:bg-gray-100 p-2 rounded-md cursor-pointer ${
+                              hoveredOption === option
+                                ? "text-primary-main"
+                                : ""
+                            }`}
                           >
+                            {hoveredOption === option && (
+                              <span className="mr-2">•</span>
+                            )}
                             {getOptionLabel(option, name)}
                           </li>
                         ))}
                       </ul>
-                      <>{renderOptions(hoveredOption, currentStream, name)}</>
+                      <div className="py-4">
+                        {renderOptions(hoveredOption, currentStream, name)}
+                      </div>
+                      <div className="w-full flex flex-col items-center justify-center gap-2">
+                        <span className="text-gray-8 font-semibold text-base">
+                          FEATURED COLLEGES
+                        </span>
+                        {featureColleges(currentStream, name)}
+                      </div>
                     </NavigationMenuContent>
                   </NavigationMenuItem>
                 ))}
+                {/* Compare Colleges link for desktop nav */}
+                <NavigationMenuItem
+                  style={{ marginBottom: "0px", borderRadius: "100%" }}
+                >
+                  <Link
+                    href="/compare-colleges"
+                    className="flex items-center gap-2 px-4 text-gray-4 font-semibold transition-colors duration-200 group hover:bg-[#00A76F] hover:text-white"
+                    style={{ borderRadius: "100px", height: "36px" }}
+                  >
+                    <ArrowUpDown className="w-4 h-4 transition-colors duration-200 hover:text-white" />{" "}
+                    Compare
+                  </Link>
+                </NavigationMenuItem>
                 {additionalStreams.length > 0 ? (
                   <NavigationMenuItem
                     style={{ marginBottom: "0px", borderRadius: "100%" }}
@@ -453,6 +581,11 @@ const Header: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* SearchModal for mobile header search button */}
+      <div ref={searchModalRef} className="hidden">
+        <SearchModal />
+      </div>
     </>
   );
 };
