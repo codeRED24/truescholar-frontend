@@ -10,40 +10,41 @@ import { formatFeeRange } from "@/components/utils/utils";
 import "@/app/styles/tables.css";
 import RatingComponent from "@/components/miscellaneous/RatingComponent";
 
-// export async function generateMetadata({
-//   params,
-// }: {
-//   params: Promise<{ "slug-id": string; "silos-slug-id": string }>;
-// }): Promise<{ title: string; description?: string }> {
-//   const resolvedParams = await params;
-//   let { "silos-slug-id": courseSlugCourseId } = resolvedParams;
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ "slug-id": string; "silos-slug-id": string }>;
+}): Promise<{ title: string; description?: string }> {
+  const resolvedParams = await params;
+  let { "silos-slug-id": courseSlugCourseId } = resolvedParams;
 
-//   const dynamicParam = courseSlugCourseId.split("-");
-//   courseSlugCourseId = dynamicParam.join("-");
+  const dynamicParam = courseSlugCourseId.split("-");
+  courseSlugCourseId = dynamicParam.join("-");
 
-//   const courseMatch = courseSlugCourseId.match(/(.+)-(\d+)$/);
-//   if (!courseMatch) return { title: "Page Not Found" };
+  const courseMatch = courseSlugCourseId.match(/(.+)-(\d+)$/);
+  if (!courseMatch) return { title: "Page Not Found" };
 
-//   const courseId = Number(courseMatch[2]);
-//   if (isNaN(courseId)) return { title: "Invalid Course ID" };
+  const courseId = Number(courseMatch[2]);
+  if (isNaN(courseId)) return { title: "Invalid Course ID" };
 
-//   const courseDetails = await getCourseByCollegeId(courseId);
-//   if (!courseDetails || !courseDetails.college_information) {
-//     return { title: "Course Not Found" };
-//   }
+  const courseDetails = await getCourseByCollegeId(courseId);
 
-//   const collegeName =
-//     courseDetails.college_information?.college_name || "Unknown College";
-//   const courseName =
-//     courseDetails.college_wise_course?.name || "Unknown Course";
+  if (!courseDetails || !courseDetails.college_information) {
+    return { title: "Course Not Found" };
+  }
 
-//   return {
-//     title: `${courseName} - ${collegeName} Details` || "College Courses",
-//     description:
-//       courseDetails.college_information?.meta_desc ||
-//       `Explore details about ${collegeName} and its courses.`,
-//   };
-// }
+  const collegeName =
+    courseDetails.college_information?.college_name || "Unknown College";
+  const courseName =
+    courseDetails.college_wise_course?.name || "Unknown Course";
+
+  return {
+    title: `${courseName} - ${collegeName} Details` || "College Courses",
+    description:
+      courseDetails.college_information?.meta_desc ||
+      `Explore details about ${collegeName} and its courses.`,
+  };
+}
 
 export default async function CoursesByClg({
   params,
@@ -81,11 +82,6 @@ export default async function CoursesByClg({
   } = courseDetails;
   const clgName = college_information?.slug || "Default College Name";
   const collegeId = college_information?.college_id;
-  const placementSectionData = college_placement_section || [];
-
-  const sortedPlacementData = [...placementSectionData].sort((a, b) =>
-    a.year && b.year ? b.year - a.year : 0
-  );
 
   const trimmedCollegeName = clgName
     .replace(/-\d+$/, "")
@@ -100,6 +96,7 @@ export default async function CoursesByClg({
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
     .toLowerCase();
+
   const correctCourseSlugId = `${courseSlug}-${courseId}`;
 
   if (slugId !== correctSlugId || courseSlugCourseId !== correctCourseSlugId) {
@@ -146,7 +143,10 @@ export default async function CoursesByClg({
       available: !!college_wise_course?.syllabus,
     },
   ];
-
+  const placementSectionData = college_placement_section || [];
+  const sortedPlacementData = [...placementSectionData].sort((a, b) =>
+    a.year && b.year ? b.year - a.year : 0
+  );
   const extractedData = {
     college_name: college_information.college_name,
     college_logo: college_information.logo_img,
