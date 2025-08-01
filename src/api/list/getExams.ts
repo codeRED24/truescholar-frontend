@@ -44,11 +44,19 @@ export const getExams = async ({
 
     const apiURL = `${API_URL}/exams/listing?${params.toString()}`;
 
+    // Create an abort controller for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
     const response = await fetch(apiURL, {
       method: "GET",
       headers: HEADERS,
+      signal: controller.signal,
       // cache: "no-store",
     });
+
+    clearTimeout(timeoutId);
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error(
@@ -70,7 +78,16 @@ export const getExams = async ({
       ...data,
       limit: pageSize,
     } as ExamsResponse;
-  } catch {
+  } catch (error) {
+    console.error("Error in getExams:", error);
+
+    // If it's an abort error (timeout), provide a more specific message
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error(
+        "Request timeout: Failed to fetch exams within 30 seconds"
+      );
+    }
+
     throw new Error("Failed to fetch exams");
   }
 };

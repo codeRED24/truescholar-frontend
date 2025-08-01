@@ -54,13 +54,20 @@ export const getColleges = async ({
   )}`;
 
   try {
+    // Create an abort controller for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
     const response = await fetch(requestUrl, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${BEARER_TOKEN}`,
         "Content-Type": "application/json",
       },
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       throw new Error(`Fetch failed with status ${response.status}`);
@@ -80,7 +87,16 @@ export const getColleges = async ({
       colleges: data.colleges ?? [],
       total_colleges_count: data.total_colleges_count ?? 0,
     };
-  } catch {
+  } catch (error) {
+    console.error("Error in getColleges:", error);
+
+    // If it's an abort error (timeout), provide a more specific message
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error(
+        "Request timeout: Failed to fetch colleges within 30 seconds"
+      );
+    }
+
     throw new Error("Failed to fetch colleges data.");
   }
 };
