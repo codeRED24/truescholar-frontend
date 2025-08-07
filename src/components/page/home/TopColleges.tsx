@@ -55,9 +55,9 @@ const TopColleges: React.FC<{ data: HomeStream[] }> = ({ data }) => {
         <Link
           href={
             currentStream?.stream_name !== "All Streams"
-              ? `/college/${formatName(
-                  currentStream?.stream_name ?? ""
-                )}-colleges`
+              ? `/colleges-stream-${currentStream?.stream_name
+                  .replace(/\s+/g, "")
+                  .toLowerCase()}`
               : "/colleges"
           }
           className="text-primary-main font-semibold"

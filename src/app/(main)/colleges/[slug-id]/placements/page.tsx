@@ -125,29 +125,29 @@ const CollegePlacement = async (props: {
           },
         ],
       }),
-      generateJSONLD("JobPosting", {
-        title: "Various Roles at IIT Madras Placements",
-        hiringOrganization: {
-          "@type": "Organization",
-          name: college_information.college_name,
-        },
-        employmentType: "FULL_TIME",
-        baseSalary: {
-          "@type": "MonetaryAmount",
-          currency: "INR",
-          value: {
-            "@type": "QuantitativeValue",
-            minValue: placement_process.placements?.[0]?.highest_package || 0,
-            maxValue: placement_process.placements?.[1]?.highest_package || 0,
-            unitText: "YEAR",
-          },
-        },
-        datePosted: placement_process.content[0]?.updated_at,
-        jobLocation: {
-          "@type": "Place",
-          address: college_information.location,
-        },
-      }),
+      // generateJSONLD("JobPosting", {
+      //   title: "Various Roles at IIT Madras Placements",
+      //   hiringOrganization: {
+      //     "@type": "Organization",
+      //     name: college_information.college_name,
+      //   },
+      //   employmentType: "FULL_TIME",
+      //   baseSalary: {
+      //     "@type": "MonetaryAmount",
+      //     currency: "INR",
+      //     value: {
+      //       "@type": "QuantitativeValue",
+      //       minValue: placement_process.placements?.[0]?.highest_package || 0,
+      //       maxValue: placement_process.placements?.[1]?.highest_package || 0,
+      //       unitText: "YEAR",
+      //     },
+      //   },
+      //   datePosted: placement_process.content[0]?.updated_at,
+      //   jobLocation: {
+      //     "@type": "Place",
+      //     address: college_information.location,
+      //   },
+      // }),
     ];
 
     const extractedData = {

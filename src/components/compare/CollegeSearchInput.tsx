@@ -65,9 +65,10 @@ export default function CollegeSearchInput({
       <Input
         ref={inputRef}
         placeholder="Enter name of university"
-        className="h-10 pl-4 pr-10 text-sm"
+        className="h-12 pl-4 pr-10 text-sm"
         value={inputValue}
         onChange={handleInputChange}
+        style={{ backgroundColor: "white" }}
         onFocus={() => {
           if (inputValue.trim().length > 0 && results.colleges.length > 0)
             setDropdownOpen(true);
