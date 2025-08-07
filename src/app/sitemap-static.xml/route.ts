@@ -11,6 +11,7 @@ export async function GET() {
     { path: "exams", priority: 0.8, changefreq: "weekly" },
     { path: "colleges", priority: 0.8, changefreq: "weekly" },
     { path: "articles", priority: 0.8, changefreq: "weekly" },
+    { path: "compare-colleges", priority: 0.8, changefreq: "monthly" },
   ];
   const urls = staticRoutes
     .map(

@@ -34,9 +34,7 @@ const UniInfoCard: React.FC<any> = ({
       {/* Card content */}
       <div className="mb-6 mt-7 flex flex-col items-center px-4">
         <Link
-          href={`/university/${tagSanatize(university?.data?.college?.slug)}-${
-            university?.data?.college?.id
-          }/info`}
+          href={`/colleges/${tagSanatize(university?.data?.college?.slug)}`}
         >
           <h2 className="text-gray-7 line-clamp-1 text-center text-xl font-bold">
             {university?.data?.college?.college_name}
