@@ -31,7 +31,10 @@ const CollegeRow: React.FC<{ college: HomeCollege }> = memo(({ college }) => {
       <td className="p-3">
         <div className="flex items-center gap-3">
           <Image
-            src={logo_img || "https://d28xcrw70jd98d.cloudfront.net/allCollegeLogo/defaultLogo1.webp"}
+            src={
+              logo_img ||
+              "https://d28xcrw70jd98d.cloudfront.net/allCollegeLogo/defaultLogo1.webp"
+            }
             alt={`${college_name} Logo`}
             width={50}
             height={50}
@@ -42,7 +45,9 @@ const CollegeRow: React.FC<{ college: HomeCollege }> = memo(({ college }) => {
             className="font-medium min-w-40"
           >
             {college_name}
-            <span className="block font-normal text-[#919EAB] text-sm">{city_name}</span>
+            <span className="block font-normal text-[#919EAB] text-sm">
+              {city_name}
+            </span>
           </Link>
         </div>
       </td>
@@ -51,11 +56,14 @@ const CollegeRow: React.FC<{ college: HomeCollege }> = memo(({ college }) => {
         <span className="font-semibold">{course_count}</span>+
       </td>
       <td className="p-3 text-center">{nacc_grade || "-"}</td>
-      <td className="p-3">{formatFeeRange(min_tution_fees, max_tution_fees)}</td>
+      <td className="p-3">
+        {formatFeeRange(min_tution_fees, max_tution_fees)}
+      </td>
       <td className="p-3 text-center">
         {kapp_rating && kapp_rating > 0 ? (
           <span className="text-primary-3 bg-[#22C55E29] font-semibold px-3 py-0.5 rounded-full flex justify-center items-center gap-1 w-fit">
-            <Star className="size-4 inline-block fill-primary-3 text-primary-3" /> <span>{kapp_rating}</span>
+            <Star className="size-4 inline-block fill-primary-3 text-primary-3" />{" "}
+            <span>{kapp_rating}</span>
           </span>
         ) : (
           "-"
@@ -70,13 +78,14 @@ const PrivateCollege: React.FC<PrivateCollegeProps> = memo(({ data }) => {
   const [selectedStreamId, setSelectedStreamId] = useState<string | null>(null);
   const [filteredColleges, setFilteredColleges] = useState<HomeCollege[]>([]);
 
-  const availableStreams = useMemo(() => 
-    data.filter((stream) => stream?.colleges?.length > 0),
+  const availableStreams = useMemo(
+    () => data.filter((stream) => stream?.colleges?.length > 0),
     [data]
   );
 
-  const currentStream = useMemo(() => 
-    data.find((stream) => stream.stream_id.toString() === selectedStreamId),
+  const currentStream = useMemo(
+    () =>
+      data.find((stream) => stream.stream_id.toString() === selectedStreamId),
     [data, selectedStreamId]
   );
 
@@ -92,13 +101,17 @@ const PrivateCollege: React.FC<PrivateCollegeProps> = memo(({ data }) => {
 
   useEffect(() => {
     if (selectedStreamId && data) {
-      const stream = data.find((s) => s.stream_id.toString() === selectedStreamId);
+      const stream = data.find(
+        (s) => s.stream_id.toString() === selectedStreamId
+      );
       setFilteredColleges(stream?.colleges?.slice(0, 6) || []);
     }
   }, [data, selectedStreamId]);
 
   if (!data?.length) {
-    return <div className="container-body pb-6 md:pb-12">No data available</div>;
+    return (
+      <div className="container-body pb-6 md:pb-12">No data available</div>
+    );
   }
 
   return (
@@ -110,7 +123,9 @@ const PrivateCollege: React.FC<PrivateCollegeProps> = memo(({ data }) => {
         <Link
           href={
             currentStream?.stream_name !== "Top Private Colleges Without Filter"
-              ? `/college/${formatName(currentStream?.stream_name ?? "")}-colleges`
+              ? `/colleges-stream-${currentStream?.stream_name
+                  .replace(/\s+/g, "")
+                  .toLowerCase()}-type-private`
               : "/colleges"
           }
           className="text-primary-main font-semibold"

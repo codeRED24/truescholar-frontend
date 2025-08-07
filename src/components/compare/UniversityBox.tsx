@@ -7,7 +7,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { X, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 import CollegeSearchInput from "../compare/CollegeSearchInput";
 import CourseDialogContent from "../compare/CourseDialogContent";
@@ -45,6 +45,11 @@ export default function UniversityBox({
   const [selectedCourseLocal, setSelectedCourseLocal] = useState<string | null>(
     selectedCourseId || null
   );
+
+  // Sync local state with prop when prop changes (e.g., after URL param parsing)
+  useEffect(() => {
+    setSelectedCourseLocal(selectedCourseId || null);
+  }, [selectedCourseId]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Handler for course selection
@@ -100,18 +105,9 @@ export default function UniversityBox({
   }, [selectedCollegeId, courses]); // Remove setSelectedStream from dependencies
   return (
     <div
-      className={`relative space-y-4 rounded bg-white p-4 shadow-md hover:shadow-lg`}
+      className={`relative p-4`}
       style={{ paddingTop: canDelete && onDelete ? "1.5rem" : "1rem" }}
     >
-      {canDelete && onDelete && (
-        <button
-          aria-label="close"
-          onClick={onDelete}
-          className="absolute right-1 top-1 z-50 flex h-6 w-6 items-center justify-center text-black transition-colors hover:text-red-500"
-        >
-          <X className="h-3 w-3" />
-        </button>
-      )}
       <CollegeSearchInput
         value={selectedCollegeName || ""}
         onChange={(name: string, collegeId?: string) => {
@@ -125,7 +121,7 @@ export default function UniversityBox({
             className="h-12 w-full justify-between text-left font-normal"
             disabled={loading || (!courses.length && !!selectedCollegeId)}
           >
-            <span>
+            <span className="truncate">
               {loading
                 ? "Loading courses..."
                 : selectedCourseLocal && getSelectedCourseName()

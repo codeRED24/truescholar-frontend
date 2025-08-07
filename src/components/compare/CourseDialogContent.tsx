@@ -76,7 +76,7 @@ const CourseDialogContent: React.FC<Props> = ({
         placeholder="Search course..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="w-full rounded border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full rounded border px-3 py-2 text-sm "
         autoFocus
       />
       <div ref={parentRef} className="max-h-96 overflow-auto rounded border">
@@ -90,7 +90,8 @@ const CourseDialogContent: React.FC<Props> = ({
           >
             {virtualizer.getVirtualItems().map((virtualItem) => {
               const course = filtered[virtualItem.index];
-              const isSelected = String(course.course_id) === selected;
+              const isSelected =
+                String((course as any).college_wise_course_id) === selected;
               return (
                 <div
                   key={virtualItem.key}
@@ -104,9 +105,11 @@ const CourseDialogContent: React.FC<Props> = ({
                   }}
                 >
                   <Button
-                    variant={isSelected ? "default" : "ghost"}
+                    variant={"ghost"}
                     className={`h-full w-full justify-start text-left hover:text-primary-main  font-normal ${
-                      isSelected ? "text-primary-main" : "text-black"
+                      isSelected
+                        ? "text-primary-main bg-primary-1"
+                        : "text-black"
                     }`}
                     onClick={() => handleCourseSelect(course)}
                   >
