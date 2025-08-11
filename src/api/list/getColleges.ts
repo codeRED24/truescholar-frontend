@@ -86,6 +86,7 @@ export const getColleges = async ({
       },
       colleges: data.colleges ?? [],
       total_colleges_count: data.total_colleges_count ?? 0,
+      selected_description: data.selected_description,
     };
   } catch (error) {
     console.error("Error in getColleges:", error);

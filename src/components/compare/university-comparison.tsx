@@ -23,7 +23,7 @@ export default function ComaprisonComponent() {
   return (
     <div className="min-h-screen bg-[#F6F6F7]">
       <UniversityComparisonHero />
-      <div className="container mx-auto py-12 lg:py-16">
+      <div className="container-body mx-auto py-12 lg:py-16">
         <UniversityComparisonHeader />
         <Suspense fallback={<ComparisonLoading />}>
           <UniversityComparisonForm />

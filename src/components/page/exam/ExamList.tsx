@@ -191,7 +191,7 @@ const ExamsList: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto py-8 min-h-screen">
+    <div className="container-body mx-auto py-20 min-h-screen">
       <div className="flex md:justify-between items-center flex-wrap">
         <h1 className="text-3xl font-bold text-gray-800 mb-8">Explore Exams</h1>
         <SelectedFiltersDisplay />
