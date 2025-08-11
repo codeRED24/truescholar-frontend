@@ -107,6 +107,9 @@ const CollegeList = () => {
   const [collegesData, setCollegesData] = useState<
     CollegesResponseDTO["colleges"]
   >([]);
+  const [selectedDescription, setSelectedDescription] = useState<string | null>(
+    null
+  );
   const [filterSection, setFilterSection] = useState<
     CollegesResponseDTO["filter_section"]
   >({
@@ -180,7 +183,8 @@ const CollegeList = () => {
     setLoading(true);
     try {
       const data = await getColleges({ page, limit: 10, filters: apiFilters });
-      // console.log({ data });
+      // Store selected_description if present
+      setSelectedDescription(data.selected_description || null);
 
       sessionCache.set(cacheKey, data);
       setTotalCollegesCount(data.total_colleges_count);
@@ -321,8 +325,9 @@ const CollegeList = () => {
 
   return (
     <div className="md:py-14 container-body">
-      <div className="hidden md:flex sticky top-0 z-10 pb-4 bg-[#f4f6f8] inset-x-0 gap-8 items-center">
-        <h1 className="text-2xl font-bold mb-2">
+      <div className="hidden md:flex sticky top-0 z-10 pb-4 bg-[#f4f6f8] inset-x-0 items-center">
+        <div className=""></div>
+        <h1 className="text-2xl font-bold mb-2 mr-4">
           Colleges ({totalCollegesCount})
         </h1>
         <div className="flex flex-wrap gap-2 flex-1">
@@ -392,6 +397,12 @@ const CollegeList = () => {
           <CollegeSort onSortChange={handleSortChange} />
         </div>
       </div>
+      {selectedDescription && (
+        <div
+          className="styledContent prose max-w-none leading-relaxed text-gray-700 mb-6"
+          dangerouslySetInnerHTML={{ __html: selectedDescription }}
+        />
+      )}
       <div className="flex flex-col md:flex-row gap-2 md:gap-4">
         {isMobile ? (
           <>

@@ -13,7 +13,7 @@ export default function UniversityComparisonHero() {
       />
       <div className="absolute inset-0 bg-black/40" />
       <div className="absolute inset-0 flex items-end">
-        <div className="container mx-auto pb-8">
+        <div className="container-body mx-auto pb-8">
           <h1 className="text-3xl font-bold text-white md:text-4xl lg:text-5xl">
             Compare Colleges in India
           </h1>

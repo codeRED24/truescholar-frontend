@@ -81,4 +81,5 @@ export interface CollegesResponseDTO {
   filter_section: FilterSectionDTO;
   colleges: CollegeDTO[];
   total_colleges_count: number;
+  selected_description?: string;
 }

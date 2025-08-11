@@ -14,13 +14,10 @@ const UniInfoCard: React.FC<any> = ({
       {/* Logo in circle above card */}
       <div className="absolute -top-20 left-1/2 z-10 flex -translate-x-1/2 items-center justify-center">
         <div className="flex h-32 w-32 items-center justify-center rounded-full border border-gray-100 bg-white shadow-lg">
-          {university?.data?.college?.logo_url ? (
+          {university?.data?.college?.logo_img ? (
             <div className="relative h-28 w-28 overflow-hidden rounded-full">
               <Image
-                src={
-                  "https://pickmyuni-bucket.s3.ap-southeast-2.amazonaws.com/collegelogo/" +
-                    university?.data?.college?.logo_url || "/vercel.svg"
-                }
+                src={university?.data?.college?.logo_img || "/vercel.svg"}
                 alt={university?.data?.college?.college_name + " logo"}
                 fill
                 className="rounded-full object-contain"
@@ -49,14 +46,6 @@ const UniInfoCard: React.FC<any> = ({
           <span className="text-xs font-medium text-gray-500">COURSE</span>
           <span className="mt-1 line-clamp-2 text-base font-bold text-primary-3">
             {university?.data?.college?.CollegesCourses[0]?.name}
-          </span>
-        </div>
-        <div className="flex flex-col items-end">
-          <span className="text-xs font-medium text-gray-500">TOTAL COST</span>
-          <span className="mt-1 line-clamp-2 text-right text-base font-bold text-primary-3">
-            INR{" "}
-            {university?.data?.college?.CollegesCourses?.[0]?.fees?.toLocaleString() ??
-              "-"}
           </span>
         </div>
       </div>
