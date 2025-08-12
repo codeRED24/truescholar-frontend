@@ -11,6 +11,8 @@ import UniInfoCard from "./UniInfoCard";
 import {
   CourseComparisonTable,
   InstitutionComparisonTable,
+  PlacementComparisonTable,
+  RankingComparisonTable,
 } from "./ComparisonTables";
 
 export default function UniversityComparisonForm() {
@@ -318,6 +320,8 @@ export default function UniversityComparisonForm() {
             <div className="mt-8">
               <CourseComparisonTable universities={universities} />
               <InstitutionComparisonTable universities={universities} />
+              <RankingComparisonTable universities={universities} />
+              <PlacementComparisonTable universities={universities} />
             </div>
           )}
         </div>
