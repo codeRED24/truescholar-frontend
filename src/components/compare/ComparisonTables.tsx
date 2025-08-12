@@ -157,7 +157,8 @@ const InstitutionComparisonTable = ({ universities }: ComparisonTableProps) => {
     },
     {
       label: "Total Courses",
-      getValue: (uni: University) => uni.data?.college?.coursesCount || "-",
+      getValue: (uni: University) =>
+        uni.data?.college?.coursesCount + "+" || "-",
     },
     {
       label: "Total Students",

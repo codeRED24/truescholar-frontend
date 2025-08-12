@@ -18,9 +18,7 @@ import { CollegeDTO } from "@/api/@types/college-list";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 
-const LeadForm = dynamic(() => import("../forms/LeadForm"), {
-  ssr: false,
-});
+const LeadForm = dynamic(() => import("../forms/LeadForm"), {});
 
 const getCookie = (name: string) => {
   const value = `; ${document.cookie}`;
