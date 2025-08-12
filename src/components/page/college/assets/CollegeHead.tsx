@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { trimText } from "@/components/utils/utils";
 import StoryWrapper from "@/components/vid/StoryWrapper";
 import { Headset, LucideArrowDownUp } from "lucide-react";
+import Link from "next/link";
 import React from "react";
 import { GrCatalog } from "react-icons/gr";
 
@@ -57,9 +58,31 @@ const CollegeHead = ({
         <div className="w-full">
           <div className="flex items-center justify-between md:gap-4 flex-wrap">
             <p className="text-base text-[#919EAB] font-public">
-              {data.city && data.state
-                ? `${data.city}, ${data.state}`
-                : data.location}
+              {data.city && data.state ? (
+                <>
+                  <Link
+                    href={`/colleges-city-${data.city
+                      .replace(/\s+/g, "")
+                      .toLowerCase()}`}
+                  >
+                    <span className="text-primary-1 hover:underline">
+                      {data.city}
+                    </span>
+                  </Link>
+                  {", "}
+                  <Link
+                    href={`/colleges-state-${data.state
+                      .replace(/\s+/g, "")
+                      .toLowerCase()}`}
+                  >
+                    <span className="text-primary-1 hover:underline">
+                      {data.state}
+                    </span>
+                  </Link>
+                </>
+              ) : (
+                data.location
+              )}
             </p>
 
             <div className="flex items-center gap-4 justify-between">
