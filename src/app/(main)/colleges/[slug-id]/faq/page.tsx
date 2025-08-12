@@ -48,19 +48,19 @@ export async function generateMetadata(props: {
     const college = await getCollegeData(collegeId);
     if (!college) return { title: "FAQs Not Available" };
 
-    const { college_information, faq_section } = college;
+    const { college_information, faqData } = college;
     const collegeName = college_information.college_name || "College FAQs";
     const canonicalUrl = `${BASE_URL}/colleges/${college_information.slug}-${collegeId}/faqs`;
     const metaDesc =
-      faq_section[0]?.meta_desc ||
+      faqData[0]?.meta_desc ||
       "Find answers to frequently asked questions about this college.";
 
     return {
-      title: faq_section[0]?.title || `${collegeName} FAQs`,
+      title: faqData[0]?.title || `${collegeName} FAQs`,
       description: metaDesc,
       alternates: { canonical: canonicalUrl },
       openGraph: {
-        title: faq_section[0]?.title || `${collegeName} FAQs`,
+        title: faqData[0]?.title || `${collegeName} FAQs`,
         description: metaDesc,
         url: canonicalUrl,
       },
