@@ -9,7 +9,7 @@ const NewsletterSignup: React.FC = () => {
         <svg
           viewBox="0 0 1000 150"
           width="100%"
-          height="auto"
+          height="100%"
           className="max-w-full h-auto  hidden sm:flex"
         >
           <text

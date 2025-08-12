@@ -118,6 +118,7 @@ export default function UniversityBox({
         <DialogTrigger asChild>
           <Button
             variant="outline"
+            style={{ backgroundColor: "white" }}
             className="h-12 w-full justify-between text-left font-normal"
             disabled={loading || (!courses.length && !!selectedCollegeId)}
           >
