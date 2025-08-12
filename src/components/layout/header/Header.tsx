@@ -531,10 +531,10 @@ const Header: React.FC = () => {
                 >
                   <Link
                     href="/compare-colleges"
-                    className="flex items-center gap-2 px-4 text-gray-4 font-semibold transition-colors duration-200 group hover:bg-[#00A76F] hover:text-white"
+                    className="flex items-center gap-1 px-4 text-gray-4 transition-colors duration-200 group hover:bg-[#00A76F] hover:text-white font-medium"
                     style={{ borderRadius: "100px", height: "36px" }}
                   >
-                    <ArrowUpDown className="w-4 h-4 transition-colors duration-200 hover:text-white" />{" "}
+                    <ArrowUpDown className="w-[14px] h-[14px] transition-colors duration-200 hover:text-white" />{" "}
                     Compare
                   </Link>
                 </NavigationMenuItem>
