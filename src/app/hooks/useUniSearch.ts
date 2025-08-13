@@ -19,7 +19,7 @@ export function useUniSearch() {
       const url = `${
         process.env.NEXT_PUBLIC_API_URL
       }/college-search?q=${encodeURIComponent(query)}`;
-      const res = await fetch(url);
+      const res = await fetch(url, { next: { revalidate: 10800 } });
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
