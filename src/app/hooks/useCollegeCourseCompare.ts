@@ -1,6 +1,8 @@
 "use client";
 
+import next from "next";
 import { useState, useEffect } from "react";
+import { revalidate } from "../(main)/colleges/[slug-id]/page";
 // import axios from "axios";
 
 export type CollegeCourseCompareResult = {
@@ -26,7 +28,8 @@ export const useCollegeCourseCompare = (
       setError(null);
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/compare?college_id=${collegeId}&course_id=${courseId}`
+          `${process.env.NEXT_PUBLIC_API_URL}/compare?college_id=${collegeId}&course_id=${courseId}`,
+          { next: { revalidate: 10800 } }
         );
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);

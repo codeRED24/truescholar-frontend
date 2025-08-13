@@ -20,7 +20,8 @@ export const useOnlyCollegeIdCompare = (collegeId: string | null) => {
       setError(null);
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/compare?college_id=${collegeId}`
+          `${process.env.NEXT_PUBLIC_API_URL}/compare?college_id=${collegeId}`,
+          { next: { revalidate: 10800 } }
         );
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
