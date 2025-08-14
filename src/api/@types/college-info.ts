@@ -11,6 +11,9 @@ export interface DynamicFields {
   facility: boolean;
   faq: boolean;
   news: boolean;
+  other: boolean;
+  result: boolean;
+  eligibility: boolean;
 }
 
 export interface AdditionalFields {

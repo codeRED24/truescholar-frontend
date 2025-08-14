@@ -10,23 +10,39 @@ interface ExamData {
 }
 
 const navItems = [
-  { silo: "info", label: "Info", path: "" },
-  { silo: "question_papers", label: "Question Paper", path: "/question-paper" },
-  { silo: "highlights", label: "Highlights", path: "/highlights" },
-  { silo: "application_process", label: "Application Process", path: "/application-process" },
-  { silo: "cutoff", label: "Cut-Off", path: "/cut-off" },
-  { silo: "eligibility_criteria", label: "Eligibility Criteria", path: "/eligibility-criteria" },
+  { silo: "exam_info", label: "Info", path: "" },
+  {
+    silo: "question_papers",
+    label: "Question Paper",
+    path: "/question-papers",
+  },
+  {
+    silo: "exam_imp_highlight",
+    label: "Highlights",
+    path: "/exam-imp-highlight",
+  },
+  {
+    silo: "exam_application_process",
+    label: "Application Process",
+    path: "/exam-application-process",
+  },
+  { silo: "exam_cutoff", label: "Cut-Off", path: "/exam-cutoff" },
+  {
+    silo: "exam_eligibility_criteria",
+    label: "Eligibility Criteria",
+    path: "/exam-eligibility-criteria",
+  },
   { silo: "admit_card", label: "Admit Card", path: "/admit-card" },
   { silo: "exam_pattern", label: "Exam Pattern", path: "/exam-pattern" },
   { silo: "books", label: "Books", path: "/books" },
-  { silo: "syllabus", label: "Syllabus", path: "/syllabus" },
-  { silo: "result", label: "Results", path: "/result" },
+  { silo: "exam_syllabus", label: "Syllabus", path: "/exam-syllabus" },
+  { silo: "exam_result", label: "Results", path: "/exam-result" },
   { silo: "news", label: "News", path: "/news" },
   { silo: "centers", label: "Exam Centers", path: "/centers" },
-  { silo: "faq", label: "FAQ", path: "/faq" },
+  { silo: "exam_faq", label: "FAQ", path: "/exam-faq" },
   { silo: "answer_key", label: "Answer Key", path: "/answer-key" },
   { silo: "analysis", label: "Analysis", path: "/analysis" },
-  { silo: "preperation", label: "Preparation", path: "/preparation" },
+  { silo: "preparation", label: "Preparation", path: "/preparation" },
   { silo: "counselling", label: "Counselling", path: "/counselling" },
   { silo: "notification", label: "Notification", path: "/notification" },
   { silo: "recruitment", label: "Recruitment", path: "/recruitment" },
@@ -54,12 +70,14 @@ const ExamNav: React.FC<ExamData> = ({ data }) => {
 
   useEffect(() => {
     if (navRef.current) {
-      const activeElement = navRef.current.querySelector('[aria-current="page"]');
+      const activeElement = navRef.current.querySelector(
+        '[aria-current="page"]'
+      );
       if (activeElement instanceof HTMLElement) {
         const navWidth = navRef.current.offsetWidth;
         const activeWidth = activeElement.offsetWidth;
         const activeOffset = activeElement.offsetLeft;
-        const scrollPosition = activeOffset - (navWidth / 2) + (activeWidth / 2);
+        const scrollPosition = activeOffset - navWidth / 2 + activeWidth / 2;
 
         navRef.current.scrollTo({
           left: scrollPosition,
@@ -68,6 +86,18 @@ const ExamNav: React.FC<ExamData> = ({ data }) => {
       }
     }
   }, [pathname, orderedNavItems]);
+
+  // // 1) Log everything the backend is giving you:
+  // console.log(
+  //   "API silos ➞",
+  //   distinctSilos.map((s) => s.silos)
+  // );
+
+  // // 2) Find which ones don’t map to your navItems list:
+  // const missing = distinctSilos
+  //   .map((s) => s.silos)
+  //   .filter((s) => !navItems.some((item) => item.silo === s));
+  // console.log("Nav-mismatches ➞", missing);
 
   return (
     <nav className="bg-white text-[#637381] border border-[#DFE3E8] shadow-sm font-light">

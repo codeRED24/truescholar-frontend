@@ -55,6 +55,9 @@ const ExamSiloCard: React.FC<{
   if (silos === "info") {
     redirect(`/exams/${slugId}`);
   }
+  if (silos === "news") {
+    redirect(`/exams/${slugId}/news`);
+  }
   const accurateSilos = splitSilos(silos);
 
   const match = slugId.match(/(.+)-(\d+)$/);

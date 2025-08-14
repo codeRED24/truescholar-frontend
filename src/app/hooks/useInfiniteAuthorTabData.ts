@@ -49,7 +49,7 @@ export function useInfiniteAuthorTabData<T = any>({
         setError(null);
 
         const url = `${process.env.NEXT_PUBLIC_API_URL}/authors/author-data/${authorId}?type=${type}&page=${pageNum}&limit=${limit}`;
-        const res = await fetch(url);
+        const res = await fetch(url, { next: { revalidate: 10800 } });
 
         if (!res.ok) {
           throw new Error("Failed to fetch author tab data");

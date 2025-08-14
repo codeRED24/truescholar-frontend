@@ -20,7 +20,6 @@ export default async function AuthorsPage(props: {
 }) {
   const { authorId } = await props.params;
   const author = await getAuthor(authorId);
-  console.log({ author });
 
   if (!author) return notFound();
 
@@ -62,7 +61,8 @@ export default async function AuthorsPage(props: {
                 <div className="text-lg font-semibold">
                   {author.article_count?.article +
                     author.article_count?.college +
-                    author.article_count?.exam}{" "}
+                    author.article_count?.exam}
+                  {"+ "}
                   <span className="text-xs font-normal">Posts</span>
                 </div>
               </div>

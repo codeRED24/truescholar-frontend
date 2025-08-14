@@ -1,6 +1,6 @@
-import { getNewsByCollegeId } from "@/api/individual/getNewsByCollegeId";
-import CollegeHead from "@/components/page/college/assets/CollegeHead";
-import CollegeNav from "@/components/page/college/assets/CollegeNav";
+import { getNewsByExamId } from "@/api/individual/getNewsByExamId";
+import ExamHead from "@/components/page/exam/ExamHead";
+import ExamNav from "@/components/page/exam/ExamNav";
 import { notFound, redirect } from "next/navigation";
 import Script from "next/script";
 import { sanitizeHtml } from "@/components/utils/sanitizeHtml";
@@ -10,44 +10,42 @@ import "@/app/styles/tables.css";
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ "slug-id": string; "news-id": string }>;
+  params: Promise<{ "slug-id": string; "news-slug": string }>;
 }) {
-  const { "slug-id": slugId, "news-id": newsSlugId } = await params;
+  const { "slug-id": slugId, "news-slug": newsSlugId } = await params;
 
-  const collegeMatch = slugId.match(/(.+)-(\d+)$/);
-  if (!collegeMatch) return { title: "College Not Found" };
-  const collegeId = Number(collegeMatch[2]);
-  if (isNaN(collegeId)) return { title: "Invalid College" };
+  const examMatch = slugId.match(/(.+)-(\d+)$/);
+  if (!examMatch) return { title: "Exam Not Found" };
+  const examId = Number(examMatch[2]);
+  if (isNaN(examId)) return { title: "Invalid Exam" };
 
   const newsMatch = newsSlugId.match(/(.+)-(\d+)$/);
   if (!newsMatch) return { title: "News Not Found" };
   const newsId = Number(newsMatch[2]);
   if (isNaN(newsId)) return { title: "Invalid News" };
 
-  const college = await getNewsByCollegeId(newsId);
+  const exam = await getNewsByExamId(newsId);
+  if (!exam?.news_section?.[0]) return { title: "News Not Found" };
 
-  if (!college?.news_section?.[0]) return { title: "News Not Found" };
-
-  const { title, description, updated_at } = college.news_section[0];
-  const collegeName =
-    college.college_information?.college_name || "Unknown College";
-  const collegeSlug =
-    college.college_information?.slug?.replace(/-\d+$/, "") ||
-    collegeName.toLowerCase().replace(/\s+/g, "-");
-  const correctSlugId = `${collegeSlug}-${collegeId}`;
+  const { title, description, updated_at } = exam.news_section[0];
+  const examName = exam.examInformation?.exam_name || "Unknown Exam";
+  const examSlug =
+    exam.examInformation?.slug?.replace(/-\d+$/, "") ||
+    examName.toLowerCase().replace(/\s+/g, "-");
+  const correctSlugId = `${examSlug}-${examId}`;
   const newsSlug = newsSlugId.replace(/-\d+$/, "");
 
   return {
-    title: `${title} | ${collegeName} News`,
-    description: description || `Latest news from ${collegeName}.`,
-    keywords: `${collegeName}, news, ${newsSlug}, education`,
+    title: `${title} | ${examName} News`,
+    description: description || `Latest news from ${examName}.`,
+    keywords: `${examName}, news, ${newsSlug}, education`,
     alternates: {
-      canonical: `https://www.truescholar.in/colleges/${correctSlugId}/news/${newsSlug}-${newsId}`,
+      canonical: `https://www.truescholar.in/exams/${correctSlugId}/news/${newsSlug}-${newsId}`,
     },
     openGraph: {
-      title: `${title} | ${collegeName}`,
-      description: description || `Latest news from ${collegeName}.`,
-      url: `https://www.truescholar.in/colleges/${correctSlugId}/news/${newsSlug}-${newsId}`,
+      title: `${title} | ${examName}`,
+      description: description || `Latest news from ${examName}.`,
+      url: `https://www.truescholar.in/exams/${correctSlugId}/news/${newsSlug}-${newsId}`,
       type: "article",
       publishedTime: updated_at,
     },
@@ -57,35 +55,33 @@ export async function generateMetadata({
 const NewsIndividual = async ({
   params,
 }: {
-  params: Promise<{ "slug-id": string; "news-id": string }>;
+  params: Promise<{ "slug-id": string; "news-slug": string }>;
 }) => {
-  const { "slug-id": slugId, "news-id": newsSlugId } = await params;
+  const { "slug-id": slugId, "news-slug": newsSlugId } = await params;
 
-  const collegeMatch = slugId.match(/(.+)-(\d+)$/);
-  if (!collegeMatch) return notFound();
-  const collegeId = Number(collegeMatch[2]);
-  if (isNaN(collegeId)) return notFound();
+  const examMatch = slugId.match(/(.+)-(\d+)$/);
+  if (!examMatch) return notFound();
+  const examId = Number(examMatch[2]);
+  if (isNaN(examId)) return notFound();
 
   const newsMatch = newsSlugId.match(/(.+)-(\d+)$/);
   if (!newsMatch) return notFound();
   const newsId = Number(newsMatch[2]);
   if (isNaN(newsId)) return notFound();
 
-  const college = await getNewsByCollegeId(newsId);
-  if (!college?.college_information || !college?.news_section?.[0])
-    return notFound();
+  const exam = await getNewsByExamId(newsId);
+  if (!exam?.examInformation || !exam?.news_section?.[0]) return notFound();
 
-  const news = college.news_section[0];
-  const collegeName =
-    college.college_information.college_name || "Unknown College";
-  const collegeSlug =
-    college.college_information.slug?.replace(/-\d+$/, "") ||
-    collegeName.toLowerCase().replace(/\s+/g, "-");
-  const correctSlugId = `${collegeSlug}-${collegeId}`;
+  const news = exam.news_section[0];
+  const examName = exam.examInformation.exam_name || "Unknown Exam";
+  const examSlug =
+    exam.examInformation.slug?.replace(/-\d+$/, "") ||
+    examName.toLowerCase().replace(/\s+/g, "-");
+  const correctSlugId = `${examSlug}-${examId}`;
   const correctNewsSlugId = `${newsSlugId.replace(/-\d+$/, "")}-${newsId}`;
 
   if (slugId !== correctSlugId || newsSlugId !== correctNewsSlugId) {
-    redirect(`/colleges/${correctSlugId}/news/${correctNewsSlugId}`);
+    redirect(`/exams/${correctSlugId}/news/${correctNewsSlugId}`);
   }
 
   const { title, updated_at, description, author_name, author_img, author_id } =
@@ -98,13 +94,10 @@ const NewsIndividual = async ({
   const jsonLD = [
     {
       "@context": "https://schema.org",
-      "@type": "CollegeOrUniversity",
-      name: collegeName,
-      logo: college.college_information.logo_img,
-      url: college.college_information.college_website,
-      email: college.college_information.college_email,
-      telephone: college.college_information.college_phone,
-      address: college.college_information.location,
+      "@type": "Organization",
+      name: examName,
+      logo: exam.examInformation.exam_logo,
+      url: `https://www.truescholar.in/exams/${correctSlugId}`,
     },
     {
       "@context": "https://schema.org",
@@ -119,26 +112,26 @@ const NewsIndividual = async ({
         {
           "@type": "ListItem",
           position: 2,
-          name: "Colleges",
-          item: "https://www.truescholar.in/colleges",
+          name: "Exams",
+          item: "https://www.truescholar.in/exams",
         },
         {
           "@type": "ListItem",
           position: 3,
-          name: collegeName,
-          item: `https://www.truescholar.in/colleges/${correctSlugId}`,
+          name: examName,
+          item: `https://www.truescholar.in/exams/${correctSlugId}`,
         },
         {
           "@type": "ListItem",
           position: 4,
           name: "News",
-          item: `https://www.truescholar.in/colleges/${correctSlugId}/news`,
+          item: `https://www.truescholar.in/exams/${correctSlugId}/news`,
         },
         {
           "@type": "ListItem",
           position: 5,
           name: title,
-          item: `https://www.truescholar.in/colleges/${correctSlugId}/news/${correctNewsSlugId}`,
+          item: `https://www.truescholar.in/exams/${correctSlugId}/news/${correctNewsSlugId}`,
         },
       ],
     },
@@ -146,12 +139,12 @@ const NewsIndividual = async ({
       "@context": "https://schema.org",
       "@type": "NewsArticle",
       headline: title,
-      description: description || `Latest news from ${collegeName}.`,
+      description: description || `Latest news from ${examName}.`,
       author: { "@type": "Person", name: author_name || "Unknown Author" },
       datePublished: updated_at,
       dateModified: updated_at,
       image:
-        college.college_information.logo_img ||
+        exam.examInformation.exam_logo ||
         "https://www.truescholar.in/logo-dark.webp",
       publisher: {
         "@type": "Organization",
@@ -163,7 +156,7 @@ const NewsIndividual = async ({
       },
       mainEntityOfPage: {
         "@type": "WebPage",
-        "@id": `https://www.truescholar.in/colleges/${correctSlugId}/news/${correctNewsSlugId}`,
+        "@id": `https://www.truescholar.in/exams/${correctSlugId}/news/${correctNewsSlugId}`,
       },
     },
   ];
@@ -175,8 +168,8 @@ const NewsIndividual = async ({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLD) }}
       />
-      <CollegeHead data={college} fromNews={true} />
-      <CollegeNav data={college} />
+      <ExamHead data={exam.examInformation} title={title} />
+      <ExamNav data={exam} />
 
       <div className="container-body lg:grid grid-cols-12 gap-4 pt-4">
         <div className="col-span-9">
