@@ -6,7 +6,6 @@ import TocGenerator from "@/components/miscellaneous/TocGenerator";
 import ExamNav from "./ExamNav";
 import "@/app/styles/tables.css";
 
-
 const ExamContent: React.FC<{ exam: GreExamDTO }> = ({ exam }) => {
   const sanitizedHtml = sanitizeHtml(exam.examContent.description);
   return (

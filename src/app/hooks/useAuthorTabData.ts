@@ -51,7 +51,7 @@ export function useAuthorTabData<T = AuthorTabDataResponse>({
     setError(null);
     setData(null);
     const url = `${process.env.NEXT_PUBLIC_API_URL}/authors/author-data/${authorId}?type=${type}&page=${page}&limit=${limit}`;
-    fetch(url)
+    fetch(url, { next: { revalidate: 10800 } })
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch author tab data");
         return res.json();

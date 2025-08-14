@@ -179,9 +179,7 @@ const CollegeHighlights = async (props: {
 
       <div className="bg-gray-2">
         <CollegeHead data={extractedData} />
-        <div className="md:container-body sticky md:top-2 lg:top-4 z-10 lg:-mt-6">
-          <CollegeNav data={college} />
-        </div>
+        <CollegeNav data={college_information} />
 
         <div className="container-body lg:grid grid-cols-12 gap-4 pt-4">
           <div className="col-span-9">
@@ -189,7 +187,7 @@ const CollegeHighlights = async (props: {
             <div dangerouslySetInnerHTML={{ __html: description }} />
             <RatingComponent />
           </div>
-          <div className="col-span-1 mt-4">
+          <div className="col-span-3 mt-4">
             <Image src="/ads/static.svg" height={250} width={500} alt="ads" />
             <CollegeNews news={news_section} clgSlug={correctSlugId} />
           </div>

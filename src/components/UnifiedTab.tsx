@@ -8,6 +8,7 @@ import {
 import { useInfiniteAuthorTabData } from "@/app/hooks/useInfiniteAuthorTabData";
 import { ChevronRight, Clock } from "lucide-react";
 import Link from "next/link";
+import { mapCollegeTabSlugToPath } from "@/lib/collegeTab";
 
 interface UnifiedTabProps {
   authorId: string;
@@ -147,9 +148,28 @@ export function UnifiedTab({ authorId, type }: UnifiedTabProps) {
             <Link
               href={
                 item.category === "exam"
-                  ? `/exams/${(item.entity_name ?? "exam")
-                      .replace(/\s+/g, "-")
-                      .toLowerCase()}-${item.id}`
+                  ? (() => {
+                      const slug = (item.entity_name ?? "exam")
+                        .replace(/\s+/g, "-")
+                        .toLowerCase();
+                      const basePath = `/exams/${slug}-${item.id}`;
+                      // Use silo segment if not default "exam_info"
+                      const silo = (item as any).silos ?? "exam_info";
+                      return silo === "exam_info"
+                        ? basePath
+                        : `${basePath}/${silo.replace(/_/g, "-")}`;
+                    })()
+                  : item.category === "college"
+                  ? (() => {
+                      const slug = (item.slug ?? "college")
+                        .replace(/\s+/g, "-")
+                        .toLowerCase();
+                      const basePath = `/colleges/${slug}`;
+                      const silos = (item as any).silos ?? "info";
+                      return silos === "info"
+                        ? basePath
+                        : `${basePath}${mapCollegeTabSlugToPath(silos)}`;
+                    })()
                   : `/articles/${item.slug}-${item.id}`
               }
             >

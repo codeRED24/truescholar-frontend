@@ -7,6 +7,7 @@ import { Headset, LucideArrowDownUp } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { GrCatalog } from "react-icons/gr";
+import { IoHeart } from "react-icons/io5";
 
 const sampleVideoUrls = [
   "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
@@ -18,19 +19,76 @@ const sampleVideoUrls = [
 
 const CollegeHead = ({
   data,
+  fromNews = false,
 }: {
-  data: {
-    college_name: string;
-    college_logo: string;
-    city: string;
-    state: string;
-    title: string;
-    location: string;
-    college_brochure?: string;
-  };
+  data: any;
+  fromNews?: boolean;
 }) => {
   const videoUrls = sampleVideoUrls;
   const initialState = videoUrls.length > 0 ? "unread" : "no-story";
+
+  if (fromNews) {
+    return (
+      <div className="relative bg-college-head text-white pt-16 md:pt-24 pb-6 container-body min-h-60">
+        <h2 className="absolute inset-x-0 top-1/4 flex items-center justify-center text-center text-5xl md:text-8xl leading-10 md:leading-ultraWide font-public font-bold text-[#FFFFFF] opacity-20">
+          {trimText(data.college_information.college_name, 58)}
+        </h2>
+        <div className="relative z-10 flex items-center flex-col md:flex-row gap-6">
+          {/* <Image
+          src={
+            data.college_logo ||
+            "https://d28xcrw70jd98d.cloudfront.net/allCollegeLogo/defaultLogo1.webp"
+          }
+          alt={data.college_name}
+          className="w-20 h-20 object-contain rounded-full"
+          height={80}
+          width={80}
+          aria-label="college logo"
+        /> */}
+          <div>
+            <StoryWrapper
+              videoUrls={videoUrls}
+              initialState={initialState}
+              collegeLogo={data.college_logo}
+            />
+          </div>
+          <div className="w-full flex flex-col md:flex-col">
+            <div className="w-full flex flex-col md:flex-row">
+              <div className="flex flex-col justify-center md:max-w-4/5 w-full md:w-4/5">
+                <h1 className="text-xl md:text-3xl leading-6 md:leading-9 font-public font-bold line-clamp-2">
+                  {data.news_section[0].title}
+                </h1>
+                <p className="line-clamp-2 text-gray-400 text-sm md:text-base">
+                  {data.news_section[0].meta_desc}
+                </p>
+              </div>
+              <div className="w-full md:w-1/5 flex flex-col justify-between gap-2 md:max-w-1/5">
+                <div className="flex items-center gap-4 justify-start">
+                  <Button
+                    variant="ghost"
+                    className="px-0 text-primary-1 hover:bg-transparent hover:text-primary-1"
+                  >
+                    <IoHeart />
+                    <span className="ml-1">Favorite</span>
+                  </Button>
+                  <Share />
+                </div>
+                <LeadModal
+                  triggerText={
+                    <span className="flex items-center gap-2">
+                      Enquire Now
+                      <Headset />
+                    </span>
+                  }
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative bg-college-head text-white pt-16 md:pt-24 pb-6 container-body min-h-60">
       <h2 className="absolute inset-x-0 top-1/4 flex items-center justify-center text-center text-5xl md:text-8xl leading-10 md:leading-ultraWide font-public font-bold text-[#FFFFFF] opacity-20">

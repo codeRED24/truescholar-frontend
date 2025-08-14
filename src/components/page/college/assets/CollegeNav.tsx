@@ -25,18 +25,34 @@ const CollegeNav: React.FC<CollegeData> = ({ data, activeTab }) => {
   const navItems = useMemo(() => {
     const items = [
       { label: "Info", path: "", show: true },
-      { label: "Highlights", path: "/highlights", show: dynamic_fields.highlight },
+      {
+        label: "Highlights",
+        path: "/highlights",
+        show: dynamic_fields.highlight,
+      },
       {
         label: "Courses",
         path: "/courses",
-        show: dynamic_fields.courses || additional_fields.college_wise_course_present,
+        show:
+          dynamic_fields.courses ||
+          additional_fields.college_wise_course_present,
       },
       {
         label: "Fees",
         path: "/fees",
-        show: dynamic_fields.fees || additional_fields.college_wise_fees_present,
+        show:
+          dynamic_fields.fees || additional_fields.college_wise_fees_present,
       },
-      { label: "Admission Process", path: "/admission-process", show: dynamic_fields.admission },
+      {
+        label: "Eligibility",
+        path: "/eligibility",
+        show: dynamic_fields.eligibility,
+      },
+      {
+        label: "Admission Process",
+        path: "/admission-process",
+        show: dynamic_fields.admission,
+      },
       {
         label: "Cutoffs",
         path: "/cutoffs",
@@ -45,17 +61,30 @@ const CollegeNav: React.FC<CollegeData> = ({ data, activeTab }) => {
       {
         label: "Placements",
         path: "/placements",
-        show: dynamic_fields.placement || additional_fields.college_wise_placement_present,
+        show:
+          dynamic_fields.placement ||
+          additional_fields.college_wise_placement_present,
       },
       {
         label: "Rankings",
         path: "/rankings",
-        show: dynamic_fields.ranking || additional_fields.college_ranking_present,
+        show:
+          dynamic_fields.ranking || additional_fields.college_ranking_present,
       },
-      { label: "Scholarship", path: "/scholarship", show: dynamic_fields.scholarship },
-      { label: "Facilities", path: "/facilities", show: dynamic_fields.facility },
+      {
+        label: "Scholarship",
+        path: "/scholarship",
+        show: dynamic_fields.scholarship,
+      },
+      {
+        label: "Facilities",
+        path: "/facilities",
+        show: dynamic_fields.facility,
+      },
       { label: "FAQ", path: "/faq", show: dynamic_fields.faq },
       { label: "News", path: "/news", show: dynamic_fields.news },
+      { label: "Results", path: "/results", show: dynamic_fields.result },
+      { label: "More", path: "/others", show: dynamic_fields.other },
     ].filter((item) => item.show);
 
     return items;
@@ -66,13 +95,15 @@ const CollegeNav: React.FC<CollegeData> = ({ data, activeTab }) => {
   // Center the active tab when component mounts or activeTab changes
   useEffect(() => {
     if (navRef.current) {
-      const activeElement = navRef.current.querySelector('[aria-current="page"]');
+      const activeElement = navRef.current.querySelector(
+        '[aria-current="page"]'
+      );
       if (activeElement instanceof HTMLElement) {
         const navWidth = navRef.current.offsetWidth;
         const activeWidth = activeElement.offsetWidth;
         const activeOffset = activeElement.offsetLeft;
-        const scrollPosition = activeOffset - (navWidth / 2) + (activeWidth / 2);
-        
+        const scrollPosition = activeOffset - navWidth / 2 + activeWidth / 2;
+
         navRef.current.scrollTo({
           left: scrollPosition,
           behavior: "smooth",
@@ -90,7 +121,8 @@ const CollegeNav: React.FC<CollegeData> = ({ data, activeTab }) => {
         const fullPath = `${basePath}${path}`;
         const isActive = activeTab
           ? label === defaultActiveTab
-          : pathname === fullPath || (!pathname.includes(basePath + "/") && idx === 0);
+          : pathname === fullPath ||
+            (!pathname.includes(basePath + "/") && idx === 0);
 
         return (
           <React.Fragment key={label}>

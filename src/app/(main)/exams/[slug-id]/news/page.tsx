@@ -1,15 +1,13 @@
 import React from "react";
-import {
-  getCollegeById,
-  getCollegeNewsById,
-} from "@/api/individual/getIndividualCollege";
+import { getExamNewsById } from "@/api/individual/getExamNewsById";
 import { notFound, redirect } from "next/navigation";
 import Script from "next/script";
 import Link from "next/link";
-import CollegeHead from "@/components/page/college/assets/CollegeHead";
-import CollegeNav from "@/components/page/college/assets/CollegeNav";
+import ExamHead from "@/components/page/exam/ExamHead";
+import ExamNav from "@/components/page/exam/ExamNav";
 import Image from "next/image";
 import { createSlugFromTitle } from "@/components/utils/utils";
+import "@/app/styles/tables.css";
 
 const formatDateWord = (dateStr: string): string => {
   return new Date(dateStr).toLocaleDateString("en-US", {
@@ -36,40 +34,38 @@ export async function generateMetadata(props: {
   const params = await props.params;
   const slugId = params["slug-id"];
   const match = slugId.match(/(.+)-(\d+)$/);
-  if (!match) return { title: "College Not Found" };
+  if (!match) return { title: "Exam Not Found" };
 
-  const collegeId = Number(match[2]);
-  if (isNaN(collegeId)) return { title: "Invalid College" };
+  const examId = Number(match[2]);
+  if (isNaN(examId)) return { title: "Invalid Exam" };
 
-  const college = await getCollegeById(collegeId);
-  if (!college) return { title: "College Not Found" };
+  const exam = await getExamNewsById(examId);
+  if (!exam) return { title: "Exam Not Found" };
 
-  const { college_information, scholarship_section } = college;
-  const { college_name, slug } = college_information;
-  const scholarship = scholarship_section?.[0];
-  const collegeSlug = slug.replace(/-\d+$/, "");
+  const { examInformation, news_section } = exam;
+  const { exam_name, slug } = examInformation;
+  const newsItem = news_section?.[0];
+  const examSlug = slug.replace(/-\d+$/, "");
 
   return {
-    title: scholarship?.title || `${college_name} News`,
+    title: newsItem?.title || `${exam_name} News`,
     description:
-      scholarship?.meta_desc || `Latest news and updates from ${college_name}.`,
+      newsItem?.meta_desc || `Latest news and updates from ${exam_name}.`,
     keywords:
-      scholarship?.seo_param ||
-      `${college_name}, news, college updates, education`,
+      newsItem?.seo_param || `${exam_name}, news, exam updates, education`,
     alternates: {
-      canonical: `https://www.truescholar.in/colleges/${collegeSlug}-${collegeId}/news`,
+      canonical: `https://www.truescholar.in/exams/${examSlug}-${examId}/news`,
     },
     openGraph: {
-      title: scholarship?.title || `${college_name} News`,
+      title: newsItem?.title || `${exam_name} News`,
       description:
-        scholarship?.meta_desc ||
-        `Latest news and updates from ${college_name}.`,
-      url: `https://www.truescholar.in/colleges/${collegeSlug}-${collegeId}/news`,
+        newsItem?.meta_desc || `Latest news and updates from ${exam_name}.`,
+      url: `https://www.truescholar.in/exams/${examSlug}-${examId}/news`,
     },
   };
 }
 
-const CollegeNews = async ({
+const ExamNews = async ({
   params,
 }: {
   params: Promise<{ "slug-id": string }>;
@@ -78,51 +74,38 @@ const CollegeNews = async ({
   const match = slugId.match(/(.+)-(\d+)$/);
   if (!match) return notFound();
 
-  const collegeId = Number(match[2]);
-  if (isNaN(collegeId)) return notFound();
+  const examId = Number(match[2]);
+  if (isNaN(examId)) return notFound();
 
-  const college = await getCollegeNewsById(collegeId);
-  if (!college?.college_information || !college?.news_section)
-    return notFound();
+  const exam = await getExamNewsById(examId);
+  if (!exam?.examInformation || !exam?.news_section) return notFound();
 
-  const { college_information, news_section } = college;
+  const { examInformation, news_section } = exam;
 
-  const newsList = college.news_section;
-  const collegeName =
-    college.college_information?.college_name || "Unknown College";
-  const trimmedCollegeName =
-    college.college_information?.slug?.replace(/-\d+$/, "") ||
-    collegeName.toLowerCase().replace(/\s+/g, "-");
-  const correctSlugId = `${trimmedCollegeName}-${collegeId}`;
+  const newsList = exam.news_section;
+  const examName = exam.examInformation?.exam_name || "Unknown Exam";
+  const trimmedExamName =
+    exam.examInformation?.slug?.replace(/-\d+$/, "") ||
+    examName.toLowerCase().replace(/\s+/g, "-");
+  const correctSlugId = `${trimmedExamName}-${examId}`;
 
   if (slugId !== correctSlugId) {
-    redirect(`/colleges/${correctSlugId}/news`);
+    redirect(`/exams/${correctSlugId}/news`);
   }
 
   if (!newsList || newsList.length === 0) {
     return notFound();
   }
 
-  const extractedData = {
-    college_name: college_information.college_name,
-    college_logo: college_information.logo_img,
-    city: college_information.city,
-    state: college_information.state,
-    title: college_information.college_name,
-    location: college_information.location,
-    college_brochure: college_information.college_brochure || "/",
-  };
+  // Use the full examInformation object for ExamHead
 
   const jsonLD = [
     {
       "@context": "https://schema.org",
-      "@type": "CollegeOrUniversity",
-      name: collegeName,
-      logo: college.college_information?.logo_img,
-      url: college.college_information?.college_website,
-      email: college.college_information?.college_email,
-      telephone: college.college_information?.college_phone,
-      address: college.college_information?.location,
+      "@type": "Organization",
+      name: examName,
+      logo: exam.examInformation?.exam_logo,
+      url: `https://www.truescholar.in/exams/${correctSlugId}`,
     },
     {
       "@context": "https://schema.org",
@@ -137,29 +120,28 @@ const CollegeNews = async ({
         {
           "@type": "ListItem",
           position: 2,
-          name: "Colleges",
-          item: "https://www.truescholar.in/colleges",
+          name: "Exams",
+          item: "https://www.truescholar.in/exams",
         },
         {
           "@type": "ListItem",
           position: 3,
-          name: collegeName,
-          item: `https://www.truescholar.in/colleges/${correctSlugId}`,
+          name: examName,
+          item: `https://www.truescholar.in/exams/${correctSlugId}`,
         },
         {
           "@type": "ListItem",
           position: 4,
           name: "News",
-          item: `https://www.truescholar.in/colleges/${correctSlugId}/news`,
+          item: `https://www.truescholar.in/exams/${correctSlugId}/news`,
         },
       ],
     },
     {
       "@context": "https://schema.org",
       "@type": "NewsArticle",
-      headline: newsList[0]?.title || `${collegeName} News`,
-      description:
-        newsList[0]?.meta_desc || `Latest updates from ${collegeName}.`,
+      headline: newsList[0]?.title || `${examName} News`,
+      description: newsList[0]?.meta_desc || `Latest updates from ${examName}.`,
       author: {
         "@type": "Person",
         name: newsList[0]?.author_name || "Unknown Author",
@@ -167,7 +149,7 @@ const CollegeNews = async ({
       datePublished: newsList[0]?.updated_at,
       dateModified: newsList[0]?.updated_at,
       image:
-        college.college_information?.logo_img ||
+        exam.examInformation?.exam_logo ||
         "https://www.truescholar.in/logo-dark.webp",
       publisher: {
         "@type": "Organization",
@@ -183,12 +165,12 @@ const CollegeNews = async ({
   return (
     <div className="bg-gray-2 min-h-screen">
       <Script
-        id="college-news-ld-json"
+        id="exam-news-ld-json"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLD) }}
       />
-      <CollegeHead data={extractedData} />
-      <CollegeNav data={college_information} />
+      <ExamHead data={examInformation} title={`${examName} News`} />
+      <ExamNav data={exam} />
       <div className="container-body lg:grid grid-cols-12 gap-4 pt-4">
         <div className="col-span-3 mt-4">
           <Image src="/ads/static.svg" height={250} width={500} alt="ads" />
@@ -207,7 +189,7 @@ const CollegeNews = async ({
                   className="p-4 bg-white shadow-md rounded-2xl"
                 >
                   <Link
-                    href={`/colleges/${correctSlugId}/news/${createSlugFromTitle(
+                    href={`/exams/${correctSlugId}/news/${createSlugFromTitle(
                       newsItem.title
                     )}-${newsItem.id}`}
                   >
@@ -236,4 +218,4 @@ const CollegeNews = async ({
   );
 };
 
-export default CollegeNews;
+export default ExamNews;
