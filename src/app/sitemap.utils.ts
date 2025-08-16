@@ -1,6 +1,7 @@
 import { getExams } from "@/api/list/getExams";
 import { getArticles } from "@/api/list/getArticles";
 import { getCollegeSitemapData } from "@/api/sitemap/getCollegeSitemapData";
+import { getAuthors } from "@/api/list/getAuthors";
 
 const INVALID_CHARACTERS_REGEX = /[&<>"']/;
 function isValidSlug(slug: string): boolean {
@@ -57,6 +58,9 @@ export async function generateCollegesUrls() {
               changeFrequency = "weekly";
             } else if (tab === "cutoffs" || tab === "scholarship") {
               priority = 0.7;
+            } else if (tab === "news") {
+              priority = 1;
+              changeFrequency = "daily";
             }
 
             collegeUrls.push({
@@ -147,6 +151,30 @@ export async function generateArticlesUrls() {
       .flat();
   } catch (error) {
     console.error("Error generating article URLs for sitemap:", error);
+    // Return empty array to prevent build failure
+    return [];
+  }
+}
+
+export async function generateAuthorsUrls() {
+  try {
+    const allAuthors = await getAuthors();
+    if (!Array.isArray(allAuthors)) return [];
+
+    console.log("author page count: ", allAuthors.length);
+
+    return allAuthors
+      .filter((author) => author.is_active) // Only include active authors
+      .map((author) => {
+        const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/authors/${author.author_id}`;
+        return {
+          url: baseUrl,
+          changeFrequency: "weekly" as const,
+          priority: 0.7,
+        };
+      });
+  } catch (error) {
+    console.error("Error generating author URLs for sitemap:", error);
     // Return empty array to prevent build failure
     return [];
   }
