@@ -25,6 +25,10 @@ import {
 import { Controller } from "react-hook-form";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import { SuggestionInput } from "@/components/ui/suggestion-input";
+import { useUniSearch } from "@/app/hooks/useUniSearch";
+import { useOnlyCollegeIdCompare } from "@/app/hooks/useOnlyCollegeIdCompare";
+import { useState, useEffect, useCallback } from "react";
 
 export function PersonalDetailsStep() {
   const { formData, updateFormData, personalDetailsForm } = useFormContext();
@@ -36,6 +40,100 @@ export function PersonalDetailsStep() {
   } = personalDetailsForm;
 
   const isPhoneVerified = watch("isPhoneVerified") || false;
+  const selectedCollegeId = watch("collegeId");
+
+  const { results, loading: searchLoading, search } = useUniSearch();
+  const { courses, loading: coursesLoading } =
+    useOnlyCollegeIdCompare(selectedCollegeId);
+
+  const [selectedCollege, setSelectedCollege] = useState<any>(null);
+  const [collegeOptions, setCollegeOptions] = useState<any[]>([]);
+
+  // Create fetchSuggestions function for SuggestionInput
+  const fetchCollegeSuggestions = useCallback(
+    async (query: string): Promise<string[]> => {
+      if (!query || query.length < 2) {
+        return [];
+      }
+
+      try {
+        const url = `${
+          process.env.NEXT_PUBLIC_API_URL
+        }/college-search?q=${encodeURIComponent(query)}`;
+        const res = await fetch(url);
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const data = await res.json();
+        const colleges = data.data.colleges || [];
+
+        // Store colleges for later use in selection
+        setCollegeOptions(colleges);
+
+        return colleges.map(
+          (college: any) => college.college_name || college.name
+        );
+      } catch (error) {
+        console.error("Error fetching college suggestions:", error);
+        return [];
+      }
+    },
+    []
+  );
+
+  // Function to get college by name from stored options
+  const getCollegeByName = useCallback(
+    (collegeName: string) => {
+      return collegeOptions.find(
+        (college) => (college.college_name || college.name) === collegeName
+      );
+    },
+    [collegeOptions]
+  );
+
+  // Handle college selection
+  const handleCollegeSelect = (collegeName: string) => {
+    const college = getCollegeByName(collegeName);
+    if (college) {
+      setSelectedCollege(college);
+      const collegeDisplayName = college.college_name || college.name;
+      const collegeId = Number(college.college_id || college.id);
+      const collegeLocation = college.location || college.city || "";
+
+      setValue("collegeName", collegeDisplayName);
+      setValue("collegeId", collegeId);
+      setValue("collegeLocation", collegeLocation);
+      // Reset course when college changes
+      setValue("courseName", "");
+      setValue("courseId", 0);
+
+      updateFormData({
+        collegeName: collegeDisplayName,
+        collegeId: collegeId,
+        collegeLocation: collegeLocation,
+        courseName: "",
+        courseId: 0,
+      });
+    }
+  };
+
+  // Handle course selection
+  const handleCourseSelect = (courseValue: string) => {
+    const course = courses.find(
+      (c) =>
+        c.college_wise_course_id != null &&
+        c.college_wise_course_id.toString() === courseValue
+    );
+    if (course) {
+      setValue("courseName", course.name);
+      setValue("courseId", Number(course.college_wise_course_id));
+
+      updateFormData({
+        courseName: course.name,
+        courseId: Number(course.college_wise_course_id),
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -245,7 +343,7 @@ export function PersonalDetailsStep() {
           )}
         </div>
 
-        {/* College Name */}
+        {/* College Name with Suggestions */}
         <div className="space-y-2">
           <Label
             htmlFor="collegeName"
@@ -258,17 +356,17 @@ export function PersonalDetailsStep() {
             name="collegeName"
             control={control}
             render={({ field }) => (
-              <Input
-                {...field}
-                id="collegeName"
-                placeholder="Enter your college name"
+              <SuggestionInput
+                value={field.value}
+                onChange={field.onChange}
+                onSelect={handleCollegeSelect}
+                fetchSuggestions={fetchCollegeSuggestions}
+                placeholder="Type to search for colleges..."
                 className={`border-gray-300 ${
                   errors.collegeName ? "border-red-500" : ""
                 }`}
-                onChange={(e) => {
-                  field.onChange(e);
-                  updateFormData({ collegeName: e.target.value });
-                }}
+                minQueryLength={2}
+                debounceMs={300}
               />
             )}
           />
@@ -303,6 +401,7 @@ export function PersonalDetailsStep() {
                   field.onChange(e);
                   updateFormData({ collegeLocation: e.target.value });
                 }}
+                readOnly={!!selectedCollege}
               />
             )}
           />
@@ -324,34 +423,59 @@ export function PersonalDetailsStep() {
             control={control}
             render={({ field }) => (
               <Select
-                value={field.value}
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  updateFormData({ courseName: value });
-                }}
+                value={
+                  field.value
+                    ? courses
+                        .find(
+                          (c) =>
+                            c.name === field.value &&
+                            c.college_wise_course_id != null
+                        )
+                        ?.college_wise_course_id?.toString() || ""
+                    : ""
+                }
+                onValueChange={handleCourseSelect}
+                disabled={
+                  !selectedCollegeId ||
+                  selectedCollegeId === 0 ||
+                  coursesLoading
+                }
               >
                 <SelectTrigger
                   className={`border-gray-300 ${
                     errors.courseName ? "border-red-500" : ""
                   }`}
                 >
-                  <SelectValue placeholder="Select course" />
+                  <SelectValue
+                    placeholder={
+                      !selectedCollegeId || selectedCollegeId === 0
+                        ? "Select a college first"
+                        : coursesLoading
+                        ? "Loading courses..."
+                        : "Select course"
+                    }
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="btech-cse">
-                    B.Tech. in Computer Science and Engineering
-                  </SelectItem>
-                  <SelectItem value="btech-ece">
-                    B.Tech. in Electronics and Communication
-                  </SelectItem>
-                  <SelectItem value="btech-me">
-                    B.Tech. in Mechanical Engineering
-                  </SelectItem>
-                  <SelectItem value="btech-ce">
-                    B.Tech. in Civil Engineering
-                  </SelectItem>
-                  <SelectItem value="mtech">M.Tech</SelectItem>
-                  <SelectItem value="mba">MBA</SelectItem>
+                  {courses && courses.length > 0 ? (
+                    courses
+                      .filter(
+                        (course) =>
+                          course.college_wise_course_id != null && course.name
+                      )
+                      .map((course) => (
+                        <SelectItem
+                          key={course.college_wise_course_id}
+                          value={course.college_wise_course_id.toString()}
+                        >
+                          {course.name}
+                        </SelectItem>
+                      ))
+                  ) : (
+                    <div className="px-3 py-2 text-sm text-muted-foreground">
+                      No courses available
+                    </div>
+                  )}
                 </SelectContent>
               </Select>
             )}

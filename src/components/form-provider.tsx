@@ -18,8 +18,10 @@ interface FormData {
   contactNumber: string;
   countryOfOrigin: string;
   collegeName: string;
+  collegeId: number;
   collegeLocation: string;
   courseName: string;
+  courseId: number;
   graduationYear: string;
   upiId: string;
   isEmailVerified: boolean;
@@ -72,8 +74,10 @@ const initialFormData: FormData = {
   contactNumber: "",
   countryOfOrigin: "",
   collegeName: "",
+  collegeId: 0,
   collegeLocation: "",
   courseName: "",
+  courseId: 0,
   graduationYear: "",
   upiId: "",
   isEmailVerified: false,
@@ -108,8 +112,10 @@ export function FormProvider({ children }: { children: ReactNode }) {
       contactNumber: "",
       countryOfOrigin: "",
       collegeName: "",
+      collegeId: 0,
       collegeLocation: "",
       courseName: "",
+      courseId: 0,
       graduationYear: "",
       upiId: "",
       isEmailVerified: false,

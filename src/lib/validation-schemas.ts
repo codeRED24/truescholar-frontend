@@ -26,8 +26,10 @@ export const personalDetailsSchema = z.object({
     }, "Please enter a valid phone number format"),
   countryOfOrigin: z.string().min(1, "Please select your country of origin"),
   collegeName: z.string().min(1, "Please select a college"),
+  collegeId: z.number().min(1, "Please select a college"),
   collegeLocation: z.string().min(1, "Please select a college"),
   courseName: z.string().min(1, "Please select a course"),
+  courseId: z.number().min(1, "Please select a course"),
   graduationYear: z.string().min(1, "Please select graduation year"),
   upiId: z
     .string()

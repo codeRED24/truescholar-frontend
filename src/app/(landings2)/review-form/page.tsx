@@ -11,6 +11,8 @@ import { SuccessScreen } from "@/components/success-screen";
 import { FormProvider, useFormContext } from "@/components/form-provider";
 import { OtpVerificationDialog } from "@/components/otp-verification-dialog";
 import { CheckCircle, Circle } from "lucide-react";
+import { useCreateUser } from "@/lib/hooks/useCreateUser";
+import { CreateUserRequest } from "@/api/users/createUser";
 
 const STEPS = [
   { id: 1, title: "Personal Details", component: PersonalDetailsStep },
@@ -24,6 +26,14 @@ function ReviewFormContent() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showOtpDialog, setShowOtpDialog] = useState(false);
+  const [createdUserId, setCreatedUserId] = useState<number | null>(null);
+
+  const {
+    createUserAsync,
+    isLoading: isCreatingUser,
+    error: createUserError,
+  } = useCreateUser();
+
   const {
     validateCurrentStep,
     validatePersonalDetailsWithOtp,
@@ -38,21 +48,50 @@ function ReviewFormContent() {
       if (currentStep === 1) {
         // Console log all fields from step 1 (Personal Details) before asking for OTPs
         const step1Data = personalDetailsForm.getValues();
-        console.log("\n=== STEP 1 DATA BEFORE OTP VERIFICATION ===");
-        console.log("Name:", step1Data.name);
-        console.log("Email:", step1Data.email);
-        console.log("Gender:", step1Data.gender);
-        console.log("Contact Number:", step1Data.contactNumber);
-        console.log("Country Code:", step1Data.countryCode);
-        console.log("Country of Origin:", step1Data.countryOfOrigin);
-        console.log("College Name:", step1Data.collegeName);
-        console.log("College Location:", step1Data.collegeLocation);
-        console.log("Course Name:", step1Data.courseName);
-        console.log("Graduation Year:", step1Data.graduationYear);
-        console.log("UPI ID:", step1Data.upiId);
-        console.log("Email Verified:", step1Data.isEmailVerified);
-        console.log("Phone Verified:", step1Data.isPhoneVerified);
-        console.log("=== END STEP 1 DATA ===\n");
+        // console.log("\n=== STEP 1 DATA BEFORE OTP VERIFICATION ===");
+        // console.log("Name:", step1Data.name);
+        // console.log("Email:", step1Data.email);
+        // console.log("Gender:", step1Data.gender);
+        // console.log("Contact Number:", step1Data.contactNumber);
+        // console.log("Country Code:", step1Data.countryCode);
+        // console.log("Country of Origin:", step1Data.countryOfOrigin);
+        // console.log("College Name:", step1Data.collegeName);
+        // console.log("College Location:", step1Data.collegeLocation);
+        // console.log("Course Name:", step1Data.courseName);
+        // console.log("Graduation Year:", step1Data.graduationYear);
+        // console.log("UPI ID:", step1Data.upiId);
+        // console.log("Email Verified:", step1Data.isEmailVerified);
+        // console.log("Phone Verified:", step1Data.isPhoneVerified);
+        // console.log("Collegeid:", step1Data.collegeId);
+        // console.log("CourseId:", step1Data.courseId);
+
+        // console.log("=== END STEP 1 DATA ===\n");
+
+        // Create user via API call
+        try {
+          const userPayload: CreateUserRequest = {
+            name: step1Data.name,
+            email: step1Data.email,
+            gender: step1Data.gender,
+            contact_number: step1Data.contactNumber,
+            country_of_origin: step1Data.countryOfOrigin,
+            college_id: step1Data.collegeId,
+            course_id: step1Data.courseId,
+            college_location: step1Data.collegeLocation,
+            pass_year: step1Data.graduationYear,
+            user_type: "student", // Default user type for review form
+          };
+
+          // console.log("Creating user with payload:", userPayload);
+          const userResponse = await createUserAsync(userPayload);
+          // console.log("User created successfully:", userResponse);
+          setCreatedUserId(userResponse.data.id);
+        } catch (error) {
+          console.error("Failed to create user:", error);
+          // You might want to show an error message to the user here
+          // alert("Failed to create user. Please try again.");
+          return; // Don't proceed to OTP if user creation fails
+        }
 
         // For step 1, show OTP verification dialog after basic validation
         setShowOtpDialog(true);
@@ -124,15 +163,15 @@ function ReviewFormContent() {
       submittedAt: new Date().toISOString(),
     };
 
-    console.log("\n=== COMBINED FORM DATA FOR API ===");
-    console.log(combinedFormData);
+    // console.log("\n=== COMBINED FORM DATA FOR API ===");
+    // console.log(combinedFormData);
 
     // Simulate API call delay
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Here you would typically send the form data to your backend
     // const response = await submitReview(combinedFormData)
-    console.log("Form submitted successfully!");
+    // console.log("Form submitted successfully!");
 
     setIsSubmitting(false);
     setIsSubmitted(true);
@@ -144,6 +183,7 @@ function ReviewFormContent() {
     setIsSubmitted(false);
     setIsSubmitting(false);
     setShowOtpDialog(false);
+    setCreatedUserId(null);
   };
 
   if (isSubmitted) {
@@ -211,6 +251,14 @@ function ReviewFormContent() {
 
         {/* Form Content */}
         <Card className="p-8">
+          {createUserError && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-red-600 text-sm">
+                <strong>Error creating user:</strong> {createUserError}
+              </p>
+            </div>
+          )}
+
           {CurrentStepComponent && <CurrentStepComponent />}
 
           {/* Navigation Buttons */}
@@ -226,9 +274,10 @@ function ReviewFormContent() {
             ) : (
               <Button
                 onClick={handleNext}
+                disabled={isCreatingUser}
                 className="bg-teal-500 hover:bg-teal-600 text-white"
               >
-                Next
+                {isCreatingUser ? "Creating User..." : "Next"}
               </Button>
             )}
           </div>
