@@ -19,7 +19,14 @@ export default async function AuthorsPage(props: {
   params: Promise<{ authorId: string }>;
 }) {
   const { authorId } = await props.params;
-  const author = await getAuthor(authorId);
+  // Extract numeric id from a slug-id like "john-doe-123"
+  // If no trailing numeric id is found, fall back to the original value.
+  const id = (() => {
+    const match = String(authorId).match(/-(\d+)$/);
+    return match ? match[1] : String(authorId);
+  })();
+
+  const author = await getAuthor(id);
 
   if (!author) return notFound();
 
@@ -100,7 +107,8 @@ export default async function AuthorsPage(props: {
           {availableTabs.map((tab) => (
             <TabsContent key={tab.key} value={tab.key} className="mt-6">
               <UnifiedTab
-                authorId={authorId}
+                // Pass numeric id-only to UnifiedTab so internal API calls use the id
+                authorId={id}
                 type={tab.key as "articles" | "exams" | "colleges"}
               />
             </TabsContent>
