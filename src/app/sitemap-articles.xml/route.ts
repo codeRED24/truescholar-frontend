@@ -1,10 +1,18 @@
 import { NextResponse } from "next/server";
-import { generateArticlesUrls } from "../sitemap.utils";
+import { generateArticlesUrls, generateExamNewsUrls } from "../sitemap.utils";
 
 export async function GET() {
   try {
-    const urls = await generateArticlesUrls();
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls
+    // Generate both regular articles and exam news articles
+    const [articleUrls, examNewsUrls] = await Promise.all([
+      generateArticlesUrls(),
+      generateExamNewsUrls(),
+    ]);
+
+    // Combine all URLs
+    const allUrls = [...examNewsUrls, ...articleUrls];
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${allUrls
       .map(
         (u) =>
           `<url><loc>${u.url}</loc><changefreq>${u.changeFrequency}</changefreq><priority>${u.priority}</priority></url>`
