@@ -1,29 +1,35 @@
 import { z } from "zod";
 
-// Personal Details Schema
+// Personal Details Schema (Step 1 - without OTP verification requirement)
 export const personalDetailsSchema = z.object({
   name: z
     .string()
-    .min(2, "Name must be at least 2 characters")
+    .min(3, "Name must be at least 3 characters")
     .max(50, "Name must be less than 50 characters"),
-  email: z.string().email("Please enter a valid email address"),
+  email: z.email("Please enter a valid email address"),
   gender: z.string().min(1, "Please select a gender"),
   contactNumber: z
     .string()
-    .min(10, "Contact number must be at least 10 digits")
-    .max(15, "Contact number must be less than 15 digits")
-    .regex(/^\d+$/, "Contact number must contain only digits"),
-  countryCode: z.string().min(1, "Please select a country code"),
+    .min(1, "Please enter your phone number")
+    .refine((val) => {
+      // Remove all non-digit characters and check length
+      const digitsOnly = val.replace(/\D/g, "");
+      return digitsOnly.length >= 10 && digitsOnly.length <= 15;
+    }, "Please enter a valid phone number (10-15 digits)")
+    .refine((val) => {
+      // Check if it's a valid international phone number format
+      // Should start with + followed by country code
+      return (
+        /^\+[1-9]\d{1,14}$/.test(val) ||
+        /^\d{10,15}$/.test(val.replace(/\D/g, ""))
+      );
+    }, "Please enter a valid phone number format"),
   countryOfOrigin: z.string().min(1, "Please select your country of origin"),
-  collegeName: z
-    .string()
-    .min(2, "College name must be at least 2 characters")
-    .max(100, "College name must be less than 100 characters"),
-  collegeLocation: z
-    .string()
-    .min(2, "College location must be at least 2 characters")
-    .max(100, "College location must be less than 100 characters"),
+  collegeName: z.string().min(1, "Please select a college"),
+  collegeId: z.number().min(1, "Please select a college"),
+  collegeLocation: z.string().min(1, "Please select a college"),
   courseName: z.string().min(1, "Please select a course"),
+  courseId: z.number().min(1, "Please select a course"),
   graduationYear: z.string().min(1, "Please select graduation year"),
   upiId: z
     .string()
@@ -32,7 +38,17 @@ export const personalDetailsSchema = z.object({
     .regex(
       /^[\w.-]+@[\w.-]+$/,
       "Please enter a valid UPI ID (e.g., username@paytm)"
-    ),
+    )
+    .optional()
+    .or(z.literal("")),
+
+  // Optional verification flags - they are set after OTP verification
+  isEmailVerified: z.boolean().optional(),
+  isPhoneVerified: z.boolean().optional(),
+});
+
+// Personal Details Schema with OTP verification requirement (for final validation)
+export const personalDetailsWithOtpSchema = personalDetailsSchema.extend({
   isEmailVerified: z
     .boolean()
     .refine((val) => val === true, "Please verify your email"),
@@ -129,11 +145,14 @@ export const otpVerificationSchema = z.object({
 });
 
 // Combined schema for complete form
-export const completeFormSchema = personalDetailsSchema
+export const completeFormSchema = personalDetailsWithOtpSchema
   .merge(studentReviewSchema)
   .merge(profileVerificationSchema);
 
 export type PersonalDetailsFormData = z.infer<typeof personalDetailsSchema>;
+export type PersonalDetailsWithOtpFormData = z.infer<
+  typeof personalDetailsWithOtpSchema
+>;
 export type StudentReviewFormData = z.infer<typeof studentReviewSchema>;
 export type ProfileVerificationFormData = z.infer<
   typeof profileVerificationSchema

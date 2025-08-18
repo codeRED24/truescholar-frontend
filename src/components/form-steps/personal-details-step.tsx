@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -11,7 +10,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useFormContext } from "@/components/form-provider";
-import { OtpVerification } from "@/components/otp-verification";
 import {
   User,
   Mail,
@@ -25,7 +23,12 @@ import {
   CreditCard,
 } from "lucide-react";
 import { Controller } from "react-hook-form";
-import { Button } from "@/components/ui/button";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
+import { SuggestionInput } from "@/components/ui/suggestion-input";
+import { useUniSearch } from "@/app/hooks/useUniSearch";
+import { useOnlyCollegeIdCompare } from "@/app/hooks/useOnlyCollegeIdCompare";
+import { useState, useEffect, useCallback } from "react";
 
 export function PersonalDetailsStep() {
   const { formData, updateFormData, personalDetailsForm } = useFormContext();
@@ -36,88 +39,100 @@ export function PersonalDetailsStep() {
     setValue,
   } = personalDetailsForm;
 
-  const [otpStates, setOtpStates] = useState({
-    emailSent: false,
-    phoneSent: false,
-    emailLoading: false,
-    phoneLoading: false,
-    emailError: "",
-    phoneError: "",
-  });
-
-  const watchedEmail = watch("email");
-  const watchedPhone = watch("contactNumber");
-  const isEmailVerified = watch("isEmailVerified") || false;
   const isPhoneVerified = watch("isPhoneVerified") || false;
+  const selectedCollegeId = watch("collegeId");
 
-  const handleSendEmailOtp = async () => {
-    if (!watchedEmail) return;
+  const { results, loading: searchLoading, search } = useUniSearch();
+  const { courses, loading: coursesLoading } =
+    useOnlyCollegeIdCompare(selectedCollegeId);
 
-    setOtpStates((prev) => ({ ...prev, emailLoading: true, emailError: "" }));
+  const [selectedCollege, setSelectedCollege] = useState<any>(null);
+  const [collegeOptions, setCollegeOptions] = useState<any[]>([]);
 
-    // Simulate API call
-    setTimeout(() => {
-      setOtpStates((prev) => ({
-        ...prev,
-        emailSent: true,
-        emailLoading: false,
-      }));
-    }, 1000);
-  };
-
-  const handleSendPhoneOtp = async () => {
-    if (!watchedPhone) return;
-
-    setOtpStates((prev) => ({ ...prev, phoneLoading: true, phoneError: "" }));
-
-    // Simulate API call
-    setTimeout(() => {
-      setOtpStates((prev) => ({
-        ...prev,
-        phoneSent: true,
-        phoneLoading: false,
-      }));
-    }, 1000);
-  };
-
-  const handleVerifyEmailOtp = async (otp: string) => {
-    setOtpStates((prev) => ({ ...prev, emailLoading: true, emailError: "" }));
-
-    // Simulate API call
-    setTimeout(() => {
-      if (otp === "123456") {
-        // Mock verification
-        setValue("isEmailVerified", true);
-        updateFormData({ isEmailVerified: true });
-        setOtpStates((prev) => ({ ...prev, emailLoading: false }));
-      } else {
-        setOtpStates((prev) => ({
-          ...prev,
-          emailLoading: false,
-          emailError: "Invalid OTP. Please try again.",
-        }));
+  // Create fetchSuggestions function for SuggestionInput
+  const fetchCollegeSuggestions = useCallback(
+    async (query: string): Promise<string[]> => {
+      if (!query || query.length < 2) {
+        return [];
       }
-    }, 1000);
+
+      try {
+        const url = `${
+          process.env.NEXT_PUBLIC_API_URL
+        }/college-search?q=${encodeURIComponent(query)}`;
+        const res = await fetch(url);
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const data = await res.json();
+        const colleges = data.data.colleges || [];
+
+        // Store colleges for later use in selection
+        setCollegeOptions(colleges);
+
+        return colleges.map(
+          (college: any) => college.college_name || college.name
+        );
+      } catch (error) {
+        console.error("Error fetching college suggestions:", error);
+        return [];
+      }
+    },
+    []
+  );
+
+  // Function to get college by name from stored options
+  const getCollegeByName = useCallback(
+    (collegeName: string) => {
+      return collegeOptions.find(
+        (college) => (college.college_name || college.name) === collegeName
+      );
+    },
+    [collegeOptions]
+  );
+
+  // Handle college selection
+  const handleCollegeSelect = (collegeName: string) => {
+    const college = getCollegeByName(collegeName);
+    if (college) {
+      setSelectedCollege(college);
+      const collegeDisplayName = college.college_name || college.name;
+      const collegeId = Number(college.college_id || college.id);
+      const collegeLocation = college.location || college.city || "";
+
+      setValue("collegeName", collegeDisplayName);
+      setValue("collegeId", collegeId);
+      setValue("collegeLocation", collegeLocation);
+      // Reset course when college changes
+      setValue("courseName", "");
+      setValue("courseId", 0);
+
+      updateFormData({
+        collegeName: collegeDisplayName,
+        collegeId: collegeId,
+        collegeLocation: collegeLocation,
+        courseName: "",
+        courseId: 0,
+      });
+    }
   };
 
-  const handleVerifyPhoneOtp = async (otp: string) => {
-    setOtpStates((prev) => ({ ...prev, phoneLoading: true, phoneError: "" }));
+  // Handle course selection
+  const handleCourseSelect = (courseValue: string) => {
+    const course = courses.find(
+      (c) =>
+        c.college_wise_course_id != null &&
+        c.college_wise_course_id.toString() === courseValue
+    );
+    if (course) {
+      setValue("courseName", course.name);
+      setValue("courseId", Number(course.college_wise_course_id));
 
-    // Simulate API call
-    setTimeout(() => {
-      if (otp === "123456") {
-        // Mock verification
-        setValue("isPhoneVerified", true);
-        updateFormData({ isPhoneVerified: true });
-        setOtpStates((prev) => ({ ...prev, phoneLoading: false }));
-      } else {
-        setOtpStates((prev) => ({
-          ...prev,
-          phoneLoading: false,
-          phoneError: "Invalid OTP. Please try again.",
-        }));
-      }
-    }, 1000);
+      updateFormData({
+        courseName: course.name,
+        courseId: Number(course.college_wise_course_id),
+      });
+    }
   };
 
   return (
@@ -170,54 +185,25 @@ export function PersonalDetailsStep() {
             <Mail className="w-4 h-4 text-teal-500" />
             Email ID <span className="text-teal-600">*</span>
           </Label>
-          {!otpStates.emailSent ? (
-            <div className="flex gap-2">
-              <Controller
-                name="email"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    id="email"
-                    type="email"
-                    placeholder="Enter your email address"
-                    className={`flex-1 border-gray-300 ${
-                      errors.email ? "border-red-500" : ""
-                    }`}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      updateFormData({ email: e.target.value });
-                      // Reset verification when email changes
-                      if (isEmailVerified) {
-                        setValue("isEmailVerified", false);
-                        updateFormData({ isEmailVerified: false });
-                      }
-                    }}
-                  />
-                )}
+          <Controller
+            name="email"
+            control={control}
+            render={({ field }) => (
+              <Input
+                {...field}
+                id="email"
+                type="email"
+                placeholder="Enter your email address"
+                className={`border-gray-300 ${
+                  errors.email ? "border-red-500" : ""
+                }`}
+                onChange={(e) => {
+                  field.onChange(e);
+                  updateFormData({ email: e.target.value });
+                }}
               />
-              <Button
-                type="button"
-                onClick={handleSendEmailOtp}
-                disabled={
-                  !watchedEmail || !!errors.email || otpStates.emailLoading
-                }
-                className="bg-teal-600 hover:bg-teal-700 whitespace-nowrap"
-              >
-                {otpStates.emailLoading ? "Sending..." : "Send OTP"}
-              </Button>
-            </div>
-          ) : (
-            <OtpVerification
-              type="email"
-              value={watchedEmail}
-              onVerify={handleVerifyEmailOtp}
-              onResend={handleSendEmailOtp}
-              isVerified={isEmailVerified}
-              isLoading={otpStates.emailLoading}
-              error={otpStates.emailError}
-            />
-          )}
+            )}
+          />
           {errors.email && (
             <p className="text-sm text-red-600">
               {errors.email.message as string}
@@ -270,78 +256,46 @@ export function PersonalDetailsStep() {
             <Phone className="w-4 h-4 text-teal-500" />
             Contact Number <span className="text-teal-600">*</span>
           </Label>
-          {!otpStates.phoneSent ? (
-            <>
-              <div className="flex gap-2">
-                <Controller
-                  name="countryCode"
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      value={field.value}
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                        updateFormData({ countryCode: value });
-                      }}
-                    >
-                      <SelectTrigger className="w-32 border-gray-300">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="IN (+91)">IN (+91)</SelectItem>
-                        <SelectItem value="US (+1)">US (+1)</SelectItem>
-                        <SelectItem value="UK (+44)">UK (+44)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
+          <Controller
+            name="contactNumber"
+            control={control}
+            render={({ field }) => (
+              <div className="w-full p-[1px] focus-within:ring-1 focus-within:ring-green-800 rounded-md z-10">
+                <PhoneInput
+                  country="in"
+                  value={field.value}
+                  onChange={(phone) => {
+                    field.onChange(phone);
+                    updateFormData({ contactNumber: phone });
+                    // Reset verification when phone changes
+                    if (isPhoneVerified) {
+                      setValue("isPhoneVerified", false);
+                      updateFormData({ isPhoneVerified: false });
+                    }
+                  }}
+                  inputStyle={{
+                    border: "1px solid #D0D5DD",
+                    borderRadius: "4px !important",
+                    width: "100%",
+                    height: "36px",
+                    padding: "8px 8px 8px 40px",
+                  }}
+                  buttonStyle={{
+                    backgroundColor: "#fff",
+                    border: "1px solid #d0d5dd",
+                    borderRight: "none",
+                    borderRadius: "2px !important",
+                  }}
+                  placeholder="Enter contact number"
+                  enableSearch
+                  containerStyle={{ width: "100%" }}
+                  disableSearchIcon
+                  searchPlaceholder="Search countries..."
+                  specialLabel=""
                 />
-                <Controller
-                  name="contactNumber"
-                  control={control}
-                  render={({ field }) => (
-                    <Input
-                      {...field}
-                      placeholder="Enter contact number"
-                      className={`flex-1 border-gray-300 ${
-                        errors.contactNumber ? "border-red-500" : ""
-                      }`}
-                      onChange={(e) => {
-                        field.onChange(e);
-                        updateFormData({ contactNumber: e.target.value });
-                        // Reset verification when phone changes
-                        if (isPhoneVerified) {
-                          setValue("isPhoneVerified", false);
-                          updateFormData({ isPhoneVerified: false });
-                        }
-                      }}
-                    />
-                  )}
-                />
-                <Button
-                  type="button"
-                  onClick={handleSendPhoneOtp}
-                  disabled={
-                    !watchedPhone ||
-                    !!errors.contactNumber ||
-                    otpStates.phoneLoading
-                  }
-                  className="bg-teal-600 hover:bg-teal-700 whitespace-nowrap"
-                >
-                  {otpStates.phoneLoading ? "Sending..." : "Send OTP"}
-                </Button>
               </div>
-            </>
-          ) : (
-            <OtpVerification
-              type="phone"
-              value={`${watch("countryCode")} ${watchedPhone}`}
-              onVerify={handleVerifyPhoneOtp}
-              onResend={handleSendPhoneOtp}
-              isVerified={isPhoneVerified}
-              isLoading={otpStates.phoneLoading}
-              error={otpStates.phoneError}
-            />
-          )}
+            )}
+          />
           {errors.contactNumber && (
             <p className="text-sm text-red-600">
               {errors.contactNumber.message as string}
@@ -389,7 +343,7 @@ export function PersonalDetailsStep() {
           )}
         </div>
 
-        {/* College Name */}
+        {/* College Name with Suggestions */}
         <div className="space-y-2">
           <Label
             htmlFor="collegeName"
@@ -402,17 +356,17 @@ export function PersonalDetailsStep() {
             name="collegeName"
             control={control}
             render={({ field }) => (
-              <Input
-                {...field}
-                id="collegeName"
-                placeholder="Enter your college name"
+              <SuggestionInput
+                value={field.value}
+                onChange={field.onChange}
+                onSelect={handleCollegeSelect}
+                fetchSuggestions={fetchCollegeSuggestions}
+                placeholder="Type to search for colleges..."
                 className={`border-gray-300 ${
                   errors.collegeName ? "border-red-500" : ""
                 }`}
-                onChange={(e) => {
-                  field.onChange(e);
-                  updateFormData({ collegeName: e.target.value });
-                }}
+                minQueryLength={2}
+                debounceMs={300}
               />
             )}
           />
@@ -447,6 +401,7 @@ export function PersonalDetailsStep() {
                   field.onChange(e);
                   updateFormData({ collegeLocation: e.target.value });
                 }}
+                readOnly={!!selectedCollege}
               />
             )}
           />
@@ -468,34 +423,59 @@ export function PersonalDetailsStep() {
             control={control}
             render={({ field }) => (
               <Select
-                value={field.value}
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  updateFormData({ courseName: value });
-                }}
+                value={
+                  field.value
+                    ? courses
+                        .find(
+                          (c) =>
+                            c.name === field.value &&
+                            c.college_wise_course_id != null
+                        )
+                        ?.college_wise_course_id?.toString() || ""
+                    : ""
+                }
+                onValueChange={handleCourseSelect}
+                disabled={
+                  !selectedCollegeId ||
+                  selectedCollegeId === 0 ||
+                  coursesLoading
+                }
               >
                 <SelectTrigger
                   className={`border-gray-300 ${
                     errors.courseName ? "border-red-500" : ""
                   }`}
                 >
-                  <SelectValue placeholder="Select course" />
+                  <SelectValue
+                    placeholder={
+                      !selectedCollegeId || selectedCollegeId === 0
+                        ? "Select a college first"
+                        : coursesLoading
+                        ? "Loading courses..."
+                        : "Select course"
+                    }
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="btech-cse">
-                    B.Tech. in Computer Science and Engineering
-                  </SelectItem>
-                  <SelectItem value="btech-ece">
-                    B.Tech. in Electronics and Communication
-                  </SelectItem>
-                  <SelectItem value="btech-me">
-                    B.Tech. in Mechanical Engineering
-                  </SelectItem>
-                  <SelectItem value="btech-ce">
-                    B.Tech. in Civil Engineering
-                  </SelectItem>
-                  <SelectItem value="mtech">M.Tech</SelectItem>
-                  <SelectItem value="mba">MBA</SelectItem>
+                  {courses && courses.length > 0 ? (
+                    courses
+                      .filter(
+                        (course) =>
+                          course.college_wise_course_id != null && course.name
+                      )
+                      .map((course) => (
+                        <SelectItem
+                          key={course.college_wise_course_id}
+                          value={course.college_wise_course_id.toString()}
+                        >
+                          {course.name}
+                        </SelectItem>
+                      ))
+                  ) : (
+                    <div className="px-3 py-2 text-sm text-muted-foreground">
+                      No courses available
+                    </div>
+                  )}
                 </SelectContent>
               </Select>
             )}
@@ -558,7 +538,6 @@ export function PersonalDetailsStep() {
           >
             <CreditCard className="w-4 h-4 text-teal-500" />
             Enter UPI ID For Cash Rewards{" "}
-            <span className="text-teal-600">*</span>
           </Label>
           <Controller
             name="upiId"

@@ -5,6 +5,7 @@ import { useForm, type UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   personalDetailsSchema,
+  personalDetailsWithOtpSchema,
   studentReviewSchema,
   profileVerificationSchema,
 } from "@/lib/validation-schemas";
@@ -15,11 +16,12 @@ interface FormData {
   email: string;
   gender: string;
   contactNumber: string;
-  countryCode: string;
   countryOfOrigin: string;
   collegeName: string;
+  collegeId: number;
   collegeLocation: string;
   courseName: string;
+  courseId: number;
   graduationYear: string;
   upiId: string;
   isEmailVerified: boolean;
@@ -60,6 +62,7 @@ interface FormContextType {
   studentReviewForm: UseFormReturn<any>;
   profileVerificationForm: UseFormReturn<any>;
   validateCurrentStep: (step: number) => Promise<boolean>;
+  validatePersonalDetailsWithOtp: () => Promise<boolean>;
 }
 
 const FormContext = createContext<FormContextType | undefined>(undefined);
@@ -69,11 +72,12 @@ const initialFormData: FormData = {
   email: "",
   gender: "",
   contactNumber: "",
-  countryCode: "IN (+91)",
   countryOfOrigin: "",
   collegeName: "",
+  collegeId: 0,
   collegeLocation: "",
   courseName: "",
+  courseId: 0,
   graduationYear: "",
   upiId: "",
   isEmailVerified: false,
@@ -106,11 +110,12 @@ export function FormProvider({ children }: { children: ReactNode }) {
       email: "",
       gender: "",
       contactNumber: "",
-      countryCode: "IN (+91)",
       countryOfOrigin: "",
       collegeName: "",
+      collegeId: 0,
       collegeLocation: "",
       courseName: "",
+      courseId: 0,
       graduationYear: "",
       upiId: "",
       isEmailVerified: false,
@@ -184,6 +189,17 @@ export function FormProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const validatePersonalDetailsWithOtp = async (): Promise<boolean> => {
+    const currentValues = personalDetailsForm.getValues();
+    try {
+      await personalDetailsWithOtpSchema.parseAsync(currentValues);
+      return true;
+    } catch (error) {
+      console.log("Personal details with OTP validation failed:", error);
+      return false;
+    }
+  };
+
   return (
     <FormContext.Provider
       value={{
@@ -195,6 +211,7 @@ export function FormProvider({ children }: { children: ReactNode }) {
         studentReviewForm,
         profileVerificationForm,
         validateCurrentStep,
+        validatePersonalDetailsWithOtp,
       }}
     >
       {children}

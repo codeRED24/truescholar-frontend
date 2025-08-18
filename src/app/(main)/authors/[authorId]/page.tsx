@@ -1,6 +1,6 @@
 import React from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { UnifiedTab } from "../../../../components/UnifiedTab";
 import { trimText } from "@/components/utils/utils";
 
@@ -29,6 +29,21 @@ export default async function AuthorsPage(props: {
   const author = await getAuthor(id);
 
   if (!author) return notFound();
+
+  // Build canonical slug for the author (same logic used in sitemap and other places)
+  const rawName = (
+    author?.view_name ||
+    author?.author_name ||
+    "author"
+  ).toString();
+  const canonicalSlug = `${rawName.trim().replace(/-\d+$/, "").toLowerCase()}-${
+    author.author_id
+  }`;
+
+  // If the incoming route param doesn't match the canonical slug, redirect to canonical URL
+  if (String(authorId).toLowerCase() !== canonicalSlug) {
+    return redirect(`/authors/${canonicalSlug}`);
+  }
 
   // Prepare available tabs
   const availableTabs = [];
