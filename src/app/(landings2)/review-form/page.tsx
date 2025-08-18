@@ -9,6 +9,7 @@ import { StudentReviewStep } from "@/components/form-steps/student-review-step";
 import { ProfileVerificationStep } from "@/components/form-steps/profile-verification-step";
 import { SuccessScreen } from "@/components/success-screen";
 import { FormProvider, useFormContext } from "@/components/form-provider";
+import { OtpVerificationDialog } from "@/components/otp-verification-dialog";
 import { CheckCircle, Circle } from "lucide-react";
 
 const STEPS = [
@@ -22,39 +23,88 @@ function ReviewFormContent() {
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { validateCurrentStep, studentReviewForm, profileVerificationForm } =
-    useFormContext();
+  const [showOtpDialog, setShowOtpDialog] = useState(false);
+  const {
+    validateCurrentStep,
+    validatePersonalDetailsWithOtp,
+    studentReviewForm,
+    profileVerificationForm,
+    personalDetailsForm,
+  } = useFormContext();
 
   const handleNext = async () => {
     const isValid = await validateCurrentStep(currentStep);
-    if (isValid && currentStep < STEPS.length) {
-      setCompletedSteps((prev) => [
-        ...prev.filter((s) => s !== currentStep),
-        currentStep,
-      ]);
-      setCurrentStep(currentStep + 1);
-    }
-  };
+    if (isValid) {
+      if (currentStep === 1) {
+        // Console log all fields from step 1 (Personal Details) before asking for OTPs
+        const step1Data = personalDetailsForm.getValues();
+        console.log("\n=== STEP 1 DATA BEFORE OTP VERIFICATION ===");
+        console.log("Name:", step1Data.name);
+        console.log("Email:", step1Data.email);
+        console.log("Gender:", step1Data.gender);
+        console.log("Contact Number:", step1Data.contactNumber);
+        console.log("Country Code:", step1Data.countryCode);
+        console.log("Country of Origin:", step1Data.countryOfOrigin);
+        console.log("College Name:", step1Data.collegeName);
+        console.log("College Location:", step1Data.collegeLocation);
+        console.log("Course Name:", step1Data.courseName);
+        console.log("Graduation Year:", step1Data.graduationYear);
+        console.log("UPI ID:", step1Data.upiId);
+        console.log("Email Verified:", step1Data.isEmailVerified);
+        console.log("Phone Verified:", step1Data.isPhoneVerified);
+        console.log("=== END STEP 1 DATA ===\n");
 
-  const handlePrevious = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const handleStepClick = async (stepId: number) => {
-    if (stepId < currentStep || completedSteps.includes(stepId)) {
-      setCurrentStep(stepId);
-    } else if (stepId === currentStep + 1) {
-      const isValid = await validateCurrentStep(currentStep);
-      if (isValid) {
+        // For step 1, show OTP verification dialog after basic validation
+        setShowOtpDialog(true);
+      } else if (currentStep < STEPS.length) {
+        // For other steps, proceed normally
         setCompletedSteps((prev) => [
           ...prev.filter((s) => s !== currentStep),
           currentStep,
         ]);
-        setCurrentStep(stepId);
+        setCurrentStep(currentStep + 1);
       }
     }
+  };
+
+  const handleOtpVerificationSuccess = async () => {
+    // After OTP verification is complete, validate with OTP requirements
+    const isValidWithOtp = await validatePersonalDetailsWithOtp();
+    if (isValidWithOtp) {
+      setCompletedSteps((prev) => [...prev.filter((s) => s !== 1), 1]);
+      setCurrentStep(2);
+      setShowOtpDialog(false);
+    }
+  };
+
+  const handleCloseOtpDialog = () => {
+    setShowOtpDialog(false);
+  };
+
+  const handlePrevious = () => {
+    // going back removed: no-op
+  };
+
+  const handleStepClick = async (stepId: number) => {
+    // Disable going back via step clicks. Allow only advancing to the next step
+    // when clicking the immediate next step after validation.
+    if (stepId === currentStep + 1) {
+      const isValid = await validateCurrentStep(currentStep);
+      if (isValid) {
+        if (currentStep === 1) {
+          // For step 1, show OTP verification dialog
+          setShowOtpDialog(true);
+        } else {
+          // For other steps, proceed normally
+          setCompletedSteps((prev) => [
+            ...prev.filter((s) => s !== currentStep),
+            currentStep,
+          ]);
+          setCurrentStep(stepId);
+        }
+      }
+    }
+    // All other clicks (including earlier steps) are ignored to prevent going back.
   };
 
   const handleSubmit = async () => {
@@ -93,6 +143,7 @@ function ReviewFormContent() {
     setCompletedSteps([]);
     setIsSubmitted(false);
     setIsSubmitting(false);
+    setShowOtpDialog(false);
   };
 
   if (isSubmitted) {
@@ -163,14 +214,7 @@ function ReviewFormContent() {
           {CurrentStepComponent && <CurrentStepComponent />}
 
           {/* Navigation Buttons */}
-          <div className="flex justify-between mt-8 pt-6 border-t">
-            <Button
-              variant="outline"
-              onClick={handlePrevious}
-              disabled={currentStep === 1}
-            >
-              Previous
-            </Button>
+          <div className="flex justify-end mt-8 pt-6 border-t">
             {currentStep === STEPS.length ? (
               <Button
                 onClick={handleSubmit}
@@ -189,6 +233,16 @@ function ReviewFormContent() {
             )}
           </div>
         </Card>
+
+        {/* OTP Verification Dialog */}
+        <OtpVerificationDialog
+          isOpen={showOtpDialog}
+          onClose={handleCloseOtpDialog}
+          onSuccess={handleOtpVerificationSuccess}
+          phoneNumber={personalDetailsForm.watch("contactNumber") || ""}
+          email={personalDetailsForm.watch("email") || ""}
+          countryCode={personalDetailsForm.watch("countryCode") || "IN (+91)"}
+        />
       </div>
     </div>
   );

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -11,7 +10,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useFormContext } from "@/components/form-provider";
-import { OtpVerification } from "@/components/otp-verification";
 import {
   User,
   Mail,
@@ -25,7 +23,8 @@ import {
   CreditCard,
 } from "lucide-react";
 import { Controller } from "react-hook-form";
-import { Button } from "@/components/ui/button";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 
 export function PersonalDetailsStep() {
   const { formData, updateFormData, personalDetailsForm } = useFormContext();
@@ -36,89 +35,7 @@ export function PersonalDetailsStep() {
     setValue,
   } = personalDetailsForm;
 
-  const [otpStates, setOtpStates] = useState({
-    emailSent: false,
-    phoneSent: false,
-    emailLoading: false,
-    phoneLoading: false,
-    emailError: "",
-    phoneError: "",
-  });
-
-  const watchedEmail = watch("email");
-  const watchedPhone = watch("contactNumber");
-  const isEmailVerified = watch("isEmailVerified") || false;
   const isPhoneVerified = watch("isPhoneVerified") || false;
-
-  const handleSendEmailOtp = async () => {
-    if (!watchedEmail) return;
-
-    setOtpStates((prev) => ({ ...prev, emailLoading: true, emailError: "" }));
-
-    // Simulate API call
-    setTimeout(() => {
-      setOtpStates((prev) => ({
-        ...prev,
-        emailSent: true,
-        emailLoading: false,
-      }));
-    }, 1000);
-  };
-
-  const handleSendPhoneOtp = async () => {
-    if (!watchedPhone) return;
-
-    setOtpStates((prev) => ({ ...prev, phoneLoading: true, phoneError: "" }));
-
-    // Simulate API call
-    setTimeout(() => {
-      setOtpStates((prev) => ({
-        ...prev,
-        phoneSent: true,
-        phoneLoading: false,
-      }));
-    }, 1000);
-  };
-
-  const handleVerifyEmailOtp = async (otp: string) => {
-    setOtpStates((prev) => ({ ...prev, emailLoading: true, emailError: "" }));
-
-    // Simulate API call
-    setTimeout(() => {
-      if (otp === "123456") {
-        // Mock verification
-        setValue("isEmailVerified", true);
-        updateFormData({ isEmailVerified: true });
-        setOtpStates((prev) => ({ ...prev, emailLoading: false }));
-      } else {
-        setOtpStates((prev) => ({
-          ...prev,
-          emailLoading: false,
-          emailError: "Invalid OTP. Please try again.",
-        }));
-      }
-    }, 1000);
-  };
-
-  const handleVerifyPhoneOtp = async (otp: string) => {
-    setOtpStates((prev) => ({ ...prev, phoneLoading: true, phoneError: "" }));
-
-    // Simulate API call
-    setTimeout(() => {
-      if (otp === "123456") {
-        // Mock verification
-        setValue("isPhoneVerified", true);
-        updateFormData({ isPhoneVerified: true });
-        setOtpStates((prev) => ({ ...prev, phoneLoading: false }));
-      } else {
-        setOtpStates((prev) => ({
-          ...prev,
-          phoneLoading: false,
-          phoneError: "Invalid OTP. Please try again.",
-        }));
-      }
-    }, 1000);
-  };
 
   return (
     <div className="space-y-6">
@@ -170,54 +87,25 @@ export function PersonalDetailsStep() {
             <Mail className="w-4 h-4 text-teal-500" />
             Email ID <span className="text-teal-600">*</span>
           </Label>
-          {!otpStates.emailSent ? (
-            <div className="flex gap-2">
-              <Controller
-                name="email"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    id="email"
-                    type="email"
-                    placeholder="Enter your email address"
-                    className={`flex-1 border-gray-300 ${
-                      errors.email ? "border-red-500" : ""
-                    }`}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      updateFormData({ email: e.target.value });
-                      // Reset verification when email changes
-                      if (isEmailVerified) {
-                        setValue("isEmailVerified", false);
-                        updateFormData({ isEmailVerified: false });
-                      }
-                    }}
-                  />
-                )}
+          <Controller
+            name="email"
+            control={control}
+            render={({ field }) => (
+              <Input
+                {...field}
+                id="email"
+                type="email"
+                placeholder="Enter your email address"
+                className={`border-gray-300 ${
+                  errors.email ? "border-red-500" : ""
+                }`}
+                onChange={(e) => {
+                  field.onChange(e);
+                  updateFormData({ email: e.target.value });
+                }}
               />
-              <Button
-                type="button"
-                onClick={handleSendEmailOtp}
-                disabled={
-                  !watchedEmail || !!errors.email || otpStates.emailLoading
-                }
-                className="bg-teal-600 hover:bg-teal-700 whitespace-nowrap"
-              >
-                {otpStates.emailLoading ? "Sending..." : "Send OTP"}
-              </Button>
-            </div>
-          ) : (
-            <OtpVerification
-              type="email"
-              value={watchedEmail}
-              onVerify={handleVerifyEmailOtp}
-              onResend={handleSendEmailOtp}
-              isVerified={isEmailVerified}
-              isLoading={otpStates.emailLoading}
-              error={otpStates.emailError}
-            />
-          )}
+            )}
+          />
           {errors.email && (
             <p className="text-sm text-red-600">
               {errors.email.message as string}
@@ -270,78 +158,46 @@ export function PersonalDetailsStep() {
             <Phone className="w-4 h-4 text-teal-500" />
             Contact Number <span className="text-teal-600">*</span>
           </Label>
-          {!otpStates.phoneSent ? (
-            <>
-              <div className="flex gap-2">
-                <Controller
-                  name="countryCode"
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      value={field.value}
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                        updateFormData({ countryCode: value });
-                      }}
-                    >
-                      <SelectTrigger className="w-32 border-gray-300">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="IN (+91)">IN (+91)</SelectItem>
-                        <SelectItem value="US (+1)">US (+1)</SelectItem>
-                        <SelectItem value="UK (+44)">UK (+44)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
+          <Controller
+            name="contactNumber"
+            control={control}
+            render={({ field }) => (
+              <div className="w-full p-[1px] focus-within:ring-1 focus-within:ring-green-800 rounded-md z-10">
+                <PhoneInput
+                  country="in"
+                  value={field.value}
+                  onChange={(phone) => {
+                    field.onChange(phone);
+                    updateFormData({ contactNumber: phone });
+                    // Reset verification when phone changes
+                    if (isPhoneVerified) {
+                      setValue("isPhoneVerified", false);
+                      updateFormData({ isPhoneVerified: false });
+                    }
+                  }}
+                  inputStyle={{
+                    border: "1px solid #D0D5DD",
+                    borderRadius: "4px !important",
+                    width: "100%",
+                    height: "36px",
+                    padding: "8px 8px 8px 40px",
+                  }}
+                  buttonStyle={{
+                    backgroundColor: "#fff",
+                    border: "1px solid #d0d5dd",
+                    borderRight: "none",
+                    borderRadius: "2px !important",
+                  }}
+                  placeholder="Enter contact number"
+                  enableSearch
+                  containerStyle={{ width: "100%" }}
+                  disableSearchIcon
+                  searchPlaceholder="Search countries..."
+                  specialLabel=""
                 />
-                <Controller
-                  name="contactNumber"
-                  control={control}
-                  render={({ field }) => (
-                    <Input
-                      {...field}
-                      placeholder="Enter contact number"
-                      className={`flex-1 border-gray-300 ${
-                        errors.contactNumber ? "border-red-500" : ""
-                      }`}
-                      onChange={(e) => {
-                        field.onChange(e);
-                        updateFormData({ contactNumber: e.target.value });
-                        // Reset verification when phone changes
-                        if (isPhoneVerified) {
-                          setValue("isPhoneVerified", false);
-                          updateFormData({ isPhoneVerified: false });
-                        }
-                      }}
-                    />
-                  )}
-                />
-                <Button
-                  type="button"
-                  onClick={handleSendPhoneOtp}
-                  disabled={
-                    !watchedPhone ||
-                    !!errors.contactNumber ||
-                    otpStates.phoneLoading
-                  }
-                  className="bg-teal-600 hover:bg-teal-700 whitespace-nowrap"
-                >
-                  {otpStates.phoneLoading ? "Sending..." : "Send OTP"}
-                </Button>
               </div>
-            </>
-          ) : (
-            <OtpVerification
-              type="phone"
-              value={`${watch("countryCode")} ${watchedPhone}`}
-              onVerify={handleVerifyPhoneOtp}
-              onResend={handleSendPhoneOtp}
-              isVerified={isPhoneVerified}
-              isLoading={otpStates.phoneLoading}
-              error={otpStates.phoneError}
-            />
-          )}
+            )}
+          />
           {errors.contactNumber && (
             <p className="text-sm text-red-600">
               {errors.contactNumber.message as string}
@@ -558,7 +414,6 @@ export function PersonalDetailsStep() {
           >
             <CreditCard className="w-4 h-4 text-teal-500" />
             Enter UPI ID For Cash Rewards{" "}
-            <span className="text-teal-600">*</span>
           </Label>
           <Controller
             name="upiId"
