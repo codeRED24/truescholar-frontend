@@ -1,4 +1,4 @@
-import { useUniSearch } from "@/app/hooks/useUniSearch";
+import { useUniSearch } from "@/hooks/useUniSearch";
 import { Input } from "@/components/ui/input";
 import { Search, Star } from "lucide-react";
 import { useState, useRef, useEffect } from "react";

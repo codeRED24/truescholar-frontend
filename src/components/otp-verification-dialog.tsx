@@ -13,23 +13,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Phone, CheckCircle, Clock, X } from "lucide-react";
 import { useFormContext } from "@/components/form-provider";
+import useOtpApi from "@/hooks/use-otp";
+import { toast } from "sonner";
 
 interface OtpVerificationDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
-  phoneNumber: string;
+  onVerificationComplete: () => void;
   email: string;
-  countryCode: string;
+  phone: string;
+  onResendEmailOtp: () => Promise<void>;
+  onResendPhoneOtp: () => Promise<void>;
+  canResend: boolean;
+  isLimitReached: boolean;
+  countdown: number;
 }
 
 export function OtpVerificationDialog({
   isOpen,
   onClose,
-  onSuccess,
-  phoneNumber,
+  onVerificationComplete,
   email,
-  countryCode,
+  phone,
+  onResendEmailOtp,
+  onResendPhoneOtp,
+  canResend = true,
+  isLimitReached = false,
+  countdown,
 }: OtpVerificationDialogProps) {
   const { personalDetailsForm, updateFormData } = useFormContext();
   const [emailOtp, setEmailOtp] = useState("");
@@ -43,6 +53,16 @@ export function OtpVerificationDialog({
     email: "",
     phone: "",
   });
+
+  const {
+    loading: otpLoading,
+    error: otpError,
+    sendEmailOtp: apiSendEmailOtp,
+    sendPhoneOtp: apiSendPhoneOtp,
+    verifyEmailOtp: apiVerifyEmailOtp,
+    verifyPhoneOtp: apiVerifyPhoneOtp,
+    isOtpVerified: apiIsOtpVerified,
+  } = useOtpApi();
 
   // Countdown timers
   useEffect(() => {
@@ -65,13 +85,14 @@ export function OtpVerificationDialog({
     }
   }, [phoneCountdown]);
 
-  // Auto-send OTPs when dialog opens
-  useEffect(() => {
-    if (isOpen && !isEmailVerified && !isPhoneVerified) {
-      handleSendEmailOtp();
-      handleSendPhoneOtp();
-    }
-  }, [isOpen]);
+  // Auto-send OTPs when dialog opens - REMOVED to prevent abuse
+  // OTPs are now sent from parent component before showing dialog
+  // useEffect(() => {
+  //   if (isOpen && !isEmailVerified && !isPhoneVerified) {
+  // handleSendEmailOtp();
+  // handleSendPhoneOtp();
+  //   }
+  // }, [isOpen]);
 
   // Reset state when dialog opens
   useEffect(() => {
@@ -85,80 +106,80 @@ export function OtpVerificationDialog({
   }, [isOpen]);
 
   const handleSendEmailOtp = async () => {
-    setIsLoading(true);
-    setErrors((prev) => ({ ...prev, email: "" }));
-
-    // Simulate API call
-    setTimeout(() => {
-      setEmailCountdown(30);
-      setIsLoading(false);
-      console.log(`Email OTP sent to: ${email}`);
-    }, 1000);
+    if (onResendEmailOtp) {
+      setIsLoading(true);
+      setErrors((prev) => ({ ...prev, email: "" }));
+      try {
+        await onResendEmailOtp();
+        setEmailCountdown(30);
+        // console.log(`Email OTP sent to: ${email}`);
+      } catch (err: any) {
+        toast.error("Failed to send email OTP");
+      } finally {
+        setIsLoading(false);
+      }
+    }
   };
 
   const handleSendPhoneOtp = async () => {
-    setIsLoading(true);
-    setErrors((prev) => ({ ...prev, phone: "" }));
-
-    // Simulate API call
-    setTimeout(() => {
-      setPhoneCountdown(30);
-      setIsLoading(false);
-      console.log(`Phone OTP sent to: ${countryCode} ${phoneNumber}`);
-    }, 1000);
+    if (onResendPhoneOtp) {
+      setIsLoading(true);
+      setErrors((prev) => ({ ...prev, phone: "" }));
+      try {
+        await onResendPhoneOtp();
+        setPhoneCountdown(30);
+        // console.log(`Phone OTP sent to: ${phone}`);
+      } catch (err: any) {
+        toast.error("Failed to send phone OTP");
+      } finally {
+        setIsLoading(false);
+      }
+    }
   };
 
   const handleVerifyEmailOtp = async () => {
     if (emailOtp.length !== 6) return;
-
     setIsLoading(true);
     setErrors((prev) => ({ ...prev, email: "" }));
-
-    // Simulate API call
-    setTimeout(() => {
-      if (emailOtp === "123456") {
-        // Mock verification
-        setIsEmailVerified(true);
-        personalDetailsForm.setValue("isEmailVerified", true);
-        updateFormData({ isEmailVerified: true });
-        console.log("Email verified successfully");
-      } else {
-        setErrors((prev) => ({
-          ...prev,
-          email: "Invalid OTP. Please try again.",
-        }));
-      }
+    try {
+      await apiVerifyEmailOtp(email, emailOtp);
+      setIsEmailVerified(true);
+      personalDetailsForm.setValue("isEmailVerified", true);
+      updateFormData({ isEmailVerified: true });
+      // console.log("Email verified successfully");
+    } catch (err: any) {
+      setErrors((prev) => ({
+        ...prev,
+        email: err?.message || "Invalid OTP. Please try again.",
+      }));
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleVerifyPhoneOtp = async () => {
     if (phoneOtp.length !== 6) return;
-
     setIsLoading(true);
     setErrors((prev) => ({ ...prev, phone: "" }));
-
-    // Simulate API call
-    setTimeout(() => {
-      if (phoneOtp === "123456") {
-        // Mock verification
-        setIsPhoneVerified(true);
-        personalDetailsForm.setValue("isPhoneVerified", true);
-        updateFormData({ isPhoneVerified: true });
-        console.log("Phone verified successfully");
-      } else {
-        setErrors((prev) => ({
-          ...prev,
-          phone: "Invalid OTP. Please try again.",
-        }));
-      }
+    try {
+      await apiVerifyPhoneOtp(phone, phoneOtp);
+      setIsPhoneVerified(true);
+      personalDetailsForm.setValue("isPhoneVerified", true);
+      updateFormData({ isPhoneVerified: true });
+      // console.log("Phone verified successfully");
+    } catch (err: any) {
+      setErrors((prev) => ({
+        ...prev,
+        phone: err?.message || "Invalid OTP. Please try again.",
+      }));
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleProceed = () => {
     if (isEmailVerified && isPhoneVerified) {
-      onSuccess();
+      onVerificationComplete();
     }
   };
 
@@ -220,7 +241,7 @@ export function OtpVerificationDialog({
                     variant="ghost"
                     size="sm"
                     onClick={handleSendEmailOtp}
-                    disabled={emailCountdown > 0 || isLoading}
+                    disabled={emailCountdown > 0 || isLoading || !canResend}
                     className="text-teal-600 hover:text-teal-700"
                   >
                     {emailCountdown > 0 ? (
@@ -228,6 +249,8 @@ export function OtpVerificationDialog({
                         <Clock className="w-4 h-4 mr-1" />
                         Resend in {emailCountdown}s
                       </>
+                    ) : isLimitReached ? (
+                      "Resend limit reached"
                     ) : (
                       "Resend OTP"
                     )}
@@ -252,9 +275,7 @@ export function OtpVerificationDialog({
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Phone className="w-4 h-4 text-teal-500" />
-              <Label className="text-sm font-medium">
-                Phone: {countryCode} {phoneNumber}
-              </Label>
+              <Label className="text-sm font-medium">Phone: {phone}</Label>
               {isPhoneVerified && (
                 <CheckCircle className="w-4 h-4 text-green-600" />
               )}
@@ -292,7 +313,7 @@ export function OtpVerificationDialog({
                     variant="ghost"
                     size="sm"
                     onClick={handleSendPhoneOtp}
-                    disabled={phoneCountdown > 0 || isLoading}
+                    disabled={phoneCountdown > 0 || isLoading || !canResend}
                     className="text-teal-600 hover:text-teal-700"
                   >
                     {phoneCountdown > 0 ? (
@@ -300,6 +321,8 @@ export function OtpVerificationDialog({
                         <Clock className="w-4 h-4 mr-1" />
                         Resend in {phoneCountdown}s
                       </>
+                    ) : isLimitReached ? (
+                      "Resend limit reached"
                     ) : (
                       "Resend OTP"
                     )}

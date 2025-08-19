@@ -2,7 +2,7 @@
 
 import next from "next";
 import { useState, useEffect } from "react";
-import { revalidate } from "../(main)/colleges/[slug-id]/page";
+import { revalidate } from "../app/(main)/colleges/[slug-id]/page";
 // import axios from "axios";
 
 export type CollegeCourseCompareResult = {

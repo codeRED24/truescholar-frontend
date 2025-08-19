@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -8,11 +8,20 @@ import { PersonalDetailsStep } from "@/components/form-steps/personal-details-st
 import { StudentReviewStep } from "@/components/form-steps/student-review-step";
 import { ProfileVerificationStep } from "@/components/form-steps/profile-verification-step";
 import { SuccessScreen } from "@/components/success-screen";
-import { FormProvider, useFormContext } from "@/components/form-provider";
+import {
+  FormProvider,
+  useFormContext,
+  initialFormData,
+} from "@/components/form-provider";
 import { OtpVerificationDialog } from "@/components/otp-verification-dialog";
 import { CheckCircle, Circle } from "lucide-react";
-import { useCreateUser } from "@/lib/hooks/useCreateUser";
+import { useCreateUser } from "@/hooks/useCreateUser";
+import { useSubmitReview } from "@/hooks/useSubmitReview";
 import { CreateUserRequest } from "@/api/users/createUser";
+import useOtpApi from "@/hooks/use-otp";
+import { toast } from "sonner";
+
+const OTP_COOLDOWN_SECONDS = 30;
 
 const STEPS = [
   { id: 1, title: "Personal Details", component: PersonalDetailsStep },
@@ -25,14 +34,51 @@ function ReviewFormContent() {
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [referralCode, setReferralCode] = useState<string | null>(null);
   const [showOtpDialog, setShowOtpDialog] = useState(false);
   const [createdUserId, setCreatedUserId] = useState<number | null>(null);
+  const [lastCreatedUserData, setLastCreatedUserData] =
+    useState<CreateUserRequest | null>(null);
+  const [otpSentCount, setOtpSentCount] = useState(0);
+  const [lastOtpSentTime, setLastOtpSentTime] = useState<number | null>(null);
+  const [otpsAlreadySent, setOtpsAlreadySent] = useState(false);
+  const [canResendOtp, setCanResendOtp] = useState(true);
 
   const {
     createUserAsync,
     isLoading: isCreatingUser,
     error: createUserError,
   } = useCreateUser();
+
+  const {
+    submitReviewAsync,
+    isLoading: isSubmittingReview,
+    error: submitReviewError,
+  } = useSubmitReview();
+
+  const {
+    sendEmailOtp,
+    sendPhoneOtp,
+    loading: otpLoading,
+    error: otpError,
+  } = useOtpApi();
+
+  // Update canResendOtp state periodically
+  useEffect(() => {
+    const updateCanResend = () => {
+      setCanResendOtp(canSendOtp());
+    };
+
+    // Update immediately
+    updateCanResend();
+
+    // Update every second when dialog is open
+    const interval = showOtpDialog ? setInterval(updateCanResend, 1000) : null;
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [showOtpDialog, otpSentCount, lastOtpSentTime]);
 
   const {
     validateCurrentStep,
@@ -42,56 +88,193 @@ function ReviewFormContent() {
     personalDetailsForm,
   } = useFormContext();
 
+  const { updateFormData } = useFormContext();
+
+  // Helper function to check if form data has changed since last user creation
+  const hasFormDataChanged = (currentData: CreateUserRequest) => {
+    if (!lastCreatedUserData) return true;
+
+    return (
+      currentData.name !== lastCreatedUserData.name ||
+      currentData.email !== lastCreatedUserData.email ||
+      currentData.gender !== lastCreatedUserData.gender ||
+      currentData.contact_number !== lastCreatedUserData.contact_number ||
+      currentData.country_of_origin !== lastCreatedUserData.country_of_origin ||
+      currentData.college_id !== lastCreatedUserData.college_id ||
+      currentData.course_id !== lastCreatedUserData.course_id ||
+      currentData.college_location !== lastCreatedUserData.college_location ||
+      currentData.pass_year !== lastCreatedUserData.pass_year
+    );
+  };
+
+  // Helper function to check if we can send OTP (rate limiting)
+  const canSendOtp = () => {
+    const now = Date.now();
+    const cooldownPeriod = 30000; // 30 second cooldown (matches countdown)
+    const maxOtpCount = 3; // Max 3 OTP attempts per session
+
+    if (otpSentCount >= maxOtpCount) {
+      // console.log("Maximum OTP attempts reached");
+      return false;
+    }
+
+    if (lastOtpSentTime && now - lastOtpSentTime < cooldownPeriod) {
+      // console.log(`OTP cooldown period active. ${Math.ceil((cooldownPeriod - (now - lastOtpSentTime)) / 1000)}s remaining`);
+      return false;
+    }
+
+    return true;
+  };
+
+  // Helper function to check if limit is reached (for UI display)
+  const isLimitReached = () => {
+    return otpSentCount >= 5;
+  };
+
+  // Function to send OTPs with rate limiting
+  const sendOtpsIfNeeded = async () => {
+    const step1Data = personalDetailsForm.getValues();
+    const email = step1Data.email;
+    const phone = step1Data.contactNumber;
+    const countryCode = step1Data.countryCode;
+
+    // If OTPs were already sent for this session and email/phone haven't changed, don't send again
+    if (
+      otpsAlreadySent &&
+      !hasFormDataChanged({
+        name: step1Data.name,
+        email: step1Data.email,
+        gender: step1Data.gender,
+        contact_number: step1Data.contactNumber,
+        country_of_origin: step1Data.countryOfOrigin,
+        college_id: step1Data.collegeId,
+        course_id: step1Data.courseId,
+        college_location: step1Data.collegeLocation,
+        pass_year: step1Data.graduationYear,
+        user_type: "student",
+      })
+    ) {
+      // console.log("OTPs already sent for current data");
+      return;
+    }
+
+    if (!canSendOtp()) {
+      // console.log("Cannot send OTP due to rate limiting");
+      return;
+    }
+
+    try {
+      // console.log("Sending OTPs...");
+      await Promise.all([
+        sendEmailOtp(email),
+        sendPhoneOtp(phone, countryCode),
+      ]);
+
+      setOtpSentCount((prev) => prev + 1);
+      setLastOtpSentTime(Date.now());
+      setOtpsAlreadySent(true);
+      // console.log("OTPs sent successfully");
+    } catch (error) {
+      console.error("Failed to send OTPs:", error);
+    }
+  };
+
+  // Function for manual email OTP resend
+  const resendEmailOtp = async () => {
+    if (!canSendOtp()) {
+      // console.log("Cannot resend email OTP due to rate limiting");
+      return;
+    }
+
+    const step1Data = personalDetailsForm.getValues();
+    const email = step1Data.email;
+
+    try {
+      // console.log("Resending email OTP...");
+      await sendEmailOtp(email);
+
+      setOtpSentCount((prev) => prev + 1);
+      setLastOtpSentTime(Date.now());
+      // console.log("Email OTP resent successfully");
+    } catch (error) {
+      console.error("Failed to resend email OTP:", error);
+      throw error;
+    }
+  };
+
+  // Function for manual phone OTP resend
+  const resendPhoneOtp = async () => {
+    if (!canSendOtp()) {
+      // console.log("Cannot resend phone OTP due to rate limiting");
+      return;
+    }
+
+    const step1Data = personalDetailsForm.getValues();
+    const phone = step1Data.contactNumber;
+    const countryCode = step1Data.countryCode;
+
+    try {
+      // console.log("Resending phone OTP...");
+      await sendPhoneOtp(phone, countryCode);
+
+      setOtpSentCount((prev) => prev + 1);
+      setLastOtpSentTime(Date.now());
+      // console.log("Phone OTP resent successfully");
+    } catch (error) {
+      console.error("Failed to resend phone OTP:", error);
+      throw error;
+    }
+  };
+
+  // Calculate countdown time remaining
+  const countdown = useMemo(() => {
+    if (!lastOtpSentTime) return 0;
+    const elapsed = Math.floor((Date.now() - lastOtpSentTime) / 1000);
+    const remaining = Math.max(0, OTP_COOLDOWN_SECONDS - elapsed);
+    return remaining;
+  }, [lastOtpSentTime]);
+
   const handleNext = async () => {
     const isValid = await validateCurrentStep(currentStep);
     if (isValid) {
       if (currentStep === 1) {
         // Console log all fields from step 1 (Personal Details) before asking for OTPs
         const step1Data = personalDetailsForm.getValues();
-        // console.log("\n=== STEP 1 DATA BEFORE OTP VERIFICATION ===");
-        // console.log("Name:", step1Data.name);
-        // console.log("Email:", step1Data.email);
-        // console.log("Gender:", step1Data.gender);
-        // console.log("Contact Number:", step1Data.contactNumber);
-        // console.log("Country Code:", step1Data.countryCode);
-        // console.log("Country of Origin:", step1Data.countryOfOrigin);
-        // console.log("College Name:", step1Data.collegeName);
-        // console.log("College Location:", step1Data.collegeLocation);
-        // console.log("Course Name:", step1Data.courseName);
-        // console.log("Graduation Year:", step1Data.graduationYear);
-        // console.log("UPI ID:", step1Data.upiId);
-        // console.log("Email Verified:", step1Data.isEmailVerified);
-        // console.log("Phone Verified:", step1Data.isPhoneVerified);
-        // console.log("Collegeid:", step1Data.collegeId);
-        // console.log("CourseId:", step1Data.courseId);
 
-        // console.log("=== END STEP 1 DATA ===\n");
+        // Create user payload
+        const userPayload: CreateUserRequest = {
+          name: step1Data.name,
+          email: step1Data.email,
+          gender: step1Data.gender,
+          contact_number: step1Data.contactNumber,
+          country_of_origin: step1Data.countryOfOrigin,
+          college_id: step1Data.collegeId,
+          course_id: step1Data.courseId,
+          college_location: step1Data.collegeLocation,
+          pass_year: step1Data.graduationYear,
+          user_type: "student", // Default user type for review form
+        };
 
-        // Create user via API call
-        try {
-          const userPayload: CreateUserRequest = {
-            name: step1Data.name,
-            email: step1Data.email,
-            gender: step1Data.gender,
-            contact_number: step1Data.contactNumber,
-            country_of_origin: step1Data.countryOfOrigin,
-            college_id: step1Data.collegeId,
-            course_id: step1Data.courseId,
-            college_location: step1Data.collegeLocation,
-            pass_year: step1Data.graduationYear,
-            user_type: "student", // Default user type for review form
-          };
-
-          // console.log("Creating user with payload:", userPayload);
-          const userResponse = await createUserAsync(userPayload);
-          // console.log("User created successfully:", userResponse);
-          setCreatedUserId(userResponse.data.id);
-        } catch (error) {
-          console.error("Failed to create user:", error);
-          // You might want to show an error message to the user here
-          // alert("Failed to create user. Please try again.");
-          return; // Don't proceed to OTP if user creation fails
+        // Only create user if we haven't created one yet or if the data has changed
+        if (!createdUserId || hasFormDataChanged(userPayload)) {
+          try {
+            // console.log("Creating user with payload:", userPayload);
+            const userResponse = await createUserAsync(userPayload);
+            // console.log("User created successfully:", userResponse);
+            setCreatedUserId(userResponse.data.id);
+            setLastCreatedUserData(userPayload);
+            // Reset OTP state when user data changes
+            setOtpsAlreadySent(false);
+          } catch (error) {
+            console.error("Failed to create user:", error);
+            return; // Don't proceed to OTP if user creation fails
+          }
+        } else {
+          // console.log("User already created, skipping user creation");
         }
+
+        // Send OTPs if needed before showing dialog
+        await sendOtpsIfNeeded();
 
         // For step 1, show OTP verification dialog after basic validation
         setShowOtpDialog(true);
@@ -120,9 +303,9 @@ function ReviewFormContent() {
     setShowOtpDialog(false);
   };
 
-  const handlePrevious = () => {
-    // going back removed: no-op
-  };
+  // const handlePrevious = () => {
+  //   // going back removed: no-op
+  // };
 
   const handleStepClick = async (stepId: number) => {
     // Disable going back via step clicks. Allow only advancing to the next step
@@ -131,6 +314,42 @@ function ReviewFormContent() {
       const isValid = await validateCurrentStep(currentStep);
       if (isValid) {
         if (currentStep === 1) {
+          // Get current form data
+          const step1Data = personalDetailsForm.getValues();
+          const userPayload: CreateUserRequest = {
+            name: step1Data.name,
+            email: step1Data.email,
+            gender: step1Data.gender,
+            contact_number: step1Data.contactNumber,
+            country_of_origin: step1Data.countryOfOrigin,
+            college_id: step1Data.collegeId,
+            course_id: step1Data.courseId,
+            college_location: step1Data.collegeLocation,
+            pass_year: step1Data.graduationYear,
+            user_type: "student",
+          };
+
+          // Only create user if we haven't created one yet or if the data has changed
+          if (!createdUserId || hasFormDataChanged(userPayload)) {
+            try {
+              // console.log("Creating user with payload:", userPayload);
+              const userResponse = await createUserAsync(userPayload);
+              // console.log("User created successfully:", userResponse);
+              setCreatedUserId(userResponse.data.id);
+              setLastCreatedUserData(userPayload);
+              // Reset OTP state when user data changes
+              setOtpsAlreadySent(false);
+            } catch (error) {
+              console.error("Failed to create user:", error);
+              return;
+            }
+          } else {
+            // console.log("User already created, skipping user creation");
+          }
+
+          // Send OTPs if needed before showing dialog
+          await sendOtpsIfNeeded();
+
           // For step 1, show OTP verification dialog
           setShowOtpDialog(true);
         } else {
@@ -150,28 +369,92 @@ function ReviewFormContent() {
     const isValid = await validateCurrentStep(currentStep);
     if (!isValid) return;
 
+    // Ensure we have a user ID before submitting
+    if (!createdUserId) {
+      console.error("No user ID available for review submission");
+      toast.error("User information is missing. Please go back to step 1.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     // Get data from steps 2 and 3
     const step2Data = studentReviewForm.getValues();
     const step3Data = profileVerificationForm.getValues();
 
-    // Combined data for API submission
-    const combinedFormData = {
-      ...step2Data,
-      ...step3Data,
-      submittedAt: new Date().toISOString(),
-    };
+    // Map frontend fields to backend DTO + files and submit via hook
+    try {
+      const payload = {
+        // User ID - CRITICAL: This links the review to the user
+        userId: createdUserId,
 
-    // console.log("\n=== COMBINED FORM DATA FOR API ===");
-    // console.log(combinedFormData);
+        // Titles & comments
+        reviewTitle: step2Data.collegePlacementTitle,
+        collegeAdmissionComment: step2Data.admissionExperienceComment,
+        campusExperienceComment: step2Data.campusExperienceComment,
+        placementJourneyComment: step2Data.placementJourneyComment,
+        academicExperienceComment: step2Data.academicExperienceComment,
 
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+        // Ratings mapping (frontend keys differ slightly)
+        collegeAdmissionRating: step2Data.collegeAdmissionRating,
+        campusExperienceRating: step2Data.campusExperienceRating,
+        placementJourneyRating: step2Data.placementJourneyRating,
+        academicExperienceRating:
+          step2Data.academicQualityRating || step2Data.academicExperienceRating,
 
-    // Here you would typically send the form data to your backend
-    // const response = await submitReview(combinedFormData)
-    // console.log("Form submitted successfully!");
+        // Images
+        collegeImages: step2Data.collegeImages || [],
+
+        // Profile verification fields
+        profilePicture: step3Data.profilePicture || null,
+        studentId: step3Data.studentId || null,
+        markSheet: step3Data.markSheet || null,
+        degreeCertificate: step3Data.degreeCertificate || null,
+        linkedinProfile: step3Data.linkedinProfile || undefined,
+      };
+
+      // Submit using our hook
+      const result = await submitReviewAsync(payload as any);
+      // console.log("Review submitted successfully:", result);
+
+      // Store the custom_code as referral code
+      if (result?.custom_code) {
+        // console.log("User custom code:", result.custom_code);
+        setReferralCode(result.custom_code);
+        toast.success(
+          `Review submitted successfully! Your referral code: ${result.custom_code}`
+        );
+      } else {
+        // console.log("No custom_code received in response");
+        toast.success("Review submitted successfully");
+      }
+      // Clear form data after successful submission
+      try {
+        // Reset each react-hook-form instance to their default values
+        personalDetailsForm.reset();
+        studentReviewForm.reset();
+        profileVerificationForm.reset();
+
+        // Reset provider-level aggregated formData
+        updateFormData(initialFormData);
+
+        // Reset local component state related to user/OTP
+        setCreatedUserId(null);
+        setLastCreatedUserData(null);
+        setOtpSentCount(0);
+        setLastOtpSentTime(null);
+        setOtpsAlreadySent(false);
+        setCanResendOtp(true);
+        // Note: Don't reset referralCode here - we need it for the success screen
+      } catch (resetError) {
+        console.warn("Failed to reset forms after submit:", resetError);
+      }
+    } catch (error) {
+      console.error("Failed to submit review:", error);
+      toast.error("Failed to submit review");
+      setIsSubmitting(false);
+      return;
+    }
 
     setIsSubmitting(false);
     setIsSubmitted(true);
@@ -184,10 +467,17 @@ function ReviewFormContent() {
     setIsSubmitting(false);
     setShowOtpDialog(false);
     setCreatedUserId(null);
+    setLastCreatedUserData(null);
+    setOtpSentCount(0);
+    setLastOtpSentTime(null);
+    setOtpsAlreadySent(false);
+    setCanResendOtp(true);
+    setReferralCode(null);
   };
 
   if (isSubmitted) {
-    return <SuccessScreen onReset={handleReset} />;
+    // console.log("Success screen - referralCode:", referralCode);
+    return <SuccessScreen onReset={handleReset} referralCode={referralCode} />;
   }
 
   const CurrentStepComponent = STEPS.find(
@@ -287,10 +577,14 @@ function ReviewFormContent() {
         <OtpVerificationDialog
           isOpen={showOtpDialog}
           onClose={handleCloseOtpDialog}
-          onSuccess={handleOtpVerificationSuccess}
-          phoneNumber={personalDetailsForm.watch("contactNumber") || ""}
+          onVerificationComplete={handleOtpVerificationSuccess}
+          phone={personalDetailsForm.watch("contactNumber") || ""}
           email={personalDetailsForm.watch("email") || ""}
-          countryCode={personalDetailsForm.watch("countryCode") || "IN (+91)"}
+          onResendEmailOtp={resendEmailOtp}
+          onResendPhoneOtp={resendPhoneOtp}
+          canResend={canResendOtp}
+          isLimitReached={isLimitReached()}
+          countdown={countdown}
         />
       </div>
     </div>
