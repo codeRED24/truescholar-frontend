@@ -26,8 +26,7 @@ export function StudentReviewStep() {
         {/* Review Title */}
         <div className="space-y-2">
           <Label
-            htmlFor="reviewTitle"
-            className="text-sm font-medium text-gray-700"
+            className="text-xl font-semibold text-gray-800"
           >
             Give Your Review a Title
           </Label>

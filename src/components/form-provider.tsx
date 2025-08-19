@@ -67,7 +67,7 @@ interface FormContextType {
 
 const FormContext = createContext<FormContextType | undefined>(undefined);
 
-const initialFormData: FormData = {
+export const initialFormData: FormData = {
   name: "",
   email: "",
   gender: "",

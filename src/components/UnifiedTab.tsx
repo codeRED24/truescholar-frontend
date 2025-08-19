@@ -4,8 +4,8 @@ import React, { useRef, useCallback, useEffect } from "react";
 import {
   AuthorTabType,
   StandardizedContentItem,
-} from "@/app/hooks/useAuthorTabData";
-import { useInfiniteAuthorTabData } from "@/app/hooks/useInfiniteAuthorTabData";
+} from "@/hooks/useAuthorTabData";
+import { useInfiniteAuthorTabData } from "@/hooks/useInfiniteAuthorTabData";
 import { ChevronRight, Clock } from "lucide-react";
 import Link from "next/link";
 import { mapCollegeTabSlugToPath } from "@/lib/collegeTab";

@@ -26,9 +26,9 @@ import { Controller } from "react-hook-form";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { SuggestionInput } from "@/components/ui/suggestion-input";
-import { useUniSearch } from "@/app/hooks/useUniSearch";
-import { useOnlyCollegeIdCompare } from "@/app/hooks/useOnlyCollegeIdCompare";
-import { useState, useEffect, useCallback } from "react";
+import { useUniSearch } from "@/hooks/useUniSearch";
+import { useOnlyCollegeIdCompare } from "@/hooks/useOnlyCollegeIdCompare";
+import { useState, useCallback } from "react";
 
 export function PersonalDetailsStep() {
   const { formData, updateFormData, personalDetailsForm } = useFormContext();
