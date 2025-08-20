@@ -20,6 +20,7 @@ import { useSubmitReview } from "@/hooks/useSubmitReview";
 import { CreateUserRequest } from "@/api/users/createUser";
 import useOtpApi from "@/hooks/use-otp";
 import { toast } from "sonner";
+import { getCurrentLocation } from "@/utils/location";
 
 const OTP_COOLDOWN_SECONDS = 30;
 
@@ -98,12 +99,9 @@ function ReviewFormContent() {
       currentData.name !== lastCreatedUserData.name ||
       currentData.email !== lastCreatedUserData.email ||
       currentData.gender !== lastCreatedUserData.gender ||
+      currentData.dob !== lastCreatedUserData.dob ||
       currentData.contact_number !== lastCreatedUserData.contact_number ||
-      currentData.country_of_origin !== lastCreatedUserData.country_of_origin ||
-      currentData.college_id !== lastCreatedUserData.college_id ||
-      currentData.course_id !== lastCreatedUserData.course_id ||
-      currentData.college_location !== lastCreatedUserData.college_location ||
-      currentData.pass_year !== lastCreatedUserData.pass_year
+      currentData.country_of_origin !== lastCreatedUserData.country_of_origin
     );
   };
 
@@ -145,6 +143,7 @@ function ReviewFormContent() {
         name: step1Data.name,
         email: step1Data.email,
         gender: step1Data.gender,
+        dob: step1Data.dateOfBirth,
         contact_number: step1Data.contactNumber,
         country_of_origin: step1Data.countryOfOrigin,
         college_id: step1Data.collegeId,
@@ -241,17 +240,18 @@ function ReviewFormContent() {
         // Console log all fields from step 1 (Personal Details) before asking for OTPs
         const step1Data = personalDetailsForm.getValues();
 
-        // Create user payload
+        // Get user location if available
+        const userLocation = await getCurrentLocation();
+
+        // Create user payload (without college information)
         const userPayload: CreateUserRequest = {
           name: step1Data.name,
           email: step1Data.email,
           gender: step1Data.gender,
+          dob: step1Data.dateOfBirth,
           contact_number: step1Data.contactNumber,
           country_of_origin: step1Data.countryOfOrigin,
-          college_id: step1Data.collegeId,
-          course_id: step1Data.courseId,
-          college_location: step1Data.collegeLocation,
-          pass_year: step1Data.graduationYear,
+          user_location: userLocation || undefined,
           user_type: "student", // Default user type for review form
         };
 
@@ -316,16 +316,18 @@ function ReviewFormContent() {
         if (currentStep === 1) {
           // Get current form data
           const step1Data = personalDetailsForm.getValues();
+
+          // Get user location if available
+          const userLocation = await getCurrentLocation();
+
           const userPayload: CreateUserRequest = {
             name: step1Data.name,
             email: step1Data.email,
             gender: step1Data.gender,
+            dob: step1Data.dateOfBirth,
             contact_number: step1Data.contactNumber,
             country_of_origin: step1Data.countryOfOrigin,
-            college_id: step1Data.collegeId,
-            course_id: step1Data.courseId,
-            college_location: step1Data.collegeLocation,
-            pass_year: step1Data.graduationYear,
+            user_location: userLocation || undefined,
             user_type: "student",
           };
 
@@ -387,6 +389,12 @@ function ReviewFormContent() {
       const payload = {
         // User ID - CRITICAL: This links the review to the user
         userId: createdUserId,
+
+        // College Information (from step 2)
+        collegeId: step2Data.collegeId,
+        courseId: step2Data.courseId,
+        collegeLocation: step2Data.collegeLocation,
+        passYear: parseInt(step2Data.graduationYear),
 
         // Titles & comments
         reviewTitle: step2Data.collegePlacementTitle,

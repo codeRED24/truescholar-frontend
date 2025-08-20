@@ -8,6 +8,30 @@ export const personalDetailsSchema = z.object({
     .max(50, "Name must be less than 50 characters"),
   email: z.email("Please enter a valid email address"),
   gender: z.string().min(1, "Please select a gender"),
+  dateOfBirth: z
+    .string()
+    .min(1, "Please enter your date of birth")
+    .refine((val) => {
+      // Check if it's a valid date and user is at least 16 years old
+      const date = new Date(val);
+      const today = new Date();
+      const age = today.getFullYear() - date.getFullYear();
+      const monthDiff = today.getMonth() - date.getMonth();
+
+      if (
+        monthDiff < 0 ||
+        (monthDiff === 0 && today.getDate() < date.getDate())
+      ) {
+        return age - 1 >= 16;
+      }
+      return age >= 16;
+    }, "You must be at least 16 years old")
+    .refine((val) => {
+      // Check if date is not in the future
+      const date = new Date(val);
+      const today = new Date();
+      return date <= today;
+    }, "Date of birth cannot be in the future"),
   contactNumber: z
     .string()
     .min(1, "Please enter your phone number")
@@ -25,12 +49,6 @@ export const personalDetailsSchema = z.object({
       );
     }, "Please enter a valid phone number format"),
   countryOfOrigin: z.string().min(1, "Please select your country of origin"),
-  collegeName: z.string().min(1, "Please select a college"),
-  collegeId: z.number().min(1, "Please select a college"),
-  collegeLocation: z.string().min(1, "Please select a college"),
-  courseName: z.string().min(1, "Please select a course"),
-  courseId: z.number().min(1, "Please select a course"),
-  graduationYear: z.string().min(1, "Please select graduation year"),
   upiId: z
     .string()
     .min(3, "UPI ID must be at least 3 characters")
@@ -59,6 +77,15 @@ export const personalDetailsWithOtpSchema = personalDetailsSchema.extend({
 
 // Student Review Schema
 export const studentReviewSchema = z.object({
+  // College Information (moved from personal details)
+  collegeName: z.string().min(1, "Please select a college"),
+  collegeId: z.number().min(1, "Please select a college"),
+  collegeLocation: z.string().min(1, "Please select a college"),
+  courseName: z.string().min(1, "Please select a course"),
+  courseId: z.number().min(1, "Please select a course"),
+  graduationYear: z.string().min(1, "Please select graduation year"),
+
+  // Review content
   collegePlacementTitle: z
     .string()
     .min(5, "Title must be at least 5 characters")
