@@ -15,6 +15,7 @@ interface FormData {
   name: string;
   email: string;
   gender: string;
+  dateOfBirth: string;
   contactNumber: string;
   countryOfOrigin: string;
   collegeName: string;
@@ -71,14 +72,9 @@ export const initialFormData: FormData = {
   name: "",
   email: "",
   gender: "",
+  dateOfBirth: "",
   contactNumber: "",
   countryOfOrigin: "",
-  collegeName: "",
-  collegeId: 0,
-  collegeLocation: "",
-  courseName: "",
-  courseId: 0,
-  graduationYear: "",
   upiId: "",
   isEmailVerified: false,
   isPhoneVerified: false,
@@ -97,6 +93,13 @@ export const initialFormData: FormData = {
   campusExperienceComment: "",
   campusExperienceRating: 0,
   collegeImages: [],
+  // College information now in step 2
+  collegeName: "",
+  collegeId: 0,
+  collegeLocation: "",
+  courseName: "",
+  courseId: 0,
+  graduationYear: "",
 };
 
 export function FormProvider({ children }: { children: ReactNode }) {
@@ -109,14 +112,9 @@ export function FormProvider({ children }: { children: ReactNode }) {
       name: "",
       email: "",
       gender: "",
+      dateOfBirth: "",
       contactNumber: "",
       countryOfOrigin: "",
-      collegeName: "",
-      collegeId: 0,
-      collegeLocation: "",
-      courseName: "",
-      courseId: 0,
-      graduationYear: "",
       upiId: "",
       isEmailVerified: false,
       isPhoneVerified: false,
@@ -127,6 +125,14 @@ export function FormProvider({ children }: { children: ReactNode }) {
   const studentReviewForm = useForm({
     resolver: zodResolver(studentReviewSchema),
     defaultValues: {
+      // College Information
+      collegeName: "",
+      collegeId: 0,
+      collegeLocation: "",
+      courseName: "",
+      courseId: 0,
+      graduationYear: "",
+      // Review content
       collegePlacementTitle: "",
       academicExperienceComment: "",
       academicQualityRating: 0,

@@ -10,6 +10,11 @@ interface UseSubmitReviewReturn extends UseSubmitReviewState {
   submitReviewAsync: (payload: {
     // User ID to link the review to the user
     userId?: number | null;
+    // College information (now from step 2)
+    collegeId?: number;
+    courseId?: number;
+    collegeLocation?: string;
+    passYear?: number;
     // fields mapped from step2 and step3
     reviewTitle?: string;
     collegeAdmissionComment?: string;
@@ -40,6 +45,10 @@ export const useSubmitReview = (): UseSubmitReviewReturn => {
 
   const submitReviewAsync = async (payload: {
     userId?: number | null;
+    collegeId?: number;
+    courseId?: number;
+    collegeLocation?: string;
+    passYear?: number;
     reviewTitle?: string;
     collegeAdmissionComment?: string;
     campusExperienceComment?: string;
@@ -64,6 +73,20 @@ export const useSubmitReview = (): UseSubmitReviewReturn => {
       // Add user_id if provided
       if (payload.userId) {
         form.append("user_id", String(payload.userId));
+      }
+
+      // Add college information (from step 2)
+      if (payload.collegeId) {
+        form.append("college_id", String(payload.collegeId));
+      }
+      if (payload.courseId) {
+        form.append("course_id", String(payload.courseId));
+      }
+      if (payload.collegeLocation) {
+        form.append("college_location", payload.collegeLocation);
+      }
+      if (payload.passYear) {
+        form.append("pass_year", String(payload.passYear));
       }
 
       // Map simple fields

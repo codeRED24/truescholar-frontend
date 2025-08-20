@@ -16,19 +16,12 @@ import {
   Users,
   Phone,
   Globe,
-  GraduationCap,
-  MapPin,
-  BookOpen,
-  Calendar,
   CreditCard,
+  Calendar,
 } from "lucide-react";
 import { Controller } from "react-hook-form";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
-import { SuggestionInput } from "@/components/ui/suggestion-input";
-import { useUniSearch } from "@/hooks/useUniSearch";
-import { useOnlyCollegeIdCompare } from "@/hooks/useOnlyCollegeIdCompare";
-import { useState, useCallback } from "react";
 
 export function PersonalDetailsStep() {
   const { formData, updateFormData, personalDetailsForm } = useFormContext();
@@ -40,100 +33,6 @@ export function PersonalDetailsStep() {
   } = personalDetailsForm;
 
   const isPhoneVerified = watch("isPhoneVerified") || false;
-  const selectedCollegeId = watch("collegeId");
-
-  const { results, loading: searchLoading, search } = useUniSearch();
-  const { courses, loading: coursesLoading } =
-    useOnlyCollegeIdCompare(selectedCollegeId);
-
-  const [selectedCollege, setSelectedCollege] = useState<any>(null);
-  const [collegeOptions, setCollegeOptions] = useState<any[]>([]);
-
-  // Create fetchSuggestions function for SuggestionInput
-  const fetchCollegeSuggestions = useCallback(
-    async (query: string): Promise<string[]> => {
-      if (!query || query.length < 2) {
-        return [];
-      }
-
-      try {
-        const url = `${
-          process.env.NEXT_PUBLIC_API_URL
-        }/college-search?q=${encodeURIComponent(query)}`;
-        const res = await fetch(url);
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        const data = await res.json();
-        const colleges = data.data.colleges || [];
-
-        // Store colleges for later use in selection
-        setCollegeOptions(colleges);
-
-        return colleges.map(
-          (college: any) => college.college_name || college.name
-        );
-      } catch (error) {
-        console.error("Error fetching college suggestions:", error);
-        return [];
-      }
-    },
-    []
-  );
-
-  // Function to get college by name from stored options
-  const getCollegeByName = useCallback(
-    (collegeName: string) => {
-      return collegeOptions.find(
-        (college) => (college.college_name || college.name) === collegeName
-      );
-    },
-    [collegeOptions]
-  );
-
-  // Handle college selection
-  const handleCollegeSelect = (collegeName: string) => {
-    const college = getCollegeByName(collegeName);
-    if (college) {
-      setSelectedCollege(college);
-      const collegeDisplayName = college.college_name || college.name;
-      const collegeId = Number(college.college_id || college.id);
-      const collegeLocation = college.location || college.city || "";
-
-      setValue("collegeName", collegeDisplayName);
-      setValue("collegeId", collegeId);
-      setValue("collegeLocation", collegeLocation);
-      // Reset course when college changes
-      setValue("courseName", "");
-      setValue("courseId", 0);
-
-      updateFormData({
-        collegeName: collegeDisplayName,
-        collegeId: collegeId,
-        collegeLocation: collegeLocation,
-        courseName: "",
-        courseId: 0,
-      });
-    }
-  };
-
-  // Handle course selection
-  const handleCourseSelect = (courseValue: string) => {
-    const course = courses.find(
-      (c) =>
-        c.college_wise_course_id != null &&
-        c.college_wise_course_id.toString() === courseValue
-    );
-    if (course) {
-      setValue("courseName", course.name);
-      setValue("courseId", Number(course.college_wise_course_id));
-
-      updateFormData({
-        courseName: course.name,
-        courseId: Number(course.college_wise_course_id),
-      });
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -250,6 +149,41 @@ export function PersonalDetailsStep() {
           )}
         </div>
 
+        {/* Date of Birth */}
+        <div className="space-y-2">
+          <Label
+            htmlFor="dateOfBirth"
+            className="flex items-center gap-2 text-sm font-medium"
+          >
+            <Calendar className="w-4 h-4 text-teal-500" />
+            Date of Birth <span className="text-teal-600">*</span>
+          </Label>
+          <Controller
+            name="dateOfBirth"
+            control={control}
+            render={({ field }) => (
+              <Input
+                {...field}
+                id="dateOfBirth"
+                type="date"
+                placeholder="Select your date of birth"
+                className={`border-gray-300 ${
+                  errors.dateOfBirth ? "border-red-500" : ""
+                }`}
+                onChange={(e) => {
+                  field.onChange(e);
+                  updateFormData({ dateOfBirth: e.target.value });
+                }}
+              />
+            )}
+          />
+          {errors.dateOfBirth && (
+            <p className="text-sm text-red-600">
+              {errors.dateOfBirth.message as string}
+            </p>
+          )}
+        </div>
+
         {/* Contact Number */}
         <div className="space-y-2">
           <Label className="flex items-center gap-2 text-sm font-medium">
@@ -339,193 +273,6 @@ export function PersonalDetailsStep() {
           {errors.countryOfOrigin && (
             <p className="text-sm text-red-600">
               {errors.countryOfOrigin.message as string}
-            </p>
-          )}
-        </div>
-
-        {/* College Name with Suggestions */}
-        <div className="space-y-2">
-          <Label
-            htmlFor="collegeName"
-            className="flex items-center gap-2 text-sm font-medium"
-          >
-            <GraduationCap className="w-4 h-4 text-teal-500" />
-            College Name <span className="text-teal-600">*</span>
-          </Label>
-          <Controller
-            name="collegeName"
-            control={control}
-            render={({ field }) => (
-              <SuggestionInput
-                value={field.value}
-                onChange={field.onChange}
-                onSelect={handleCollegeSelect}
-                fetchSuggestions={fetchCollegeSuggestions}
-                placeholder="Type to search for colleges..."
-                className={`border-gray-300 ${
-                  errors.collegeName ? "border-red-500" : ""
-                }`}
-                minQueryLength={2}
-                debounceMs={300}
-              />
-            )}
-          />
-          {errors.collegeName && (
-            <p className="text-sm text-red-600">
-              {errors.collegeName.message as string}
-            </p>
-          )}
-        </div>
-
-        {/* College Location */}
-        <div className="space-y-2">
-          <Label
-            htmlFor="collegeLocation"
-            className="flex items-center gap-2 text-sm font-medium"
-          >
-            <MapPin className="w-4 h-4 text-teal-500" />
-            College Location <span className="text-teal-600">*</span>
-          </Label>
-          <Controller
-            name="collegeLocation"
-            control={control}
-            render={({ field }) => (
-              <Input
-                {...field}
-                id="collegeLocation"
-                placeholder="Enter college location"
-                className={`border-gray-300 ${
-                  errors.collegeLocation ? "border-red-500" : ""
-                }`}
-                onChange={(e) => {
-                  field.onChange(e);
-                  updateFormData({ collegeLocation: e.target.value });
-                }}
-                readOnly={!!selectedCollege}
-              />
-            )}
-          />
-          {errors.collegeLocation && (
-            <p className="text-sm text-red-600">
-              {errors.collegeLocation.message as string}
-            </p>
-          )}
-        </div>
-
-        {/* Course Name */}
-        <div className="space-y-2">
-          <Label className="flex items-center gap-2 text-sm font-medium">
-            <BookOpen className="w-4 h-4 text-teal-500" />
-            Course Name <span className="text-teal-600">*</span>
-          </Label>
-          <Controller
-            name="courseName"
-            control={control}
-            render={({ field }) => (
-              <Select
-                value={
-                  field.value
-                    ? courses
-                        .find(
-                          (c) =>
-                            c.name === field.value &&
-                            c.college_wise_course_id != null
-                        )
-                        ?.college_wise_course_id?.toString() || ""
-                    : ""
-                }
-                onValueChange={handleCourseSelect}
-                disabled={
-                  !selectedCollegeId ||
-                  selectedCollegeId === 0 ||
-                  coursesLoading
-                }
-              >
-                <SelectTrigger
-                  className={`border-gray-300 ${
-                    errors.courseName ? "border-red-500" : ""
-                  }`}
-                >
-                  <SelectValue
-                    placeholder={
-                      !selectedCollegeId || selectedCollegeId === 0
-                        ? "Select a college first"
-                        : coursesLoading
-                        ? "Loading courses..."
-                        : "Select course"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {courses && courses.length > 0 ? (
-                    courses
-                      .filter(
-                        (course) =>
-                          course.college_wise_course_id != null && course.name
-                      )
-                      .map((course) => (
-                        <SelectItem
-                          key={course.college_wise_course_id}
-                          value={course.college_wise_course_id.toString()}
-                        >
-                          {course.name}
-                        </SelectItem>
-                      ))
-                  ) : (
-                    <div className="px-3 py-2 text-sm text-muted-foreground">
-                      No courses available
-                    </div>
-                  )}
-                </SelectContent>
-              </Select>
-            )}
-          />
-          {errors.courseName && (
-            <p className="text-sm text-red-600">
-              {errors.courseName.message as string}
-            </p>
-          )}
-        </div>
-
-        {/* Graduation Year */}
-        <div className="space-y-2">
-          <Label className="flex items-center gap-2 text-sm font-medium">
-            <Calendar className="w-4 h-4 text-teal-500" />
-            Graduation Year <span className="text-teal-600">*</span>
-          </Label>
-          <Controller
-            name="graduationYear"
-            control={control}
-            render={({ field }) => (
-              <Select
-                value={field.value}
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  updateFormData({ graduationYear: value });
-                }}
-              >
-                <SelectTrigger
-                  className={`border-gray-300 ${
-                    errors.graduationYear ? "border-red-500" : ""
-                  }`}
-                >
-                  <SelectValue placeholder="Select year" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 10 }, (_, i) => 2020 + i).map(
-                    (year) => (
-                      <SelectItem key={year} value={year.toString()}>
-                        {year}
-                      </SelectItem>
-                    )
-                  )}
-                </SelectContent>
-              </Select>
-            )}
-          />
-          {errors.graduationYear && (
-            <p className="text-sm text-red-600">
-              {errors.graduationYear.message as string}
             </p>
           )}
         </div>
