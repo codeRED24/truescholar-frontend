@@ -52,7 +52,7 @@ export async function generateMetadata(props: {
     const { college_information, scholarship_section } = college;
     const collegeName =
       college_information.college_name || "College Scholarships";
-    const canonicalUrl = `${BASE_URL}/colleges/${college_information.slug}-${collegeId}/scholarships`;
+    const canonicalUrl = `${BASE_URL}/colleges/${college_information.slug}-${collegeId}/scholarship`;
     const metaDesc =
       scholarship_section?.[0]?.meta_desc ||
       "Explore scholarship opportunities at this college.";
@@ -87,13 +87,14 @@ const CollegeScholarship = async (props: {
 
     const { college_information, scholarship_section, news_section } =
       scholarshipData;
-    const correctSlugId = `${college_information.slug}`;
 
-    console.log(slugId !== correctSlugId);
+    // Ensure the college slug doesn't already contain the college ID (strip one or more trailing -<digits> segments)
+    const baseSlug = college_information.slug?.replace(/(?:-\d+)+$/, "") || "";
+    const correctSlugId = `${baseSlug}-${collegeId}`;
 
-    // if (slugId !== correctSlugId) {
-    //   redirect(`/colleges/${correctSlugId}/scholarships`);
-    // }
+    if (slugId !== correctSlugId) {
+      redirect(`/colleges/${correctSlugId}/scholarship`);
+    }
 
     const jsonLD = [
       generateJSONLD("CollegeOrUniversity", {
@@ -123,7 +124,7 @@ const CollegeScholarship = async (props: {
             "@type": "ListItem",
             position: 4,
             name: "Scholarships",
-            item: `${BASE_URL}/colleges/${correctSlugId}/scholarships`,
+            item: `${BASE_URL}/colleges/${correctSlugId}/scholarship`,
           },
         ],
       }),
@@ -134,11 +135,12 @@ const CollegeScholarship = async (props: {
           name: college_information.college_name,
         },
         description: scholarship_section?.[0]?.meta_desc,
-        url: `${BASE_URL}/colleges/${correctSlugId}/scholarships`,
+        url: `${BASE_URL}/colleges/${correctSlugId}/scholarship`,
       }),
     ];
 
     const extractedData = {
+      college_id: college_information.college_id,
       college_name: college_information.college_name,
       college_logo: college_information.logo_img,
       city: college_information.city,

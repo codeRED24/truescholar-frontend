@@ -1,5 +1,8 @@
+"use client";
+
 import Share from "@/components/miscellaneous/Share";
 import LeadModal from "@/components/modals/LeadModal";
+import { ReelUploadDialog } from "@/components/reel-upload-dialog";
 import { Button } from "@/components/ui/button";
 import { trimText } from "@/components/utils/utils";
 import StoryWrapper from "@/components/vid/StoryWrapper";
@@ -16,6 +19,57 @@ const sampleVideoUrls = [
   "https://media.xiph.org/video/derf/y4m/ToS_720p.mp4",
   "https://archive.org/download/ElephantsDream/ed_1024_512kb.mp4",
 ];
+
+async function handleReelUpload(
+  data: any,
+  onProgress?: (progress: number) => void
+): Promise<void> {
+  if (!data.reel) {
+    throw new Error("No reel file provided");
+  }
+  const formData = new FormData();
+  formData.append("user_id", "45");
+  formData.append("reel", data.reel);
+  formData.append("college_id", data.college_id);
+  formData.append("type", data.type);
+
+  // Create XMLHttpRequest for progress tracking
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+
+    // Track upload progress
+    xhr.upload.addEventListener("progress", (event) => {
+      if (event.lengthComputable && onProgress) {
+        const percentComplete = (event.loaded / event.total) * 100;
+        onProgress(percentComplete);
+      }
+    });
+
+    // Handle completion
+    xhr.addEventListener("load", () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        if (onProgress) onProgress(100);
+        resolve();
+      } else {
+        reject(new Error("Upload failed"));
+      }
+    });
+
+    // Handle errors
+    xhr.addEventListener("error", () => {
+      reject(new Error("Upload failed"));
+    });
+
+    // Handle abort
+    xhr.addEventListener("abort", () => {
+      reject(new Error("Upload cancelled"));
+    });
+
+    // Open and send request
+    xhr.open("POST", `${process.env.NEXT_PUBLIC_API_URL}/reels`);
+    xhr.send(formData);
+  });
+}
 
 const CollegeHead = ({
   data,
@@ -183,14 +237,20 @@ const CollegeHead = ({
             <h1 className="text-xl md:text-2xxl leading-6 md:leading-9 font-public font-bold line-clamp-2">
               {data.title || data.college_name}
             </h1>
-            <LeadModal
-              triggerText={
-                <span className="flex items-center gap-2">
-                  Enquire Now
-                  <Headset />
-                </span>
-              }
-            />
+            <div className="flex-1 lg:flex-none  flex flex-col lg:flex-row gap-2">
+              <ReelUploadDialog
+                collegeId={data.college_id}
+                onUpload={handleReelUpload}
+              />
+              <LeadModal
+                triggerText={
+                  <span className="flex items-center gap-2">
+                    Enquire Now
+                    <Headset />
+                  </span>
+                }
+              />
+            </div>
           </div>
         </div>
       </div>

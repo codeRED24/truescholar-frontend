@@ -93,8 +93,8 @@ const CollegeCutoffs = async (props: {
     const { college_information, cutoff_content, news_section, college_dates } =
       cutoffData;
 
-    // Ensure the college slug doesn't already contain the college ID
-    const baseSlug = college_information.slug?.replace(/-\d+$/, "") || "";
+    // Ensure the college slug doesn't already contain the college ID (strip one or more trailing -<digits> segments)
+    const baseSlug = college_information.slug?.replace(/(?:-\d+)+$/, "") || "";
     const correctSlugId = `${baseSlug}-${collegeId}`;
 
     const cutoffDataVal = await getCollegeCutoffsData(collegeId);
@@ -160,6 +160,7 @@ const CollegeCutoffs = async (props: {
     ];
 
     const extractedData = {
+      college_id: college_information.college_id,
       college_name: college_information.college_name,
       college_logo: college_information.logo_img,
       city: college_information.city,
@@ -198,6 +199,15 @@ const CollegeCutoffs = async (props: {
       </>
     );
   } catch (error) {
+    // If Next threw a redirect/found exception, rethrow so Next can handle it
+    const err: any = error;
+    if (
+      err?.message?.includes?.("NEXT_REDIRECT") ||
+      err?.message?.includes?.("NEXT_FOUND")
+    ) {
+      throw err;
+    }
+
     console.log(error);
 
     return notFound();
