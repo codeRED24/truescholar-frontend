@@ -22,6 +22,8 @@ import {
 import { Controller } from "react-hook-form";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import { useMemo } from "react";
+import { countries } from "countries-list";
 
 export function PersonalDetailsStep() {
   const { formData, updateFormData, personalDetailsForm } = useFormContext();
@@ -33,6 +35,47 @@ export function PersonalDetailsStep() {
   } = personalDetailsForm;
 
   const isPhoneVerified = watch("isPhoneVerified") || false;
+
+  const formatDate = (d: Date) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  };
+
+  // Allow only users aged between 15 and 60 years
+  const minDate = useMemo(() => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 60);
+    return formatDate(d);
+  }, []);
+
+  const maxDate = useMemo(() => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 15);
+    return formatDate(d);
+  }, []);
+
+  // Sorted countries with India first
+  const sortedCountries = useMemo(() => {
+    const entries = Object.keys(countries).map((code) => ({
+      code,
+      name: countries[code as keyof typeof countries].name,
+    }));
+
+    entries.sort((a, b) => a.name.localeCompare(b.name));
+
+    // Move India to the top if present
+    const indiaIndex = entries.findIndex(
+      (e) => e.name.toLowerCase() === "india" || e.code.toLowerCase() === "in"
+    );
+    if (indiaIndex > 0) {
+      const [india] = entries.splice(indiaIndex, 1);
+      entries.unshift(india);
+    }
+
+    return entries;
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -92,7 +135,7 @@ export function PersonalDetailsStep() {
                 {...field}
                 id="email"
                 type="email"
-                placeholder="Enter your email address"
+                placeholder="Enter your official email address"
                 className={`border-gray-300 ${
                   errors.email ? "border-red-500" : ""
                 }`}
@@ -137,6 +180,7 @@ export function PersonalDetailsStep() {
                 <SelectContent>
                   <SelectItem value="male">Male</SelectItem>
                   <SelectItem value="female">Female</SelectItem>
+                  <SelectItem value="n-a">Prefer Not To Say</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
@@ -166,8 +210,10 @@ export function PersonalDetailsStep() {
                 {...field}
                 id="dateOfBirth"
                 type="date"
+                min={minDate}
+                max={maxDate}
                 placeholder="Select your date of birth"
-                className={`border-gray-300 ${
+                className={`border-gray-300  ${
                   errors.dateOfBirth ? "border-red-500" : ""
                 }`}
                 onChange={(e) => {
@@ -262,10 +308,11 @@ export function PersonalDetailsStep() {
                   <SelectValue placeholder="Select country" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="india">India</SelectItem>
-                  <SelectItem value="usa">United States</SelectItem>
-                  <SelectItem value="uk">United Kingdom</SelectItem>
-                  <SelectItem value="canada">Canada</SelectItem>
+                  {sortedCountries.map((c) => (
+                    <SelectItem key={c.code} value={c.code}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             )}
