@@ -22,10 +22,25 @@ export const personalDetailsSchema = z.object({
         monthDiff < 0 ||
         (monthDiff === 0 && today.getDate() < date.getDate())
       ) {
-        return age - 1 >= 16;
+        return age - 1 >= 15;
       }
-      return age >= 16;
-    }, "You must be at least 16 years old")
+      return age >= 15;
+    }, "You must be at least 15 years old")
+    .refine((val) => {
+      // Check if it's a valid date and user is not more than 60 years old
+      const date = new Date(val);
+      const today = new Date();
+      const age = today.getFullYear() - date.getFullYear();
+      const monthDiff = today.getMonth() - date.getMonth();
+
+      if (
+        monthDiff < 0 ||
+        (monthDiff === 0 && today.getDate() < date.getDate())
+      ) {
+        return age - 1 <= 60;
+      }
+      return age <= 60;
+    }, "Your age must be smaller than 60 years")
     .refine((val) => {
       // Check if date is not in the future
       const date = new Date(val);

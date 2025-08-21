@@ -3,6 +3,7 @@ import { getArticles } from "@/api/list/getArticles";
 import { getCollegeSitemapData } from "@/api/sitemap/getCollegeSitemapData";
 import { getExamSitemapData } from "@/api/sitemap/getExamSitemapData";
 import { getAuthors } from "@/api/list/getAuthors";
+import { mapCollegeTabSlugToPath } from "@/lib/collegeTab";
 
 const INVALID_CHARACTERS_REGEX = /[&<>"']/;
 function isValidSlug(slug: string): boolean {
@@ -31,7 +32,7 @@ export async function generateCollegesUrls() {
       const urls = collegesData.colleges
         .map((college) => {
           if (!college.slug) return [];
-          const baseSlug = `${college.slug.replace(/-\d+$/, "")}-${
+          const baseSlug = `${college.slug.replace(/(?:-\d+)+$/, "")}-${
             college.college_id
           }`;
           if (!isValidSlug(baseSlug)) return [];
@@ -50,22 +51,29 @@ export async function generateCollegesUrls() {
           college.available_tabs.forEach((tab) => {
             if (tab === "info") return; // Already added base URL
 
+            // Map backend tab name to frontend route path
+            const tabPath = mapCollegeTabSlugToPath(tab);
+
+            // Skip if it maps to empty string (info tab)
+            if (tabPath === "") return;
+
             let priority = 0.6;
             let changeFrequency = "monthly";
 
             // Set different priorities and frequencies for different tabs
-            if (tab === "admission-process") {
+            // Use the mapped path for comparisons
+            if (tabPath === "/admission-process") {
               priority = 0.8;
               changeFrequency = "weekly";
-            } else if (tab === "cutoffs" || tab === "scholarship") {
+            } else if (tabPath === "/cutoffs" || tabPath === "/scholarship") {
               priority = 0.7;
-            } else if (tab === "news") {
+            } else if (tabPath === "/news") {
               priority = 1;
               changeFrequency = "daily";
             }
 
             collegeUrls.push({
-              url: `${baseUrl}/${tab}`,
+              url: `${baseUrl}${tabPath}`,
               changeFrequency,
               priority,
             });

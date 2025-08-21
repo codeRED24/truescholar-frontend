@@ -9,38 +9,61 @@ export function mapCollegeTabSlugToPath(slug: string): string {
   const normalized = slug.trim().toLowerCase();
   switch (normalized) {
     case "admission":
+    case "admissions":
       return "/admission-process";
+
     case "courses":
+    case "course":
       return "/courses";
+
     case "cutoff":
+    case "cutoffs":
       return "/cutoffs";
 
     case "eligibility":
+    case "eligibilities":
       return "/eligibility";
+
     case "facility":
+    case "facilities":
       return "/facilities";
+
     case "faq":
+    case "faqs":
       return "/faq";
 
     case "fees":
+    case "fee":
       return "/fees";
+
+    case "highlights":
     case "highlight":
       return "/highlights";
+
     case "info":
       return "";
 
     case "news":
       return "/news";
+
     case "other":
+    case "others":
       return "/others";
+
     case "placement":
+    case "placements":
       return "/placements";
 
     case "ranking":
+    case "rankings":
       return "/rankings";
+
     case "result":
+    case "results":
       return "/results";
+
     case "scholarship":
+    case "scholarships":
       return "/scholarship";
 
     default:

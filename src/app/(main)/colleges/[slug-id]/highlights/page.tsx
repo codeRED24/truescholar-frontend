@@ -83,6 +83,7 @@ const CollegeHighlights = async (props: {
   const description = highlight.description || "";
 
   const extractedData = {
+    college_id: college_information.college_id,
     college_name: college_information.college_name,
     college_logo: college_information.logo_img,
     city: college_information.city,
@@ -181,15 +182,15 @@ const CollegeHighlights = async (props: {
         <CollegeHead data={extractedData} />
         <CollegeNav data={college_information} />
 
-        <div className="container-body lg:grid grid-cols-12 gap-4 pt-4">
+        <div className="container-body md:grid grid-cols-12 gap-4 pt-4">
+          <div className="col-span-3 mt-4">
+            <Image src="/ads/static.svg" height={250} width={500} alt="ads" />
+            <CollegeNews news={news_section} clgSlug={correctSlugId} />
+          </div>
           <div className="col-span-9">
             {description && <TocGenerator content={description} />}
             <div dangerouslySetInnerHTML={{ __html: description }} />
             <RatingComponent />
-          </div>
-          <div className="col-span-3 mt-4">
-            <Image src="/ads/static.svg" height={250} width={500} alt="ads" />
-            <CollegeNews news={news_section} clgSlug={correctSlugId} />
           </div>
         </div>
       </div>
