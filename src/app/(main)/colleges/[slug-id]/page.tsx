@@ -102,29 +102,6 @@ const IndividualCollege = async (props: {
         logo: college_information.logo_img,
         url: `https://www.truescholar.in/colleges/${correctSlugId}`,
       },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          {
-            "@type": "ListItem",
-            position: 1,
-            name: "Home",
-            item: "https://www.truescholar.in",
-          },
-          {
-            "@type": "ListItem",
-            position: 2,
-            name: "Colleges",
-            item: "https://www.truescholar.in/colleges",
-          },
-          {
-            "@type": "ListItem",
-            position: 3,
-            name: college_information.college_name,
-            item: `https://www.truescholar.in/colleges/${correctSlugId}`,
-          },
-        ],
-      },
       ...(info_section?.[0]
         ? [
             {

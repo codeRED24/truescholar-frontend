@@ -12,7 +12,7 @@ const websiteLD = {
   description: "Find and compare the best colleges in India",
   potentialAction: {
     "@type": "SearchAction",
-    target: "https://truescholar.in/search?q={search_term_string}",
+    target: `${process.env.NEXT_PUBLIC_BASE_URL}/search?q={search_term_string}`,
     "query-input": "required name=search_term_string",
   },
 };

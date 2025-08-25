@@ -112,37 +112,6 @@ const CollegeFees = async (props: {
       address: location,
     };
 
-    const breadcrumbLD = {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        {
-          "@type": "ListItem",
-          position: 1,
-          name: "Home",
-          item: "https://www.truescholar.in",
-        },
-        {
-          "@type": "ListItem",
-          position: 2,
-          name: "Colleges",
-          item: "https://www.truescholar.in/colleges",
-        },
-        {
-          "@type": "ListItem",
-          position: 3,
-          name: college_name,
-          item: `https://www.truescholar.in/colleges/${correctSlugId}`,
-        },
-        {
-          "@type": "ListItem",
-          position: 4,
-          name: "Fees",
-          item: `https://www.truescholar.in/colleges/${correctSlugId}/fees`,
-        },
-      ],
-    };
-
     const extractedData = {
       college_id: college_information.college_id,
       college_name: college_information?.college_name || "",
@@ -159,10 +128,6 @@ const CollegeFees = async (props: {
         <Script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(clgLD) }}
-        />
-        <Script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLD) }}
         />
 
         <CollegeHead data={extractedData} />

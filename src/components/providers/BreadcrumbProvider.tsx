@@ -9,6 +9,13 @@ import {
 } from "@/lib/schema";
 
 /**
+ * Converts a slug string (e.g. "my-slug") to a human-readable name (e.g. "My Slug")
+ */
+function slugToName(slug: string): string {
+  return slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+}
+
+/**
  * BreadcrumbProvider automatically generates and renders breadcrumb schema
  * based on the current pathname
  */
@@ -73,9 +80,7 @@ export default function BreadcrumbProvider() {
 
       if (pathParts.length >= 2) {
         const collegeSlug = pathParts[1];
-        const collegeName = collegeSlug
-          .replace(/-/g, " ")
-          .replace(/\b\w/g, (l) => l.toUpperCase());
+        const collegeName = slugToName(collegeSlug);
 
         if (pathParts.length === 2) {
           // Base college page
@@ -87,9 +92,7 @@ export default function BreadcrumbProvider() {
         } else if (pathParts.length === 3) {
           // Sub-routes like /cutoffs, /fees, /news, etc.
           const subRoute = pathParts[2];
-          const subRouteName =
-            subRoute.charAt(0).toUpperCase() +
-            subRoute.slice(1).replace(/-/g, " ");
+          const subRouteName = slugToName(subRoute);
           return createDynamicBreadcrumb(
             createDynamicBreadcrumb(
               breadcrumbConfigs.colleges,
@@ -103,12 +106,8 @@ export default function BreadcrumbProvider() {
           // Individual items like /news/[news-id]
           const subRoute = pathParts[2];
           const itemSlug = pathParts[3];
-          const subRouteName =
-            subRoute.charAt(0).toUpperCase() +
-            subRoute.slice(1).replace(/-/g, " ");
-          const itemName = itemSlug
-            .replace(/-/g, " ")
-            .replace(/\b\w/g, (l) => l.toUpperCase());
+          const subRouteName = slugToName(subRoute);
+          const itemName = slugToName(itemSlug);
 
           return createDynamicBreadcrumb(
             createDynamicBreadcrumb(
@@ -132,9 +131,7 @@ export default function BreadcrumbProvider() {
       const pathParts = pathname.split("/").filter(Boolean);
       if (pathParts.length >= 2) {
         const articleSlug = pathParts[1];
-        const articleName = articleSlug
-          .replace(/-/g, " ")
-          .replace(/\b\w/g, (l) => l.toUpperCase());
+        const articleName = slugToName(articleSlug);
         return createDynamicBreadcrumb(
           breadcrumbConfigs.articles,
           articleName,
@@ -149,9 +146,7 @@ export default function BreadcrumbProvider() {
 
       if (pathParts.length >= 2) {
         const examSlug = pathParts[1];
-        const examName = examSlug
-          .replace(/-/g, " ")
-          .replace(/\b\w/g, (l) => l.toUpperCase());
+        const examName = slugToName(examSlug);
 
         if (pathParts.length === 2) {
           // Base exam page
@@ -184,9 +179,7 @@ export default function BreadcrumbProvider() {
       const pathParts = pathname.split("/").filter(Boolean);
       if (pathParts.length >= 2) {
         const authorSlug = pathParts[1];
-        const authorName = authorSlug
-          .replace(/-/g, " ")
-          .replace(/\b\w/g, (l) => l.toUpperCase());
+        const authorName = slugToName(authorSlug);
         return createDynamicBreadcrumb(
           breadcrumbConfigs.authors,
           authorName,

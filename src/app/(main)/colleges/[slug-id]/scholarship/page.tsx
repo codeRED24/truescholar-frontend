@@ -105,29 +105,6 @@ const CollegeScholarship = async (props: {
         telephone: college_information.college_phone,
         address: college_information.location,
       }),
-      generateJSONLD("BreadcrumbList", {
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: BASE_URL },
-          {
-            "@type": "ListItem",
-            position: 2,
-            name: "Colleges",
-            item: `${BASE_URL}/colleges`,
-          },
-          {
-            "@type": "ListItem",
-            position: 3,
-            name: college_information.college_name,
-            item: `${BASE_URL}/colleges/${correctSlugId}`,
-          },
-          {
-            "@type": "ListItem",
-            position: 4,
-            name: "Scholarships",
-            item: `${BASE_URL}/colleges/${correctSlugId}/scholarship`,
-          },
-        ],
-      }),
       generateJSONLD("Scholarship", {
         name: scholarship_section?.[0]?.title,
         provider: {

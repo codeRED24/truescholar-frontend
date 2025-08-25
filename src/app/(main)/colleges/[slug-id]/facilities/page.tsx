@@ -116,29 +116,6 @@ const CollegeFacilities = async (props: {
             }
           : undefined,
       }),
-      generateJSONLD("BreadcrumbList", {
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: BASE_URL },
-          {
-            "@type": "ListItem",
-            position: 2,
-            name: "Colleges",
-            item: `${BASE_URL}/colleges`,
-          },
-          {
-            "@type": "ListItem",
-            position: 3,
-            name: college_information.college_name,
-            item: `${BASE_URL}/colleges/${correctSlugId}`,
-          },
-          {
-            "@type": "ListItem",
-            position: 4,
-            name: "Facilities",
-            item: `${BASE_URL}/colleges/${correctSlugId}/facilities`,
-          },
-        ],
-      }),
     ];
 
     const extractedData = {

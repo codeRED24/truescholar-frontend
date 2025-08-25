@@ -109,36 +109,6 @@ const ExamNews = async ({
     },
     {
       "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        {
-          "@type": "ListItem",
-          position: 1,
-          name: "Home",
-          item: "https://www.truescholar.in",
-        },
-        {
-          "@type": "ListItem",
-          position: 2,
-          name: "Exams",
-          item: "https://www.truescholar.in/exams",
-        },
-        {
-          "@type": "ListItem",
-          position: 3,
-          name: examName,
-          item: `https://www.truescholar.in/exams/${correctSlugId}`,
-        },
-        {
-          "@type": "ListItem",
-          position: 4,
-          name: "News",
-          item: `https://www.truescholar.in/exams/${correctSlugId}/news`,
-        },
-      ],
-    },
-    {
-      "@context": "https://schema.org",
       "@type": "NewsArticle",
       headline: newsList[0]?.title || `${examName} News`,
       description: newsList[0]?.meta_desc || `Latest updates from ${examName}.`,
