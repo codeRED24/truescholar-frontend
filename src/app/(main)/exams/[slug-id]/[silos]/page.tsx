@@ -104,6 +104,25 @@ const ExamSiloCard: React.FC<{
     examContent?.description ||
     "<p>Admit card details will be available soon.</p>";
 
+  // Dynamic breadcrumb based on silo type
+  const getSiloDisplayName = (silo: string) => {
+    const siloNames: { [key: string]: string } = {
+      syllabus: "Syllabus",
+      "exam-pattern": "Exam Pattern",
+      cutoff: "Cutoff",
+      result: "Result",
+      news: "News",
+      "admit-card": "Admit Card",
+      centers: "Exam Centers",
+      "exam-faq": "FAQ",
+      "answer-key": "Answer Key",
+    };
+    return (
+      siloNames[silo] ||
+      silo.charAt(0).toUpperCase() + silo.slice(1).replace(/-/g, " ")
+    );
+  };
+
   const breadcrumbLD = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -129,13 +148,35 @@ const ExamSiloCard: React.FC<{
       {
         "@type": "ListItem",
         position: 4,
-        name: `${examInfo.exam_name} Results`,
-        item: `https://www.truescholar.in/exams/${correctSlugId}/results`,
+        name: getSiloDisplayName(accurateSilos),
+        item: `https://www.truescholar.in/exams/${correctSlugId}/${accurateSilos}`,
       },
     ],
   };
 
   const { topic_title, meta_desc, author_name, updated_at } = examContent;
+
+  // FAQ Schema for exam-faq silos
+  const faqLD =
+    accurateSilos === "exam_faq"
+      ? {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: [
+            {
+              "@type": "Question",
+              name: topic_title || "Frequently Asked Question",
+              acceptedAnswer: {
+                "@type": "Answer",
+                text:
+                  examContent?.description ||
+                  meta_desc ||
+                  "Answer not available",
+              },
+            },
+          ],
+        }
+      : null;
 
   const articleLD = {
     "@context": "https://schema.org",
@@ -177,6 +218,12 @@ const ExamSiloCard: React.FC<{
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleLD) }}
       />
+      {faqLD && (
+        <Script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLD) }}
+        />
+      )}
 
       <ExamContent exam={exam} />
     </>

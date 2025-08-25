@@ -160,7 +160,9 @@ export const profileVerificationSchema = z.object({
     .refine(
       (url) => /^https?:\/\/(www\.)?linkedin\.com\/.*$/i.test(url),
       "Please enter a valid LinkedIn profile URL"
-    ),
+    )
+    .optional()
+    .or(z.literal("")),
   studentId: z.instanceof(File, { message: "Please upload your student ID" }),
   markSheet: z.instanceof(File, { message: "Please upload your mark sheet" }),
   degreeCertificate: z.instanceof(File, {

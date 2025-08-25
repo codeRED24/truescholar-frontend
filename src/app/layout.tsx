@@ -1,7 +1,21 @@
 import JsonLd from "@/lib/jsonld";
-import { orgLD, websiteLD } from "@/lib/schema";
 import { Barlow, Public_Sans } from "next/font/google";
 import Script from "next/script";
+import BreadcrumbProvider from "@/components/providers/BreadcrumbProvider";
+
+// Define website schema data
+const websiteLD = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "TrueScholar",
+  url: "https://truescholar.in",
+  description: "Find and compare the best colleges in India",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: "https://truescholar.in/search?q={search_term_string}",
+    "query-input": "required name=search_term_string",
+  },
+};
 
 const publicSans = Public_Sans({
   weight: ["300", "400", "500", "600", "700"],
@@ -109,6 +123,7 @@ export default function RootLayout({
       </head>
       <body className={`${publicSans.variable} ${barlow.variable} antialiased`}>
         <GTMScript gtmId="G-5CMGT07LVZ" />
+        <BreadcrumbProvider />
         {children}
       </body>
     </html>
