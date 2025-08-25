@@ -3,6 +3,7 @@ import ExamContent from "@/components/page/exam/ExamContent";
 import { splitSilos } from "@/components/utils/utils";
 import { notFound, redirect } from "next/navigation";
 import Script from "next/script";
+import { parseFAQFromHTML } from "@/components/utils/parsefaqschema";
 
 export async function generateMetadata(props: {
   params: Promise<{ "slug-id": string; silos: string }>;
@@ -95,86 +96,24 @@ const ExamSiloCard: React.FC<{
     return redirect(`/exams/${correctSlugId}/${silos}`);
   }
 
-  // ✅ Extract available silos for ExamNav
-  const availableSilos =
-    distinctSilos?.map((silo: { silos: string }) => silo.silos) || [];
-
-  // ✅ Ensure the description exists
-  const contentHTML =
-    examContent?.description ||
-    "<p>Admit card details will be available soon.</p>";
-
-  // Dynamic breadcrumb based on silo type
-  const getSiloDisplayName = (silo: string) => {
-    const siloNames: { [key: string]: string } = {
-      syllabus: "Syllabus",
-      "exam-pattern": "Exam Pattern",
-      cutoff: "Cutoff",
-      result: "Result",
-      news: "News",
-      "admit-card": "Admit Card",
-      centers: "Exam Centers",
-      "exam-faq": "FAQ",
-      "answer-key": "Answer Key",
-    };
-    return (
-      siloNames[silo] ||
-      silo.charAt(0).toUpperCase() + silo.slice(1).replace(/-/g, " ")
-    );
-  };
-
-  const breadcrumbLD = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Home",
-        item: "https://www.truescholar.in",
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: "Exams",
-        item: "https://www.truescholar.in/exams",
-      },
-      {
-        "@type": "ListItem",
-        position: 3,
-        name: examInfo.exam_name,
-        item: `https://www.truescholar.in/exams/${correctSlugId}`,
-      },
-      {
-        "@type": "ListItem",
-        position: 4,
-        name: getSiloDisplayName(accurateSilos),
-        item: `https://www.truescholar.in/exams/${correctSlugId}/${accurateSilos}`,
-      },
-    ],
-  };
-
-  const { topic_title, meta_desc, author_name, updated_at } = examContent;
+  const { topic_title, meta_desc, author_name, updated_at, description } =
+    examContent;
 
   // FAQ Schema for exam-faq silos
+  const parsedFAQs = parseFAQFromHTML(description || "");
   const faqLD =
     accurateSilos === "exam_faq"
       ? {
           "@context": "https://schema.org",
           "@type": "FAQPage",
-          mainEntity: [
-            {
-              "@type": "Question",
-              name: topic_title || "Frequently Asked Question",
-              acceptedAnswer: {
-                "@type": "Answer",
-                text:
-                  examContent?.description ||
-                  meta_desc ||
-                  "Answer not available",
-              },
+          mainEntity: parsedFAQs.map((faq, index) => ({
+            "@type": "Question",
+            name: faq.question || `FAQ ${index + 1}`,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: faq.answer || "Answer not available",
             },
-          ],
+          })),
         }
       : null;
 
@@ -210,10 +149,6 @@ const ExamSiloCard: React.FC<{
 
   return (
     <>
-      <Script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLD) }}
-      />
       <Script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleLD) }}

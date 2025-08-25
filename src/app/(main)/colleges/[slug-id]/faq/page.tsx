@@ -7,6 +7,7 @@ import CollegeNav from "@/components/page/college/assets/CollegeNav";
 import CollegeCourseContent from "@/components/page/college/assets/CollegeCourseContent";
 import Image from "next/image";
 import CollegeNews from "@/components/page/college/assets/CollegeNews";
+import { parseFAQFromHTML } from "@/components/utils/parsefaqschema";
 
 const BASE_URL = "https://www.truescholar.in";
 
@@ -91,6 +92,9 @@ const CollegeFAQs = async (props: {
       redirect(`/colleges/${correctSlugId}/faqs`);
     }
 
+    // Parse FAQs from HTML content
+    const parsedFAQs = parseFAQFromHTML(faqData[0]?.description || "");
+
     const jsonLD = [
       generateJSONLD("CollegeOrUniversity", {
         name: college_information.college_name,
@@ -101,41 +105,15 @@ const CollegeFAQs = async (props: {
         address: college_information.location,
         college_brochure: college_information.college_brochure || "/",
       }),
-      generateJSONLD("BreadcrumbList", {
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: BASE_URL },
-          {
-            "@type": "ListItem",
-            position: 2,
-            name: "Colleges",
-            item: `${BASE_URL}/colleges`,
-          },
-          {
-            "@type": "ListItem",
-            position: 3,
-            name: college_information.college_name,
-            item: `${BASE_URL}/colleges/${correctSlugId}`,
-          },
-          {
-            "@type": "ListItem",
-            position: 4,
-            name: "FAQs",
-            item: `${BASE_URL}/colleges/${correctSlugId}/faq`,
-          },
-        ],
-      }),
-
       generateJSONLD("FAQPage", {
-        mainEntity: faqData.map(
-          (faq: { title: string; description: string }) => ({
-            "@type": "Question",
-            name: faq.title || "Frequently Asked Question",
-            acceptedAnswer: {
-              "@type": "Answer",
-              text: faq.description || "Answer not available",
-            },
-          })
-        ),
+        mainEntity: parsedFAQs.map((faq, index) => ({
+          "@type": "Question",
+          name: faq.question || `FAQ ${index + 1}`,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: faq.answer || "Answer not available",
+          },
+        })),
       }),
     ];
 

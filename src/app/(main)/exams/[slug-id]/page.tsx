@@ -105,37 +105,8 @@ const IndividualExam = async ({ params }: IndividualExamProps) => {
     redirect(`/exams/${correctSlugId}`);
   }
 
-  const breadcrumbLD = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Home",
-        item: "https://www.truescholar.in",
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: "Exams",
-        item: "https://www.truescholar.in/exams",
-      },
-      {
-        "@type": "ListItem",
-        position: 3,
-        name: exam.examInformation.exam_name,
-        item: `https://www.truescholar.in/exams/${correctSlugId}`,
-      },
-    ],
-  };
-
   return (
     <>
-      <Script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLD) }}
-      />
       <ExamContent exam={exam} />
     </>
   );

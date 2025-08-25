@@ -106,29 +106,6 @@ const CollegeAdmissionProcess = async (props: {
         telephone: college_information.college_phone,
         address: college_information.location,
       }),
-      generateJSONLD("BreadcrumbList", {
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: BASE_URL },
-          {
-            "@type": "ListItem",
-            position: 2,
-            name: "Colleges",
-            item: `${BASE_URL}/colleges`,
-          },
-          {
-            "@type": "ListItem",
-            position: 3,
-            name: college_information.college_name,
-            item: `${BASE_URL}/colleges/${correctSlugId}`,
-          },
-          {
-            "@type": "ListItem",
-            position: 4,
-            name: "Admission Process",
-            item: `${BASE_URL}/colleges/${correctSlugId}/admission-process`,
-          },
-        ],
-      }),
     ];
     const extractedData = {
       college_id: college_information.college_id,

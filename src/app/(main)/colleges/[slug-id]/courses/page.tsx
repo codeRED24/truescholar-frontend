@@ -29,32 +29,6 @@ const generateJSONLD = (type: string, data: Record<string, any>) => ({
   ...data,
 });
 
-const generateBreadcrumbLD = (collegeName: string, slugId: string) => ({
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  itemListElement: [
-    { "@type": "ListItem", position: 1, name: "Home", item: BASE_URL },
-    {
-      "@type": "ListItem",
-      position: 2,
-      name: "Colleges",
-      item: `${BASE_URL}/colleges`,
-    },
-    {
-      "@type": "ListItem",
-      position: 3,
-      name: collegeName,
-      item: `${BASE_URL}/colleges/${slugId}`,
-    },
-    {
-      "@type": "ListItem",
-      position: 4,
-      name: `${collegeName} Courses`,
-      item: `${BASE_URL}/colleges/${slugId}/courses`,
-    },
-  ],
-});
-
 const getCollegeData = async (
   collegeId: number
 ): Promise<CollegeDTO | null> => {
@@ -140,7 +114,6 @@ const CourseInCollege = async ({
       logo: college_information.logo_img,
       description: `${college_information.type_of_institute} institute founded in ${college_information.founded_year}`,
     }),
-    generateBreadcrumbLD(collegeName || "Default College Name", correctSlugId),
     generateJSONLD("Article", {
       headline: courseTitle,
       description: courseMetaDesc,
