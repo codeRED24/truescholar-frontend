@@ -100,12 +100,13 @@ const ExamSiloCard: React.FC<{
     examContent;
 
   // FAQ Schema for exam-faq silos
+  const parsedFAQs = parseFAQFromHTML(description || "");
   const faqLD =
     accurateSilos === "exam_faq"
       ? {
           "@context": "https://schema.org",
           "@type": "FAQPage",
-          mainEntity: parseFAQFromHTML(description || "").map((faq, index) => ({
+          mainEntity: parsedFAQs.map((faq, index) => ({
             "@type": "Question",
             name: faq.question || `FAQ ${index + 1}`,
             acceptedAnswer: {
