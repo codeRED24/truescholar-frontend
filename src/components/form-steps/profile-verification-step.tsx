@@ -99,7 +99,7 @@ export function ProfileVerificationStep() {
           className="flex items-center gap-2 text-sm font-medium"
         >
           <Linkedin className="w-4 h-4 text-blue-600" />
-          Your LinkedIn Profile <span className="text-teal-600">*</span>
+          Your LinkedIn Profile
         </Label>
         <Controller
           name="linkedinProfile"
@@ -118,7 +118,6 @@ export function ProfileVerificationStep() {
             {errors.linkedinProfile.message as string}
           </p>
         )}
-        <div className="text-center text-gray-500 text-sm">Or</div>
       </div>
 
       {/* File Uploads */}

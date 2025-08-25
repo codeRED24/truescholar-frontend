@@ -125,16 +125,18 @@ const CollegeFAQs = async (props: {
         ],
       }),
 
-      //   generateJSONLD("FAQPage", {
-      //     mainEntity: faq_section.map((faq: { title: string; description: string }) => ({
-      //       "@type": "Question",
-      //       name: faq.title || "Frequently Asked Question",
-      //       acceptedAnswer: {
-      //         "@type": "Answer",
-      //         text: faq.description || "Answer not available",
-      //       },
-      //     })),
-      //   }),
+      generateJSONLD("FAQPage", {
+        mainEntity: faqData.map(
+          (faq: { title: string; description: string }) => ({
+            "@type": "Question",
+            name: faq.title || "Frequently Asked Question",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: faq.description || "Answer not available",
+            },
+          })
+        ),
+      }),
     ];
 
     const extractedData = {
