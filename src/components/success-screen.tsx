@@ -3,7 +3,6 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Download, Share2, Copy } from "lucide-react";
-import { useState } from "react";
 import { toast } from "sonner";
 
 interface SuccessScreenProps {
@@ -12,45 +11,24 @@ interface SuccessScreenProps {
 }
 
 export function SuccessScreen({ onReset, referralCode }: SuccessScreenProps) {
-  const [copied, setCopied] = useState(false);
-
   // console.log("SuccessScreen received referralCode:", referralCode);
 
-  const handleCopyReferralCode = async () => {
-    if (referralCode) {
-      try {
-        await navigator.clipboard.writeText(referralCode);
-        setCopied(true);
-        toast.success("Referral code copied to clipboard!");
-        setTimeout(() => setCopied(false), 2000);
-      } catch (err) {
-        console.error("Failed to copy referral code:", err);
-        toast.error("Failed to copy referral code");
-      }
-    }
+  const generateReferralUrl = () => {
+    if (!referralCode) return null;
+    const baseUrl = window.location.origin;
+    return `${baseUrl}/review-form?ref=${encodeURIComponent(referralCode)}`;
   };
 
-  const handleShare = () => {
-    const shareText = referralCode
-      ? `I just submitted my college review to help future students! Use my referral code: ${referralCode} to get started with your review!`
-      : "I just submitted my college review to help future students!";
-
-    if (navigator.share) {
-      navigator.share({
-        title: "College Review Submitted - TrueScholar",
-        text: shareText,
-        url: window.location.origin,
-      });
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard
-        .writeText(shareText)
-        .then(() => {
-          toast.success("Share text copied to clipboard!");
-        })
-        .catch(() => {
-          toast.error("Failed to copy share text");
-        });
+  const handleCopyReferralUrl = async () => {
+    const referralUrl = generateReferralUrl();
+    if (referralUrl) {
+      try {
+        await navigator.clipboard.writeText(referralUrl);
+        toast.success("Referral URL copied to clipboard!");
+      } catch (err) {
+        console.error("Failed to copy referral URL:", err);
+        toast.error("Failed to copy referral URL");
+      }
     }
   };
   return (
@@ -91,23 +69,28 @@ export function SuccessScreen({ onReset, referralCode }: SuccessScreenProps) {
               <h3 className="font-semibold text-teal-800 mb-2">
                 Your Referral Code
               </h3>
-              <div className="bg-white border border-teal-300 rounded-md p-3 mb-3 flex items-center justify-between">
-                <code className="text-lg font-mono font-bold text-teal-900">
-                  {referralCode}
-                </code>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCopyReferralCode}
-                  className="ml-3 text-teal-700 border-teal-300 hover:bg-teal-50"
-                >
-                  <Copy className="w-4 h-4 mr-1" />
-                  {copied ? "Copied!" : "Copy"}
-                </Button>
+
+              {/* Referral URL Section */}
+              <div className="mt-4 pt-4 border-t border-teal-200">
+                <div className="bg-white border border-teal-300 rounded-md p-3 flex items-center justify-between">
+                  <span className="text-sm text-gray-600 truncate flex-1 mr-2">
+                    {generateReferralUrl()}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCopyReferralUrl}
+                    className="text-teal-700 border-teal-300 hover:bg-teal-50 flex-shrink-0"
+                  >
+                    <Copy className="w-4 h-4 mr-1" />
+                    Copy URL
+                  </Button>
+                </div>
               </div>
-              <p className="text-sm text-teal-700">
-                Share this code with friends to help them get started with their
-                college reviews!
+
+              <p className="text-sm text-teal-700 mt-3">
+                Share this link with friends! When they click it, they'll
+                automatically get your referral code applied.
               </p>
             </div>
           )}
@@ -120,14 +103,6 @@ export function SuccessScreen({ onReset, referralCode }: SuccessScreenProps) {
             >
               <Download className="w-4 h-4" />
               Download Receipt
-            </Button>
-            <Button
-              variant="outline"
-              className="flex items-center gap-2 bg-transparent"
-              onClick={handleShare}
-            >
-              <Share2 className="w-4 h-4" />
-              Share
             </Button>
             {onReset && (
               <Button
