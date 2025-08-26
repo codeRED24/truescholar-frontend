@@ -7,6 +7,7 @@ import {
   personalDetailsSchema,
   personalDetailsWithOtpSchema,
   studentReviewSchema,
+  feedbackSchema,
   profileVerificationSchema,
 } from "@/lib/validation-schemas";
 
@@ -18,6 +19,7 @@ interface FormData {
   dateOfBirth: string;
   contactNumber: string;
   countryOfOrigin: string;
+  collegeRollNumber: string;
   collegeName: string;
   collegeId: number;
   collegeLocation: string;
@@ -29,29 +31,46 @@ interface FormData {
   isPhoneVerified: boolean;
 
   // Student Review
+  isAnonymous: boolean;
+  stream: string;
+  yearOfStudy: string;
+  modeOfStudy: string;
+  currentSemester: string;
+
+  // Financial Information
+  annualTuitionFees: number;
+  hostelFees: number;
+  otherCharges: number;
+  scholarshipAvailed: boolean;
+  scholarshipName: string;
+  scholarshipAmount: number;
+
+  // Feedback & Review Fields
+  reviewTitle: string;
+  overallSatisfactionRating: number;
+  overallExperienceFeedback: string;
+  teachingQualityRating: number;
+  teachingQualityFeedback: string;
+  infrastructureRating: number;
+  infrastructureFeedback: string;
+  libraryRating: number;
+  libraryFeedback: string;
+  placementSupportRating: number;
+  placementSupportFeedback: string;
+  administrativeSupportRating: number;
+  administrativeSupportFeedback: string;
+  hostelRating: number;
+  hostelFeedback: string;
+  extracurricularRating: number;
+  extracurricularFeedback: string;
+  improvementSuggestions: string;
+  collegeImages: File[];
+
   profilePicture: File | undefined;
   linkedinProfile: string;
   studentId: File | undefined;
   markSheet: File | undefined;
   degreeCertificate: File | undefined;
-
-  // Review Ratings and Comments
-  collegePlacementTitle: string;
-
-  academicExperienceComment: string;
-  academicQualityRating: number;
-
-  admissionExperienceComment: string;
-  collegeAdmissionRating: number;
-
-  placementJourneyComment: string;
-  placementJourneyRating: number;
-
-  campusExperienceComment: string;
-  campusExperienceRating: number;
-
-  // College Images
-  collegeImages: File[];
 }
 
 interface FormContextType {
@@ -61,6 +80,7 @@ interface FormContextType {
   setErrors: (errors: Record<string, string>) => void;
   personalDetailsForm: UseFormReturn<any>;
   studentReviewForm: UseFormReturn<any>;
+  feedbackForm: UseFormReturn<any>;
   profileVerificationForm: UseFormReturn<any>;
   validateCurrentStep: (step: number) => Promise<boolean>;
   validatePersonalDetailsWithOtp: () => Promise<boolean>;
@@ -75,24 +95,46 @@ export const initialFormData: FormData = {
   dateOfBirth: "",
   contactNumber: "",
   countryOfOrigin: "",
+  collegeRollNumber: "",
   upiId: "",
   isEmailVerified: false,
   isPhoneVerified: false,
+  isAnonymous: false,
+  stream: "",
+  yearOfStudy: "",
+  modeOfStudy: "",
+  currentSemester: "",
+  annualTuitionFees: 0,
+  hostelFees: 0,
+  otherCharges: 0,
+  scholarshipAvailed: false,
+  scholarshipName: "",
+  scholarshipAmount: 0,
+  reviewTitle: "",
+  overallSatisfactionRating: 0,
+  overallExperienceFeedback: "",
+  teachingQualityRating: 0,
+  teachingQualityFeedback: "",
+  infrastructureRating: 0,
+  infrastructureFeedback: "",
+  libraryRating: 0,
+  libraryFeedback: "",
+  placementSupportRating: 0,
+  placementSupportFeedback: "",
+  administrativeSupportRating: 0,
+  administrativeSupportFeedback: "",
+  hostelRating: 0,
+  hostelFeedback: "",
+  extracurricularRating: 0,
+  extracurricularFeedback: "",
+  improvementSuggestions: "",
+  collegeImages: [],
   profilePicture: undefined,
   linkedinProfile: "",
   studentId: undefined,
   markSheet: undefined,
   degreeCertificate: undefined,
-  collegePlacementTitle: "",
-  academicExperienceComment: "",
-  academicQualityRating: 0,
-  placementJourneyComment: "",
-  placementJourneyRating: 0,
-  collegeAdmissionRating: 0,
-  admissionExperienceComment: "",
-  campusExperienceComment: "",
-  campusExperienceRating: 0,
-  collegeImages: [],
+
   // College information now in step 2
   collegeName: "",
   collegeId: 0,
@@ -115,6 +157,7 @@ export function FormProvider({ children }: { children: ReactNode }) {
       dateOfBirth: "",
       contactNumber: "",
       countryOfOrigin: "",
+      collegeRollNumber: "",
       upiId: "",
       isEmailVerified: false,
       isPhoneVerified: false,
@@ -132,19 +175,48 @@ export function FormProvider({ children }: { children: ReactNode }) {
       courseName: "",
       courseId: 0,
       graduationYear: "",
-      // Review content
-      collegePlacementTitle: "",
-      academicExperienceComment: "",
-      academicQualityRating: 0,
-      placementJourneyComment: "",
-      placementJourneyRating: 0,
-      collegeAdmissionRating: 0,
-      admissionExperienceComment: "",
-      campusExperienceComment: "",
-      campusExperienceRating: 0,
+      // Academic Information
+      isAnonymous: false,
+      stream: "",
+      yearOfStudy: "",
+      modeOfStudy: "",
+      currentSemester: "",
+      // Financial Information
+      annualTuitionFees: 0,
+      hostelFees: 0,
+      otherCharges: 0,
+      scholarshipAvailed: false,
+      scholarshipName: "",
+      scholarshipAmount: 0,
+    },
+    mode: "onBlur",
+  });
+
+  const feedbackForm = useForm({
+    resolver: zodResolver(feedbackSchema),
+    defaultValues: {
+      reviewTitle: "",
+      overallSatisfactionRating: 0,
+      overallExperienceFeedback: "",
+      teachingQualityRating: 0,
+      teachingQualityFeedback: "",
+      infrastructureRating: 0,
+      infrastructureFeedback: "",
+      libraryRating: 0,
+      libraryFeedback: "",
+      placementSupportRating: 0,
+      placementSupportFeedback: "",
+      administrativeSupportRating: 0,
+      administrativeSupportFeedback: "",
+      hostelRating: 0,
+      hostelFeedback: "",
+      extracurricularRating: 0,
+      extracurricularFeedback: "",
+      improvementSuggestions: "",
       collegeImages: [],
     },
-    mode: "onBlur", // Changed from onChange to onBlur for better UX
+    mode: "onBlur",
+    reValidateMode: "onChange",
   });
 
   const profileVerificationForm = useForm({
@@ -175,14 +247,46 @@ export function FormProvider({ children }: { children: ReactNode }) {
         );
         return personalValid;
       case 2:
-        const studentReviewValid = await studentReviewForm.trigger();
+        // Only validate academic information fields for step 2
+        const academicValid = await studentReviewForm.trigger([
+          "collegeName",
+          "collegeId",
+          "collegeLocation",
+          "courseName",
+          "courseId",
+          "graduationYear",
+        ]);
         console.log(
-          "Student review validation:",
-          studentReviewValid,
+          "Academic information validation:",
+          academicValid,
           studentReviewForm.formState.errors
         );
-        return studentReviewValid;
+        return academicValid;
       case 3:
+        // Only validate financial information fields for step 3
+        const financialValid = await studentReviewForm.trigger([
+          "annualTuitionFees",
+          "hostelFees",
+          "otherCharges",
+          "scholarshipAvailed",
+          "scholarshipName",
+          "scholarshipAmount",
+        ]);
+        console.log(
+          "Financial information validation:",
+          financialValid,
+          studentReviewForm.formState.errors
+        );
+        return financialValid;
+      case 4:
+        const feedbackValid = await feedbackForm.trigger();
+        console.log(
+          "Feedback validation:",
+          feedbackValid,
+          feedbackForm.formState.errors
+        );
+        return feedbackValid;
+      case 5:
         const profileValid = await profileVerificationForm.trigger();
         console.log(
           "Profile verification validation:",
@@ -215,6 +319,7 @@ export function FormProvider({ children }: { children: ReactNode }) {
         setErrors,
         personalDetailsForm,
         studentReviewForm,
+        feedbackForm,
         profileVerificationForm,
         validateCurrentStep,
         validatePersonalDetailsWithOtp,

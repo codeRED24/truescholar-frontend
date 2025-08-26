@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { PersonalDetailsStep } from "@/components/form-steps/personal-details-step";
 import { StudentReviewStep } from "@/components/form-steps/student-review-step";
+import { FinancialInformationStep } from "@/components/form-steps/financial-information-step";
+import { FeedbackStep } from "@/components/form-steps/feedback-step";
 import { ProfileVerificationStep } from "@/components/form-steps/profile-verification-step";
 import { SuccessScreen } from "@/components/success-screen";
 import {
@@ -14,20 +16,28 @@ import {
   initialFormData,
 } from "@/components/form-provider";
 import { OtpVerificationDialog } from "@/components/otp-verification-dialog";
-import { CheckCircle, Circle } from "lucide-react";
+import { LoginDialog } from "@/components/modals/LoginDialog";
+import { CheckCircle, Circle, Gift } from "lucide-react";
 import { useCreateUser } from "@/hooks/useCreateUser";
 import { useSubmitReview } from "@/hooks/useSubmitReview";
 import { CreateUserRequest } from "@/api/users/createUser";
 import useOtpApi from "@/hooks/use-otp";
 import { toast } from "sonner";
 import { getCurrentLocation } from "@/utils/location";
+import { useSearchParams } from "next/navigation";
 
 const OTP_COOLDOWN_SECONDS = 30;
 
 const STEPS = [
   { id: 1, title: "Personal Details", component: PersonalDetailsStep },
-  { id: 2, title: "Student Review", component: StudentReviewStep },
-  { id: 3, title: "Profile Verification", component: ProfileVerificationStep },
+  { id: 2, title: "Academic Information", component: StudentReviewStep },
+  {
+    id: 3,
+    title: "Financial Information",
+    component: FinancialInformationStep,
+  },
+  { id: 4, title: "Feedback", component: FeedbackStep },
+  { id: 5, title: "Profile Verification", component: ProfileVerificationStep },
 ];
 
 function ReviewFormContent() {
@@ -36,7 +46,14 @@ function ReviewFormContent() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [referredByCode, setReferredByCode] = useState<string | null>(null);
   const [showOtpDialog, setShowOtpDialog] = useState(false);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [existingUserData, setExistingUserData] = useState<{
+    name: string;
+    email?: string;
+    phone?: string;
+  } | null>(null);
   const [createdUserId, setCreatedUserId] = useState<number | null>(null);
   const [lastCreatedUserData, setLastCreatedUserData] =
     useState<CreateUserRequest | null>(null);
@@ -44,6 +61,20 @@ function ReviewFormContent() {
   const [lastOtpSentTime, setLastOtpSentTime] = useState<number | null>(null);
   const [otpsAlreadySent, setOtpsAlreadySent] = useState(false);
   const [canResendOtp, setCanResendOtp] = useState(true);
+
+  // Get referral code from URL parameters
+  const searchParams = useSearchParams();
+
+  // Detect referral code from URL on component mount
+  useEffect(() => {
+    const urlReferralCode = searchParams.get("ref");
+    if (urlReferralCode) {
+      setReferredByCode(urlReferralCode);
+      toast.success(
+        `🎉 Welcome! You've been referred by code: ${urlReferralCode}`
+      );
+    }
+  }, [searchParams]);
 
   const {
     createUserAsync,
@@ -85,6 +116,7 @@ function ReviewFormContent() {
     validateCurrentStep,
     validatePersonalDetailsWithOtp,
     studentReviewForm,
+    feedbackForm,
     profileVerificationForm,
     personalDetailsForm,
   } = useFormContext();
@@ -251,6 +283,7 @@ function ReviewFormContent() {
           dob: step1Data.dateOfBirth,
           contact_number: step1Data.contactNumber,
           country_of_origin: step1Data.countryOfOrigin,
+          college_roll_number: step1Data.collegeRollNumber,
           user_location: userLocation || undefined,
           user_type: "student", // Default user type for review form
         };
@@ -260,24 +293,38 @@ function ReviewFormContent() {
           try {
             // console.log("Creating user with payload:", userPayload);
             const userResponse = await createUserAsync(userPayload);
-            // console.log("User created successfully:", userResponse);
+            // console.log("User response:", userResponse);
+
             setCreatedUserId(userResponse.data.id);
             setLastCreatedUserData(userPayload);
             // Reset OTP state when user data changes
             setOtpsAlreadySent(false);
+
+            // Check if user is existing (status 200) or new (status 201)
+            if (userResponse.status === 200) {
+              // Existing user - show login dialog
+              setExistingUserData({
+                name: userResponse.data.name,
+                email: userResponse.data.email,
+                phone: userResponse.data.contact_number,
+              });
+              setShowLoginDialog(true);
+              return; // Don't proceed to next step yet
+            } else if (userResponse.status === 201) {
+              // New user - send OTPs and show OTP dialog
+              await sendOtpsIfNeeded();
+              setShowOtpDialog(true);
+            }
           } catch (error) {
             console.error("Failed to create user:", error);
-            return; // Don't proceed to OTP if user creation fails
+            return; // Don't proceed if user creation fails
           }
         } else {
           // console.log("User already created, skipping user creation");
+          // If user is already created, proceed to send OTPs
+          await sendOtpsIfNeeded();
+          setShowOtpDialog(true);
         }
-
-        // Send OTPs if needed before showing dialog
-        await sendOtpsIfNeeded();
-
-        // For step 1, show OTP verification dialog after basic validation
-        setShowOtpDialog(true);
       } else if (currentStep < STEPS.length) {
         // For other steps, proceed normally
         setCompletedSteps((prev) => [
@@ -301,6 +348,18 @@ function ReviewFormContent() {
 
   const handleCloseOtpDialog = () => {
     setShowOtpDialog(false);
+  };
+
+  const handleLoginSuccess = () => {
+    // After successful login, proceed to next step
+    setCompletedSteps((prev) => [...prev.filter((s) => s !== 1), 1]);
+    setCurrentStep(2);
+    setShowLoginDialog(false);
+  };
+
+  const handleCloseLoginDialog = () => {
+    setShowLoginDialog(false);
+    setExistingUserData(null);
   };
 
   // const handlePrevious = () => {
@@ -380,9 +439,38 @@ function ReviewFormContent() {
 
     setIsSubmitting(true);
 
-    // Get data from steps 2 and 3
+    // Get data from all steps
     const step2Data = studentReviewForm.getValues();
-    const step3Data = profileVerificationForm.getValues();
+    const financialData = studentReviewForm.getValues(); // Financial data is in the same form
+    const feedbackData = feedbackForm.getValues(); // Get feedback data from step 4
+    const profileData = profileVerificationForm.getValues();
+
+    // Console log data from all steps excluding step 1
+    console.log("Step 2 (Academic Information) Data:", {
+      collegeName: step2Data.collegeName,
+      collegeId: step2Data.collegeId,
+      collegeLocation: step2Data.collegeLocation,
+      courseName: step2Data.courseName,
+      courseId: step2Data.courseId,
+      graduationYear: step2Data.graduationYear,
+      isAnonymous: step2Data.isAnonymous,
+      stream: step2Data.stream,
+      yearOfStudy: step2Data.yearOfStudy,
+      modeOfStudy: step2Data.modeOfStudy,
+      currentSemester: step2Data.currentSemester,
+    });
+
+    console.log("Step 3 (Financial Information) Data:", {
+      annualTuitionFees: step2Data.annualTuitionFees,
+      hostelFees: step2Data.hostelFees,
+      otherCharges: step2Data.otherCharges,
+      scholarshipAvailed: step2Data.scholarshipAvailed,
+      scholarshipName: step2Data.scholarshipName,
+      scholarshipAmount: step2Data.scholarshipAmount,
+    });
+
+    console.log("Step 4 (Feedback) Data:", feedbackData);
+    console.log("Step 5 (Profile Verification) Data:", profileData);
 
     // Map frontend fields to backend DTO + files and submit via hook
     try {
@@ -396,29 +484,48 @@ function ReviewFormContent() {
         collegeLocation: step2Data.collegeLocation,
         passYear: parseInt(step2Data.graduationYear),
 
-        // Titles & comments
-        reviewTitle: step2Data.collegePlacementTitle,
-        collegeAdmissionComment: step2Data.admissionExperienceComment,
-        campusExperienceComment: step2Data.campusExperienceComment,
-        placementJourneyComment: step2Data.placementJourneyComment,
-        academicExperienceComment: step2Data.academicExperienceComment,
+        // Financial Information (from step 2/3)
+        annualTuitionFees: step2Data.annualTuitionFees,
+        hostelFees: step2Data.hostelFees,
+        otherCharges: step2Data.otherCharges,
+        scholarshipAvailed: step2Data.scholarshipAvailed,
+        scholarshipName: step2Data.scholarshipName,
+        scholarshipAmount: step2Data.scholarshipAmount,
 
-        // Ratings mapping (frontend keys differ slightly)
-        collegeAdmissionRating: step2Data.collegeAdmissionRating,
-        campusExperienceRating: step2Data.campusExperienceRating,
-        placementJourneyRating: step2Data.placementJourneyRating,
-        academicExperienceRating:
-          step2Data.academicQualityRating || step2Data.academicExperienceRating,
+        // Feedback from step 4 - this is the main review content
+        reviewTitle: feedbackData.reviewTitle,
 
-        // Images
-        collegeImages: step2Data.collegeImages || [],
+        // Overall satisfaction (required)
+        overallSatisfactionRating: feedbackData.overallSatisfactionRating,
+        overallExperienceFeedback: feedbackData.overallExperienceFeedback,
+
+        // All rating categories (all required as per step 4)
+        teachingQualityRating: feedbackData.teachingQualityRating,
+        teachingQualityFeedback: feedbackData.teachingQualityFeedback || "",
+        infrastructureRating: feedbackData.infrastructureRating,
+        infrastructureFeedback: feedbackData.infrastructureFeedback || "",
+        libraryRating: feedbackData.libraryRating,
+        libraryFeedback: feedbackData.libraryFeedback || "",
+        placementSupportRating: feedbackData.placementSupportRating,
+        placementSupportFeedback: feedbackData.placementSupportFeedback || "",
+        administrativeSupportRating: feedbackData.administrativeSupportRating,
+        administrativeSupportFeedback:
+          feedbackData.administrativeSupportFeedback || "",
+        hostelRating: feedbackData.hostelRating,
+        hostelFeedback: feedbackData.hostelFeedback || "",
+        extracurricularRating: feedbackData.extracurricularRating,
+        extracurricularFeedback: feedbackData.extracurricularFeedback || "",
+        improvementSuggestions: feedbackData.improvementSuggestions,
+
+        // College images from step 4
+        collegeImages: feedbackData.collegeImages || [],
 
         // Profile verification fields
-        profilePicture: step3Data.profilePicture || null,
-        studentId: step3Data.studentId || null,
-        markSheet: step3Data.markSheet || null,
-        degreeCertificate: step3Data.degreeCertificate || null,
-        linkedinProfile: step3Data.linkedinProfile || undefined,
+        profilePicture: profileData.profilePicture || null,
+        studentId: profileData.studentId || null,
+        markSheet: profileData.markSheet || null,
+        degreeCertificate: profileData.degreeCertificate || null,
+        linkedinProfile: profileData.linkedinProfile || undefined,
       };
 
       // Submit using our hook
@@ -441,6 +548,7 @@ function ReviewFormContent() {
         // Reset each react-hook-form instance to their default values
         personalDetailsForm.reset();
         studentReviewForm.reset();
+        feedbackForm.reset();
         profileVerificationForm.reset();
 
         // Reset provider-level aggregated formData
@@ -474,6 +582,8 @@ function ReviewFormContent() {
     setIsSubmitted(false);
     setIsSubmitting(false);
     setShowOtpDialog(false);
+    setShowLoginDialog(false);
+    setExistingUserData(null);
     setCreatedUserId(null);
     setLastCreatedUserData(null);
     setOtpSentCount(0);
@@ -495,6 +605,28 @@ function ReviewFormContent() {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
+        {/* Referral Banner */}
+        {referredByCode && (
+          <Card className="mb-6 p-4 bg-gradient-to-r from-teal-50 to-green-50 border-teal-200">
+            <div className="flex items-center gap-3">
+              <Gift className="w-6 h-6 text-teal-600" />
+              <div>
+                <h3 className="font-semibold text-teal-800">Welcome! 🎉</h3>
+                <p className="text-sm text-teal-700">
+                  You've been referred by code:{" "}
+                  <code className="bg-teal-100 px-2 py-1 rounded text-teal-900 font-mono">
+                    {referredByCode}
+                  </code>
+                </p>
+                <p className="text-xs text-teal-600 mt-1">
+                  Complete your review to help both you and your referrer earn
+                  rewards!
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* Progress Header */}
         <Card className="mb-8 p-6">
           <div className="flex items-center justify-between mb-4">
@@ -594,6 +726,16 @@ function ReviewFormContent() {
           isLimitReached={isLimitReached()}
           countdown={countdown}
         />
+
+        {/* Login Dialog for Existing Users */}
+        {existingUserData && (
+          <LoginDialog
+            isOpen={showLoginDialog}
+            onClose={handleCloseLoginDialog}
+            onLoginSuccess={handleLoginSuccess}
+            userData={existingUserData}
+          />
+        )}
       </div>
     </div>
   );
@@ -602,7 +744,9 @@ function ReviewFormContent() {
 export default function ReviewForm() {
   return (
     <FormProvider>
-      <ReviewFormContent />
+      <Suspense fallback={<div>Loading...</div>}>
+        <ReviewFormContent />
+      </Suspense>
     </FormProvider>
   );
 }

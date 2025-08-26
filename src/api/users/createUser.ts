@@ -4,6 +4,7 @@ export interface CreateUserRequest {
   gender?: string;
   contact_number?: string;
   country_of_origin?: string;
+  college_roll_number?: string;
   college_id?: number;
   course_id?: number;
   college_location?: string;
@@ -24,6 +25,7 @@ export interface CreateUserResponse {
     gender?: string;
     contact_number?: string;
     country_of_origin?: string;
+    college_roll_number?: string;
     college_id?: number;
     course_id?: number;
     college_location?: string;
@@ -36,6 +38,7 @@ export interface CreateUserResponse {
     created_at: string;
     updated_at: string;
   };
+  status: number; // Add status code to determine if user is new or existing
 }
 
 export const createUser = async (
@@ -78,7 +81,10 @@ export const createUser = async (
     }
 
     const data = await response.json();
-    return data;
+    return {
+      ...data,
+      status: response.status,
+    };
   } catch (error) {
     console.error("Error in createUser:", error);
 

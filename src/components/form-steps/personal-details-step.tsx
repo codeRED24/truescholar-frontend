@@ -324,8 +324,42 @@ export function PersonalDetailsStep() {
           )}
         </div>
 
+        {/* College Roll Number */}
+        <div className="space-y-2">
+          <Label
+            htmlFor="collegeRollNumber"
+            className="flex items-center gap-2 text-sm font-medium"
+          >
+            <CreditCard className="w-4 h-4 text-teal-500" />
+            College Roll Number <span className="text-teal-600">*</span>
+          </Label>
+          <Controller
+            name="collegeRollNumber"
+            control={control}
+            render={({ field }) => (
+              <Input
+                {...field}
+                id="collegeRollNumber"
+                placeholder="Enter your college roll number"
+                className={`border-gray-300 ${
+                  errors.collegeRollNumber ? "border-red-500" : ""
+                }`}
+                onChange={(e) => {
+                  field.onChange(e);
+                  updateFormData({ collegeRollNumber: e.target.value });
+                }}
+              />
+            )}
+          />
+          {errors.collegeRollNumber && (
+            <p className="text-sm text-red-600">
+              {errors.collegeRollNumber.message as string}
+            </p>
+          )}
+        </div>
+
         {/* UPI ID */}
-        <div className="space-y-2 md:col-span-2">
+        <div className="space-y-2">
           <Label
             htmlFor="upiId"
             className="flex items-center gap-2 text-sm font-medium"
@@ -356,6 +390,10 @@ export function PersonalDetailsStep() {
               {errors.upiId.message as string}
             </p>
           )}
+        </div>
+
+        {/* UPI Description */}
+        <div className="space-y-2 md:col-span-2">
           <p className="text-sm text-teal-700">
             Sharing Your UPI ID with TrueScholar is 100% safe, secure &
             confidential. Your UPI will be used solely to share rewards.{""}

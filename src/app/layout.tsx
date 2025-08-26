@@ -2,6 +2,7 @@ import JsonLd from "@/lib/jsonld";
 import { Barlow, Public_Sans } from "next/font/google";
 import Script from "next/script";
 import BreadcrumbProvider from "@/components/providers/BreadcrumbProvider";
+import { Toaster } from "@/components/ui/sonner";
 
 // Define website schema data
 const websiteLD = {
@@ -125,6 +126,7 @@ export default function RootLayout({
         <GTMScript gtmId="G-5CMGT07LVZ" />
         <BreadcrumbProvider />
         {children}
+        <Toaster />
       </body>
     </html>
   );

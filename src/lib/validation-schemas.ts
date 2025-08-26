@@ -64,6 +64,10 @@ export const personalDetailsSchema = z.object({
       );
     }, "Please enter a valid phone number format"),
   countryOfOrigin: z.string().min(1, "Please select your country of origin"),
+  collegeRollNumber: z
+    .string()
+    .min(1, "Please enter your college roll number")
+    .max(20, "College roll number must be less than 20 characters"),
   upiId: z
     .string()
     .min(3, "UPI ID must be at least 3 characters")
@@ -90,9 +94,9 @@ export const personalDetailsWithOtpSchema = personalDetailsSchema.extend({
     .refine((val) => val === true, "Please verify your phone number"),
 });
 
-// Student Review Schema
-export const studentReviewSchema = z.object({
-  // College Information (moved from personal details)
+// Academic Information Schema (Step 2)
+export const academicInformationSchema = z.object({
+  // College Information
   collegeName: z.string().min(1, "Please select a college"),
   collegeId: z.number().min(1, "Please select a college"),
   collegeLocation: z.string().min(1, "Please select a college"),
@@ -100,57 +104,160 @@ export const studentReviewSchema = z.object({
   courseId: z.number().min(1, "Please select a course"),
   graduationYear: z.string().min(1, "Please select graduation year"),
 
-  // Review content
-  collegePlacementTitle: z
+  // Academic Information
+  isAnonymous: z.boolean().optional(),
+  stream: z.string().optional(),
+  yearOfStudy: z.string().optional(),
+  modeOfStudy: z.string().optional(),
+  currentSemester: z.string().optional(),
+});
+
+// Financial Information Schema (Step 3)
+export const financialInformationSchema = z
+  .object({
+    // Financial Information
+    annualTuitionFees: z.number().min(1, "Please enter annual tuition fees"),
+    hostelFees: z.number().min(0, "Amount must be positive").optional(),
+    otherCharges: z.number().min(0, "Amount must be positive").optional(),
+    scholarshipAvailed: z.boolean(),
+    scholarshipName: z.string().optional(),
+    scholarshipAmount: z.number().min(0, "Amount must be positive").optional(),
+  })
+  .refine(
+    (data) => {
+      // If scholarship availed is true, scholarship name and amount are required
+      if (data.scholarshipAvailed === true) {
+        if (!data.scholarshipName || data.scholarshipName.trim() === "") {
+          return false;
+        }
+        if (
+          data.scholarshipAmount === undefined ||
+          data.scholarshipAmount < 1
+        ) {
+          return false;
+        }
+      }
+      return true;
+    },
+    {
+      message:
+        "Please provide scholarship name and amount when scholarship is availed",
+      path: ["scholarshipName"], // This will show the error on scholarshipName field
+    }
+  );
+
+// Combined Student Review Schema (includes both academic and financial)
+export const studentReviewSchema = academicInformationSchema.merge(
+  financialInformationSchema
+);
+
+// Feedback Schema (Step 4)
+export const feedbackSchema = z.object({
+  // Review title
+  reviewTitle: z
     .string()
-    .min(5, "Title must be at least 5 characters")
+    .min(1, "Please provide a review title")
     .max(100, "Title must be less than 100 characters"),
 
-  academicExperienceComment: z
-    .string()
-    .min(10, "Comment must be at least 10 characters")
-    .max(2500, "Comment must be less than 2500 characters"),
-  academicQualityRating: z
+  // Overall satisfaction - required with rating and feedback
+  overallSatisfactionRating: z
     .number()
-    .min(1, "Please rate academic quality")
+    .min(1, "Please rate overall satisfaction")
     .max(5, "Rating must be between 1 and 5"),
-
-  placementJourneyComment: z
+  overallExperienceFeedback: z
     .string()
-    .min(10, "Comment must be at least 10 characters")
-    .max(2500, "Comment must be less than 2500 characters"),
-  placementJourneyRating: z
-    .number()
-    .min(1, "Please rate placement journey")
-    .max(5, "Rating must be between 1 and 5"),
+    .min(10, "Please provide detailed feedback (minimum 10 characters)")
+    .max(2500, "Feedback must be less than 2500 characters"),
 
-  collegeAdmissionRating: z
+  // Teaching quality - required rating, optional feedback
+  teachingQualityRating: z
     .number()
-    .min(1, "Please rate college admission process")
+    .min(1, "Please rate teaching quality")
     .max(5, "Rating must be between 1 and 5"),
-  admissionExperienceComment: z
+  teachingQualityFeedback: z
     .string()
-    .min(10, "Comment must be at least 10 characters")
-    .max(2500, "Comment must be less than 2500 characters"),
+    .min(10, "Please provide detailed feedback (minimum 10 characters)")
+    .max(2500, "Feedback must be less than 2500 characters"),
 
-  campusExperienceComment: z
-    .string()
-    .min(10, "Comment must be at least 10 characters")
-    .max(2500, "Comment must be less than 2500 characters"),
-
-  campusExperienceRating: z
+  // Infrastructure - required rating, optional feedback
+  infrastructureRating: z
     .number()
-    .min(1, "Please rate campus experience")
+    .min(1, "Please rate infrastructure")
     .max(5, "Rating must be between 1 and 5"),
+  infrastructureFeedback: z
+    .string()
+    .min(10, "Please provide detailed feedback (minimum 10 characters)")
+    .max(2500, "Feedback must be less than 2500 characters"),
 
+  // Library and study resources - required rating, optional feedback
+  libraryRating: z
+    .number()
+    .min(1, "Please rate library and study resources")
+    .max(5, "Rating must be between 1 and 5"),
+  libraryFeedback: z
+    .string()
+    .min(10, "Please provide detailed feedback (minimum 10 characters)")
+    .max(2500, "Feedback must be less than 2500 characters"),
+
+  // Placement support - required rating, optional feedback
+  placementSupportRating: z
+    .number()
+    .min(1, "Please rate placement support")
+    .max(5, "Rating must be between 1 and 5"),
+  placementSupportFeedback: z
+    .string()
+    .min(10, "Please provide detailed feedback (minimum 10 characters)")
+    .max(2500, "Feedback must be less than 2500 characters"),
+
+  // Administrative support - required rating, optional feedback
+  administrativeSupportRating: z
+    .number()
+    .min(1, "Please rate administrative support")
+    .max(5, "Rating must be between 1 and 5"),
+  administrativeSupportFeedback: z
+    .string()
+    .min(10, "Please provide detailed feedback (minimum 10 characters)")
+    .max(2500, "Feedback must be less than 2500 characters"),
+
+  // Hostel/accommodation - required rating, optional feedback
+  hostelRating: z
+    .number()
+    .min(1, "Please rate hostel/accommodation")
+    .max(5, "Rating must be between 1 and 5"),
+  hostelFeedback: z
+    .string()
+    .min(10, "Please provide detailed feedback (minimum 10 characters)")
+    .max(2500, "Feedback must be less than 2500 characters"),
+
+  // Extra-curricular activities - required rating, optional feedback
+  extracurricularRating: z
+    .number()
+    .min(1, "Please rate extra-curricular activities")
+    .max(5, "Rating must be between 1 and 5"),
+  extracurricularFeedback: z
+    .string()
+    .min(10, "Please provide detailed feedback (minimum 10 characters)")
+    .max(2500, "Feedback must be less than 2500 characters"),
+
+  // Suggestions for improvement - required
+  improvementSuggestions: z
+    .string()
+    .min(
+      10,
+      "Please provide suggestions for improvement (minimum 10 characters)"
+    )
+    .max(2500, "Suggestions must be less than 2500 characters"),
+
+  // College images - required (at least 1, max 6)
   collegeImages: z
     .array(z.instanceof(File))
     .min(1, "Please upload at least one college image")
     .max(6, "You can upload maximum 6 images"),
 });
 
-// Profile Verification Schema
+// Profile Verification Schema (Step 5)
 export const profileVerificationSchema = z.object({
+  // Profile verification fields
   profilePicture: z.instanceof(File, {
     message: "Please upload a profile picture",
   }),
@@ -191,13 +298,21 @@ export const otpVerificationSchema = z.object({
 // Combined schema for complete form
 export const completeFormSchema = personalDetailsWithOtpSchema
   .merge(studentReviewSchema)
+  .merge(feedbackSchema)
   .merge(profileVerificationSchema);
 
 export type PersonalDetailsFormData = z.infer<typeof personalDetailsSchema>;
 export type PersonalDetailsWithOtpFormData = z.infer<
   typeof personalDetailsWithOtpSchema
 >;
+export type AcademicInformationFormData = z.infer<
+  typeof academicInformationSchema
+>;
+export type FinancialInformationFormData = z.infer<
+  typeof financialInformationSchema
+>;
 export type StudentReviewFormData = z.infer<typeof studentReviewSchema>;
+export type FeedbackFormData = z.infer<typeof feedbackSchema>;
 export type ProfileVerificationFormData = z.infer<
   typeof profileVerificationSchema
 >;

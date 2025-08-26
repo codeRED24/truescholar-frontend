@@ -10,23 +10,50 @@ interface UseSubmitReviewReturn extends UseSubmitReviewState {
   submitReviewAsync: (payload: {
     // User ID to link the review to the user
     userId?: number | null;
-    // College information (now from step 2)
+
+    // College information (from step 2)
     collegeId?: number;
     courseId?: number;
     collegeLocation?: string;
     passYear?: number;
-    // fields mapped from step2 and step3
+
+    // Academic Information (from step 2)
+    isAnonymous?: boolean;
+    stream?: string;
+    yearOfStudy?: string;
+    modeOfStudy?: string;
+    currentSemester?: string;
+
+    // Financial Information (from step 3)
+    annualTuitionFees?: number;
+    hostelFees?: number;
+    otherCharges?: number;
+    scholarshipAvailed?: boolean;
+    scholarshipName?: string;
+    scholarshipAmount?: number;
+
+    // Feedback fields (from step 4)
     reviewTitle?: string;
-    collegeAdmissionComment?: string;
-    campusExperienceComment?: string;
-    placementJourneyComment?: string;
-    academicExperienceComment?: string;
-    collegeAdmissionRating?: number;
-    campusExperienceRating?: number;
-    placementJourneyRating?: number;
-    academicExperienceRating?: number;
+    overallSatisfactionRating?: number;
+    overallExperienceFeedback?: string;
+    teachingQualityRating?: number;
+    teachingQualityFeedback?: string;
+    infrastructureRating?: number;
+    infrastructureFeedback?: string;
+    libraryRating?: number;
+    libraryFeedback?: string;
+    placementSupportRating?: number;
+    placementSupportFeedback?: string;
+    administrativeSupportRating?: number;
+    administrativeSupportFeedback?: string;
+    hostelRating?: number;
+    hostelFeedback?: string;
+    extracurricularRating?: number;
+    extracurricularFeedback?: string;
+    improvementSuggestions?: string;
+
+    // Files
     collegeImages?: File[];
-    // profile verification files and fields
     profilePicture?: File | null;
     studentId?: File | null;
     markSheet?: File | null;
@@ -49,15 +76,36 @@ export const useSubmitReview = (): UseSubmitReviewReturn => {
     courseId?: number;
     collegeLocation?: string;
     passYear?: number;
+    isAnonymous?: boolean;
+    stream?: string;
+    yearOfStudy?: string;
+    modeOfStudy?: string;
+    currentSemester?: string;
+    annualTuitionFees?: number;
+    hostelFees?: number;
+    otherCharges?: number;
+    scholarshipAvailed?: boolean;
+    scholarshipName?: string;
+    scholarshipAmount?: number;
+
     reviewTitle?: string;
-    collegeAdmissionComment?: string;
-    campusExperienceComment?: string;
-    placementJourneyComment?: string;
-    academicExperienceComment?: string;
-    collegeAdmissionRating?: number;
-    campusExperienceRating?: number;
-    placementJourneyRating?: number;
-    academicExperienceRating?: number;
+    overallSatisfactionRating?: number;
+    overallExperienceFeedback?: string;
+    teachingQualityRating?: number;
+    teachingQualityFeedback?: string;
+    infrastructureRating?: number;
+    infrastructureFeedback?: string;
+    libraryRating?: number;
+    libraryFeedback?: string;
+    placementSupportRating?: number;
+    placementSupportFeedback?: string;
+    administrativeSupportRating?: number;
+    administrativeSupportFeedback?: string;
+    hostelRating?: number;
+    hostelFeedback?: string;
+    extracurricularRating?: number;
+    extracurricularFeedback?: string;
+    improvementSuggestions?: string;
     collegeImages?: File[];
     profilePicture?: File | null;
     studentId?: File | null;
@@ -89,54 +137,136 @@ export const useSubmitReview = (): UseSubmitReviewReturn => {
         form.append("pass_year", String(payload.passYear));
       }
 
-      // Map simple fields
-      if (payload.reviewTitle) form.append("review_title", payload.reviewTitle);
-      if (payload.collegeAdmissionComment)
-        form.append(
-          "college_admission_comment",
-          payload.collegeAdmissionComment
-        );
-      if (payload.campusExperienceComment)
-        form.append(
-          "campus_experience_comment",
-          payload.campusExperienceComment
-        );
-      if (payload.placementJourneyComment)
-        form.append(
-          "placement_journey_comment",
-          payload.placementJourneyComment
-        );
-      if (payload.academicExperienceComment)
-        form.append(
-          "academic_experience_comment",
-          payload.academicExperienceComment
-        );
+      // Academic Information (from step 2)
+      if (typeof payload.isAnonymous === "boolean") {
+        form.append("is_anonymous", String(payload.isAnonymous));
+      }
+      if (payload.stream) {
+        form.append("stream", payload.stream);
+      }
+      if (payload.yearOfStudy) {
+        form.append("year_of_study", payload.yearOfStudy);
+      }
+      if (payload.modeOfStudy) {
+        form.append("mode_of_study", payload.modeOfStudy);
+      }
+      if (payload.currentSemester) {
+        form.append("current_semester", payload.currentSemester);
+      }
 
-      // Ratings
-      if (typeof payload.collegeAdmissionRating === "number")
+      // Financial Information (from step 3)
+      if (typeof payload.annualTuitionFees === "number") {
+        form.append("annual_tuition_fees", String(payload.annualTuitionFees));
+      }
+      if (typeof payload.hostelFees === "number") {
+        form.append("hostel_fees", String(payload.hostelFees));
+      }
+      if (typeof payload.otherCharges === "number") {
+        form.append("other_charges", String(payload.otherCharges));
+      }
+      if (typeof payload.scholarshipAvailed === "boolean") {
+        form.append("scholarship_availed", String(payload.scholarshipAvailed));
+      }
+      if (payload.scholarshipName) {
+        form.append("scholarship_name", payload.scholarshipName);
+      }
+      if (typeof payload.scholarshipAmount === "number") {
+        form.append("scholarship_amount", String(payload.scholarshipAmount));
+      }
+
+      // Feedback fields (from step 4)
+      if (payload.reviewTitle) {
+        form.append("review_title", payload.reviewTitle);
+      }
+      if (typeof payload.overallSatisfactionRating === "number") {
         form.append(
-          "college_admission_rating",
-          String(payload.collegeAdmissionRating)
+          "overall_satisfaction_rating",
+          String(payload.overallSatisfactionRating)
         );
-      if (typeof payload.campusExperienceRating === "number")
+      }
+      if (payload.overallExperienceFeedback) {
         form.append(
-          "campus_experience_rating",
-          String(payload.campusExperienceRating)
+          "overall_experience_feedback",
+          payload.overallExperienceFeedback
         );
-      if (typeof payload.placementJourneyRating === "number")
+      }
+      if (typeof payload.teachingQualityRating === "number") {
         form.append(
-          "placement_journey_rating",
-          String(payload.placementJourneyRating)
+          "teaching_quality_rating",
+          String(payload.teachingQualityRating)
         );
-      if (typeof payload.academicExperienceRating === "number")
+      }
+      if (payload.teachingQualityFeedback) {
         form.append(
-          "academic_experience_rating",
-          String(payload.academicExperienceRating)
+          "teaching_quality_feedback",
+          payload.teachingQualityFeedback
         );
+      }
+      if (typeof payload.infrastructureRating === "number") {
+        form.append(
+          "infrastructure_rating",
+          String(payload.infrastructureRating)
+        );
+      }
+      if (payload.infrastructureFeedback) {
+        form.append("infrastructure_feedback", payload.infrastructureFeedback);
+      }
+      if (typeof payload.libraryRating === "number") {
+        form.append("library_rating", String(payload.libraryRating));
+      }
+      if (payload.libraryFeedback) {
+        form.append("library_feedback", payload.libraryFeedback);
+      }
+      if (typeof payload.placementSupportRating === "number") {
+        form.append(
+          "placement_support_rating",
+          String(payload.placementSupportRating)
+        );
+      }
+      if (payload.placementSupportFeedback) {
+        form.append(
+          "placement_support_feedback",
+          payload.placementSupportFeedback
+        );
+      }
+      if (typeof payload.administrativeSupportRating === "number") {
+        form.append(
+          "administrative_support_rating",
+          String(payload.administrativeSupportRating)
+        );
+      }
+      if (payload.administrativeSupportFeedback) {
+        form.append(
+          "administrative_support_feedback",
+          payload.administrativeSupportFeedback
+        );
+      }
+      if (typeof payload.hostelRating === "number") {
+        form.append("hostel_rating", String(payload.hostelRating));
+      }
+      if (payload.hostelFeedback) {
+        form.append("hostel_feedback", payload.hostelFeedback);
+      }
+      if (typeof payload.extracurricularRating === "number") {
+        form.append(
+          "extracurricular_rating",
+          String(payload.extracurricularRating)
+        );
+      }
+      if (payload.extracurricularFeedback) {
+        form.append(
+          "extracurricular_feedback",
+          payload.extracurricularFeedback
+        );
+      }
+      if (payload.improvementSuggestions) {
+        form.append("improvement_suggestions", payload.improvementSuggestions);
+      }
 
       // LinkedIn
-      if (payload.linkedinProfile)
+      if (payload.linkedinProfile) {
         form.append("linkedin_profile", payload.linkedinProfile);
+      }
 
       // Files: append each with expected field names
       if (payload.profilePicture)

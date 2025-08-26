@@ -129,466 +129,346 @@ export function StudentReviewStep() {
           <h3 className="text-xl font-semibold text-gray-800 mb-4">
             College Information
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* College Name with Suggestions */}
+          <div className="space-y-6">
+            {/* Anonymous Feedback Toggle */}
             <div className="space-y-2">
-              <Label
-                htmlFor="collegeName"
-                className="flex items-center gap-2 text-sm font-medium"
-              >
-                <GraduationCap className="w-4 h-4 text-teal-500" />
-                College Name <span className="text-teal-600">*</span>
+              <Label className="flex items-center gap-2 text-sm font-medium">
+                Would you like to keep this feedback anonymous?
               </Label>
               <Controller
-                name="collegeName"
+                name="isAnonymous"
                 control={control}
                 render={({ field }) => (
-                  <SuggestionInput
-                    value={field.value}
-                    onChange={field.onChange}
-                    onSelect={handleCollegeSelect}
-                    fetchSuggestions={fetchCollegeSuggestions}
-                    placeholder="Type to search for colleges..."
-                    className={`border-gray-300 ${
-                      errors.collegeName ? "border-red-500" : ""
-                    }`}
-                    minQueryLength={2}
-                    debounceMs={300}
-                  />
+                  <div className="flex items-center space-x-4">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        {...field}
+                        value="false"
+                        checked={field.value === false}
+                        onChange={() => field.onChange(false)}
+                        className="mr-2"
+                      />
+                      No
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        {...field}
+                        value="true"
+                        checked={field.value === true}
+                        onChange={() => field.onChange(true)}
+                        className="mr-2"
+                      />
+                      Yes
+                    </label>
+                  </div>
                 )}
               />
-              {errors.collegeName && (
-                <p className="text-sm text-red-600">
-                  {errors.collegeName.message as string}
-                </p>
-              )}
             </div>
 
-            {/* College Location */}
-            <div className="space-y-2">
-              <Label
-                htmlFor="collegeLocation"
-                className="flex items-center gap-2 text-sm font-medium"
-              >
-                <MapPin className="w-4 h-4 text-teal-500" />
-                College Location <span className="text-teal-600">*</span>
-              </Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* College Name with Suggestions */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="collegeName"
+                  className="flex items-center gap-2 text-sm font-medium"
+                >
+                  <GraduationCap className="w-4 h-4 text-teal-500" />
+                  College/University Name{" "}
+                  <span className="text-teal-600">*</span>
+                </Label>
+                <Controller
+                  name="collegeName"
+                  control={control}
+                  render={({ field }) => (
+                    <SuggestionInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      onSelect={handleCollegeSelect}
+                      fetchSuggestions={fetchCollegeSuggestions}
+                      placeholder="Type to search for colleges..."
+                      className={`border-gray-300 ${
+                        errors.collegeName ? "border-red-500" : ""
+                      }`}
+                      minQueryLength={2}
+                      debounceMs={300}
+                    />
+                  )}
+                />
+                {errors.collegeName && (
+                  <p className="text-sm text-red-600">
+                    {errors.collegeName.message as string}
+                  </p>
+                )}
+              </div>
+
+              {/* College Location - Hidden from UI but still populated */}
               <Controller
                 name="collegeLocation"
                 control={control}
                 render={({ field }) => (
-                  <Input
-                    {...field}
-                    id="collegeLocation"
-                    placeholder="Enter college location"
-                    className={`border-gray-300 ${
-                      errors.collegeLocation ? "border-red-500" : ""
-                    }`}
-                    readOnly={!!selectedCollege}
-                  />
+                  <Input {...field} type="hidden" id="collegeLocation" />
                 )}
               />
-              {errors.collegeLocation && (
-                <p className="text-sm text-red-600">
-                  {errors.collegeLocation.message as string}
-                </p>
-              )}
-            </div>
 
-            {/* Course Name */}
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2 text-sm font-medium">
-                <BookOpen className="w-4 h-4 text-teal-500" />
-                Course Name <span className="text-teal-600">*</span>
-              </Label>
-              <Controller
-                name="courseName"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    value={
-                      field.value
-                        ? courses
-                            .find(
-                              (c: any) =>
-                                c.name === field.value &&
-                                c.college_wise_course_id != null
+              {/* Current Course Enrolled */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-sm font-medium">
+                  <BookOpen className="w-4 h-4 text-teal-500" />
+                  Current Course Enrolled{" "}
+                  <span className="text-teal-600">*</span>
+                </Label>
+                <Controller
+                  name="courseName"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={
+                        field.value
+                          ? courses
+                              .find(
+                                (c: any) =>
+                                  c.name === field.value &&
+                                  c.college_wise_course_id != null
+                              )
+                              ?.college_wise_course_id?.toString() || ""
+                          : ""
+                      }
+                      onValueChange={handleCourseSelect}
+                      disabled={
+                        !selectedCollegeId ||
+                        selectedCollegeId === 0 ||
+                        coursesLoading
+                      }
+                    >
+                      <SelectTrigger
+                        className={`border-gray-300 ${
+                          errors.courseName ? "border-red-500" : ""
+                        }`}
+                      >
+                        <SelectValue
+                          placeholder={
+                            !selectedCollegeId || selectedCollegeId === 0
+                              ? "Select a college first"
+                              : coursesLoading
+                              ? "Loading courses..."
+                              : "Select course"
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {courses && courses.length > 0 ? (
+                          courses
+                            .filter(
+                              (course: any) =>
+                                course.college_wise_course_id != null &&
+                                course.name
                             )
-                            ?.college_wise_course_id?.toString() || ""
-                        : ""
-                    }
-                    onValueChange={handleCourseSelect}
-                    disabled={
-                      !selectedCollegeId ||
-                      selectedCollegeId === 0 ||
-                      coursesLoading
-                    }
-                  >
-                    <SelectTrigger
-                      className={`border-gray-300 ${
-                        errors.courseName ? "border-red-500" : ""
-                      }`}
+                            .map((course: any) => (
+                              <SelectItem
+                                key={course.college_wise_course_id}
+                                value={course.college_wise_course_id.toString()}
+                              >
+                                {course.name}
+                              </SelectItem>
+                            ))
+                        ) : (
+                          <div className="px-3 py-2 text-sm text-muted-foreground">
+                            No courses available
+                          </div>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.courseName && (
+                  <p className="text-sm text-red-600">
+                    {errors.courseName.message as string}
+                  </p>
+                )}
+              </div>
+
+              {/* Stream / Department */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-sm font-medium">
+                  Stream / Department
+                </Label>
+                <Controller
+                  name="stream"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                      }}
                     >
-                      <SelectValue
-                        placeholder={
-                          !selectedCollegeId || selectedCollegeId === 0
-                            ? "Select a college first"
-                            : coursesLoading
-                            ? "Loading courses..."
-                            : "Select course"
-                        }
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {courses && courses.length > 0 ? (
-                        courses
-                          .filter(
-                            (course: any) =>
-                              course.college_wise_course_id != null &&
-                              course.name
-                          )
-                          .map((course: any) => (
-                            <SelectItem
-                              key={course.college_wise_course_id}
-                              value={course.college_wise_course_id.toString()}
-                            >
-                              {course.name}
+                      <SelectTrigger className="border-gray-300">
+                        <SelectValue placeholder="Select stream/department" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="computer-science">
+                          Computer Science
+                        </SelectItem>
+                        <SelectItem value="information-technology">
+                          Information Technology
+                        </SelectItem>
+                        <SelectItem value="electronics">Electronics</SelectItem>
+                        <SelectItem value="mechanical">Mechanical</SelectItem>
+                        <SelectItem value="civil">Civil</SelectItem>
+                        <SelectItem value="electrical">Electrical</SelectItem>
+                        <SelectItem value="chemical">Chemical</SelectItem>
+                        <SelectItem value="biotechnology">
+                          Biotechnology
+                        </SelectItem>
+                        <SelectItem value="commerce">Commerce</SelectItem>
+                        <SelectItem value="arts">Arts</SelectItem>
+                        <SelectItem value="science">Science</SelectItem>
+                        <SelectItem value="management">Management</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+
+              {/* Year of Study */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-sm font-medium">
+                  Year of Study
+                </Label>
+                <Controller
+                  name="yearOfStudy"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                      }}
+                    >
+                      <SelectTrigger className="border-gray-300">
+                        <SelectValue placeholder="Select year" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1st">1st Year</SelectItem>
+                        <SelectItem value="2nd">2nd Year</SelectItem>
+                        <SelectItem value="3rd">3rd Year</SelectItem>
+                        <SelectItem value="4th">4th Year</SelectItem>
+                        <SelectItem value="5th">5th Year</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+
+              {/* Mode of Study */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-sm font-medium">
+                  Mode of Study
+                </Label>
+                <Controller
+                  name="modeOfStudy"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                      }}
+                    >
+                      <SelectTrigger className="border-gray-300">
+                        <SelectValue placeholder="Select mode" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="full-time">Full-time</SelectItem>
+                        <SelectItem value="part-time">Part-time</SelectItem>
+                        <SelectItem value="distance">Distance</SelectItem>
+                        <SelectItem value="online">Online</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+
+              {/* Semester */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-sm font-medium">
+                  Current Semester
+                </Label>
+                <Controller
+                  name="currentSemester"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                      }}
+                    >
+                      <SelectTrigger className="border-gray-300">
+                        <SelectValue placeholder="Select semester" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Semester 1</SelectItem>
+                        <SelectItem value="2">Semester 2</SelectItem>
+                        <SelectItem value="3">Semester 3</SelectItem>
+                        <SelectItem value="4">Semester 4</SelectItem>
+                        <SelectItem value="5">Semester 5</SelectItem>
+                        <SelectItem value="6">Semester 6</SelectItem>
+                        <SelectItem value="7">Semester 7</SelectItem>
+                        <SelectItem value="8">Semester 8</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+
+              {/* Expected Graduation Year */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-sm font-medium">
+                  <Calendar className="w-4 h-4 text-teal-500" />
+                  Expected Graduation Year{" "}
+                  <span className="text-teal-600">*</span>
+                </Label>
+                <Controller
+                  name="graduationYear"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                      }}
+                    >
+                      <SelectTrigger
+                        className={`border-gray-300 ${
+                          errors.graduationYear ? "border-red-500" : ""
+                        }`}
+                      >
+                        <SelectValue placeholder="Select year" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 10 }, (_, i) => 2020 + i).map(
+                          (year) => (
+                            <SelectItem key={year} value={year.toString()}>
+                              {year}
                             </SelectItem>
-                          ))
-                      ) : (
-                        <div className="px-3 py-2 text-sm text-muted-foreground">
-                          No courses available
-                        </div>
-                      )}
-                    </SelectContent>
-                  </Select>
+                          )
+                        )}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.graduationYear && (
+                  <p className="text-sm text-red-600">
+                    {errors.graduationYear.message as string}
+                  </p>
                 )}
-              />
-              {errors.courseName && (
-                <p className="text-sm text-red-600">
-                  {errors.courseName.message as string}
-                </p>
-              )}
-            </div>
-
-            {/* Graduation Year */}
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2 text-sm font-medium">
-                <Calendar className="w-4 h-4 text-teal-500" />
-                Graduation Year <span className="text-teal-600">*</span>
-              </Label>
-              <Controller
-                name="graduationYear"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    value={field.value}
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                    }}
-                  >
-                    <SelectTrigger
-                      className={`border-gray-300 ${
-                        errors.graduationYear ? "border-red-500" : ""
-                      }`}
-                    >
-                      <SelectValue placeholder="Select year" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Array.from({ length: 10 }, (_, i) => 2020 + i).map(
-                        (year) => (
-                          <SelectItem key={year} value={year.toString()}>
-                            {year}
-                          </SelectItem>
-                        )
-                      )}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {errors.graduationYear && (
-                <p className="text-sm text-red-600">
-                  {errors.graduationYear.message as string}
-                </p>
-              )}
+              </div>
             </div>
           </div>
-        </div>
-        {/* Review Title */}
-        <div className="space-y-2">
-          <Label className="text-xl font-semibold text-gray-800">
-            Give Your Review a Title
-          </Label>
-          <Controller
-            name="collegePlacementTitle"
-            control={control}
-            render={({ field }) => (
-              <Input
-                id="reviewTitle"
-                {...field}
-                placeholder="E.g. One of the best colleges for placements"
-                className="border-gray-300"
-              />
-            )}
-          />
-          {errors.collegePlacementTitle && (
-            <p className="text-sm text-red-500">
-              {errors.collegePlacementTitle.message as string}
-            </p>
-          )}
-        </div>
-
-        {/* College Admission Process */}
-        <div className="">
-          <div className="space-y-2">
-            <Label className="text-xl font-semibold text-gray-800">
-              How was your college admission experience, and what should future
-              applicants know?
-            </Label>
-            <div className="text-sm text-gray-600">
-              <span className="block">• Eligibility & course requirements</span>
-              <span className="block">
-                • Mode of admission (exam, direct, quota)
-              </span>
-              <span className="block">• Course Fees</span>
-              <span className="block">• Application Process</span>
-            </div>
-            <Controller
-              name="admissionExperienceComment"
-              control={control}
-              render={({ field }) => (
-                <Textarea
-                  {...field}
-                  placeholder="Write a message..."
-                  className="min-h-[100px] border-gray-300"
-                />
-              )}
-            />
-            {errors.admissionExperienceComment && (
-              <p className="text-sm text-red-500">
-                {errors.admissionExperienceComment.message as string}
-              </p>
-            )}
-            <div className="text-right text-sm text-gray-500">
-              {(watch("admissionExperienceComment") || "").length}/2500
-              characters
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <span className="text-teal-500 text-lg font-semibold">
-              College Admission Process
-            </span>
-            <Controller
-              name="collegeAdmissionRating"
-              control={control}
-              render={({ field }) => (
-                <StarRating
-                  rating={field.value || 0}
-                  onRatingChange={(rating) => field.onChange(rating)}
-                />
-              )}
-            />
-            {errors.collegeAdmissionRating && (
-              <p className="text-sm text-red-500">
-                {errors.collegeAdmissionRating.message as string}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Campus Experience */}
-        <div className="">
-          <div className="space-y-2">
-            <Label className="text-xl font-semibold text-gray-800">
-              How was your experience with the college's campus and resources?
-            </Label>
-            <span className="text-sm text-gray-600 space-y-1">
-              <span className="block">• Classroom & learning tech</span>
-              <span className="block">• Sports & extracurriculars</span>
-              <span className="block">• Hostel/living experience (if any)</span>
-              <span className="block">
-                • Total fees paid (incl. hostel, etc.)
-              </span>
-            </span>
-            <Controller
-              name="campusExperienceComment"
-              control={control}
-              render={({ field }) => (
-                <Textarea
-                  {...field}
-                  placeholder="Write a message..."
-                  className="min-h-[100px] border-gray-300"
-                />
-              )}
-            />
-            {errors.campusExperienceComment && (
-              <p className="text-sm text-red-500">
-                {errors.campusExperienceComment.message as string}
-              </p>
-            )}
-            <div className="text-right text-sm text-gray-500">
-              {(watch("campusExperienceComment") || "").length}/2500 characters
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-teal-500 text-lg font-semibold">
-              College Campus Experience
-            </span>
-            <Controller
-              name="campusExperienceRating"
-              control={control}
-              render={({ field }) => (
-                <StarRating
-                  rating={field.value || 0}
-                  onRatingChange={(rating) => field.onChange(rating)}
-                />
-              )}
-            />
-            {errors.campusExperienceRating && (
-              <p className="text-sm text-red-500">
-                {errors.campusExperienceRating.message as string}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* College Infrastructure */}
-        <div className="">
-          <div className="space-y-2">
-            <Label className="text-xl font-semibold text-gray-800">
-              How was your academic experience at the college?
-            </Label>
-            <span className="text-sm text-gray-600 space-y-1">
-              <span className="block">
-                • Exams, Curriculum relevance & value
-              </span>
-              <span className="block">
-                • Faculty support and teaching quality
-              </span>
-            </span>
-            <Controller
-              name="academicExperienceComment"
-              control={control}
-              render={({ field }) => (
-                <Textarea
-                  {...field}
-                  placeholder="Write a message..."
-                  className="min-h-[100px] border-gray-300"
-                />
-              )}
-            />
-            {errors.academicExperienceComment && (
-              <p className="text-sm text-red-500">
-                {errors.academicExperienceComment.message as string}
-              </p>
-            )}
-            <div className="text-right text-sm text-gray-500">
-              {(watch("academicExperienceComment") || "").length}/2500
-              characters
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <span className="text-teal-500 text-lg font-semibold">
-              Academic Quality
-            </span>
-            <Controller
-              name="academicQualityRating"
-              control={control}
-              render={({ field }) => (
-                <StarRating
-                  rating={field.value || 0}
-                  onRatingChange={(rating) => field.onChange(rating)}
-                />
-              )}
-            />
-            {errors.academicQualityRating && (
-              <p className="text-sm text-red-500">
-                {errors.academicQualityRating.message as string}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Academic Quality */}
-        <div className="">
-          <div className="space-y-2">
-            <Label className="text-xl font-semibold text-gray-800">
-              How did your college contribute to your placement journey?
-            </Label>
-            <span className="text-sm text-gray-600 space-y-1">
-              <span className="block">• Companies that visited</span>
-              <span className="block">• Support from the placement cell</span>
-              <span className="block">• Average & highest salary</span>
-              <span className="block">
-                • Number of recruiters & placed students
-              </span>
-            </span>
-            <Controller
-              name="placementJourneyComment"
-              control={control}
-              render={({ field }) => (
-                <Textarea
-                  {...field}
-                  placeholder="Write a message..."
-                  className="min-h-[100px] border-gray-300"
-                />
-              )}
-            />
-            {errors.placementJourneyComment && (
-              <p className="text-sm text-red-500">
-                {errors.placementJourneyComment.message as string}
-              </p>
-            )}
-            <div className="text-right text-sm text-gray-500">
-              {(watch("placementJourneyComment") || "").length}/2500 characters
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-teal-500 text-lg font-semibold">
-              College Placement
-            </span>
-            <Controller
-              name="placementJourneyRating"
-              control={control}
-              render={({ field }) => (
-                <StarRating
-                  rating={field.value || 0}
-                  onRatingChange={(rating) => field.onChange(rating)}
-                />
-              )}
-            />
-            {errors.placementJourneyRating && (
-              <p className="text-sm text-red-500">
-                {errors.placementJourneyRating.message as string}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* College Images */}
-        <div className="space-y-4">
-          <Label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-            <Camera className="w-4 h-4" />
-            Share College Images
-          </Label>
-          <Controller
-            name="collegeImages"
-            control={control}
-            render={({ field }) => (
-              <ImageUpload
-                images={field.value || []}
-                onImagesChange={(images) => field.onChange(images)}
-                maxImages={6}
-              />
-            )}
-          />
-          {errors.collegeImages && (
-            <p className="text-sm text-red-500">
-              {errors.collegeImages.message as string}
-            </p>
-          )}
         </div>
       </div>
     </div>
