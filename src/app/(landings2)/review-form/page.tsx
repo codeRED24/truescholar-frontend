@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -744,7 +744,9 @@ function ReviewFormContent() {
 export default function ReviewForm() {
   return (
     <FormProvider>
-      <ReviewFormContent />
+      <Suspense fallback={<div>Loading...</div>}>
+        <ReviewFormContent />
+      </Suspense>
     </FormProvider>
   );
 }
