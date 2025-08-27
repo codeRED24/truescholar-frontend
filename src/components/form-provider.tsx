@@ -8,7 +8,6 @@ import {
   personalDetailsWithOtpSchema,
   studentReviewSchema,
   feedbackSchema,
-  profileVerificationSchema,
 } from "@/lib/validation-schemas";
 
 interface FormData {
@@ -20,6 +19,7 @@ interface FormData {
   contactNumber: string;
   countryOfOrigin: string;
   collegeRollNumber: string;
+  iAm: string;
   collegeName: string;
   collegeId: number;
   collegeLocation: string;
@@ -81,7 +81,6 @@ interface FormContextType {
   personalDetailsForm: UseFormReturn<any>;
   studentReviewForm: UseFormReturn<any>;
   feedbackForm: UseFormReturn<any>;
-  profileVerificationForm: UseFormReturn<any>;
   validateCurrentStep: (step: number) => Promise<boolean>;
   validatePersonalDetailsWithOtp: () => Promise<boolean>;
 }
@@ -96,6 +95,7 @@ export const initialFormData: FormData = {
   contactNumber: "",
   countryOfOrigin: "",
   collegeRollNumber: "",
+  iAm: "",
   upiId: "",
   isEmailVerified: false,
   isPhoneVerified: false,
@@ -156,7 +156,6 @@ export function FormProvider({ children }: { children: ReactNode }) {
       gender: "",
       dateOfBirth: "",
       contactNumber: "",
-      countryOfOrigin: "",
       collegeRollNumber: "",
       upiId: "",
       isEmailVerified: false,
@@ -219,18 +218,6 @@ export function FormProvider({ children }: { children: ReactNode }) {
     reValidateMode: "onChange",
   });
 
-  const profileVerificationForm = useForm({
-    resolver: zodResolver(profileVerificationSchema),
-    defaultValues: {
-      profilePicture: undefined,
-      linkedinProfile: "",
-      studentId: undefined,
-      markSheet: undefined,
-      degreeCertificate: undefined,
-    },
-    mode: "onChange",
-  });
-
   const updateFormData = (data: Partial<FormData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
   };
@@ -247,7 +234,7 @@ export function FormProvider({ children }: { children: ReactNode }) {
         );
         return personalValid;
       case 2:
-        // Only validate academic information fields for step 2
+        // Validate both academic and financial information fields for step 2
         const academicValid = await studentReviewForm.trigger([
           "collegeName",
           "collegeId",
@@ -256,14 +243,6 @@ export function FormProvider({ children }: { children: ReactNode }) {
           "courseId",
           "graduationYear",
         ]);
-        console.log(
-          "Academic information validation:",
-          academicValid,
-          studentReviewForm.formState.errors
-        );
-        return academicValid;
-      case 3:
-        // Only validate financial information fields for step 3
         const financialValid = await studentReviewForm.trigger([
           "annualTuitionFees",
           "hostelFees",
@@ -273,12 +252,18 @@ export function FormProvider({ children }: { children: ReactNode }) {
           "scholarshipAmount",
         ]);
         console.log(
+          "Academic information validation:",
+          academicValid,
+          studentReviewForm.formState.errors
+        );
+        console.log(
           "Financial information validation:",
           financialValid,
           studentReviewForm.formState.errors
         );
-        return financialValid;
-      case 4:
+        return academicValid && financialValid;
+      case 3:
+        // Validate feedback form for step 3
         const feedbackValid = await feedbackForm.trigger();
         console.log(
           "Feedback validation:",
@@ -286,14 +271,6 @@ export function FormProvider({ children }: { children: ReactNode }) {
           feedbackForm.formState.errors
         );
         return feedbackValid;
-      case 5:
-        const profileValid = await profileVerificationForm.trigger();
-        console.log(
-          "Profile verification validation:",
-          profileValid,
-          profileVerificationForm.formState.errors
-        );
-        return profileValid;
       default:
         return false;
     }
@@ -320,7 +297,6 @@ export function FormProvider({ children }: { children: ReactNode }) {
         personalDetailsForm,
         studentReviewForm,
         feedbackForm,
-        profileVerificationForm,
         validateCurrentStep,
         validatePersonalDetailsWithOtp,
       }}

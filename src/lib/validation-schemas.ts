@@ -63,11 +63,12 @@ export const personalDetailsSchema = z.object({
         /^\d{10,15}$/.test(val.replace(/\D/g, ""))
       );
     }, "Please enter a valid phone number format"),
-  countryOfOrigin: z.string().min(1, "Please select your country of origin"),
+  // countryOfOrigin: z.string().min(1, "Please select your country of origin"),
   collegeRollNumber: z
     .string()
     .min(1, "Please enter your college roll number")
     .max(20, "College roll number must be less than 20 characters"),
+  iAm: z.string().min(1, "Please select your role"),
   upiId: z
     .string()
     .min(3, "UPI ID must be at least 3 characters")
@@ -116,9 +117,20 @@ export const academicInformationSchema = z.object({
 export const financialInformationSchema = z
   .object({
     // Financial Information
-    annualTuitionFees: z.number().min(1, "Please enter annual tuition fees"),
-    hostelFees: z.number().min(0, "Amount must be positive").optional(),
-    otherCharges: z.number().min(0, "Amount must be positive").optional(),
+    annualTuitionFees: z
+      .number()
+      .min(1, "Please enter annual tuition fees")
+      .max(50000000, "Please enter a valid annual tuition fees"),
+    hostelFees: z
+      .number()
+      .min(0, "Amount must be positive")
+      .max(50000000, "Please enter a valid annual tuition fees")
+      .optional(),
+    otherCharges: z
+      .number()
+      .min(0, "Amount must be positive")
+      .max(50000000, "Please enter a valid annual tuition fees")
+      .optional(),
     scholarshipAvailed: z.boolean(),
     scholarshipName: z.string().optional(),
     scholarshipAmount: z.number().min(0, "Amount must be positive").optional(),
@@ -151,13 +163,13 @@ export const studentReviewSchema = academicInformationSchema.merge(
   financialInformationSchema
 );
 
-// Feedback Schema (Step 4)
+// Feedback Schema (Step 3 - now includes profile verification)
 export const feedbackSchema = z.object({
   // Review title
   reviewTitle: z
     .string()
-    .min(1, "Please provide a review title")
-    .max(100, "Title must be less than 100 characters"),
+    .min(10, "Please provide a review title")
+    .max(200, "Title must be less than 100 characters"),
 
   // Overall satisfaction - required with rating and feedback
   overallSatisfactionRating: z
@@ -166,8 +178,8 @@ export const feedbackSchema = z.object({
     .max(5, "Rating must be between 1 and 5"),
   overallExperienceFeedback: z
     .string()
-    .min(10, "Please provide detailed feedback (minimum 10 characters)")
-    .max(2500, "Feedback must be less than 2500 characters"),
+    .min(100, "Please provide detailed feedback (minimum 100 characters)")
+    .max(5000, "Feedback must be less than 5000 characters"),
 
   // Teaching quality - required rating, optional feedback
   teachingQualityRating: z
@@ -176,8 +188,8 @@ export const feedbackSchema = z.object({
     .max(5, "Rating must be between 1 and 5"),
   teachingQualityFeedback: z
     .string()
-    .min(10, "Please provide detailed feedback (minimum 10 characters)")
-    .max(2500, "Feedback must be less than 2500 characters"),
+    .min(100, "Please provide detailed feedback (minimum 100 characters)")
+    .max(5000, "Feedback must be less than 5000 characters"),
 
   // Infrastructure - required rating, optional feedback
   infrastructureRating: z
@@ -186,8 +198,8 @@ export const feedbackSchema = z.object({
     .max(5, "Rating must be between 1 and 5"),
   infrastructureFeedback: z
     .string()
-    .min(10, "Please provide detailed feedback (minimum 10 characters)")
-    .max(2500, "Feedback must be less than 2500 characters"),
+    .min(100, "Please provide detailed feedback (minimum 100 characters)")
+    .max(5000, "Feedback must be less than 5000 characters"),
 
   // Library and study resources - required rating, optional feedback
   libraryRating: z
@@ -196,8 +208,8 @@ export const feedbackSchema = z.object({
     .max(5, "Rating must be between 1 and 5"),
   libraryFeedback: z
     .string()
-    .min(10, "Please provide detailed feedback (minimum 10 characters)")
-    .max(2500, "Feedback must be less than 2500 characters"),
+    .min(100, "Please provide detailed feedback (minimum 100 characters)")
+    .max(5000, "Feedback must be less than 5000 characters"),
 
   // Placement support - required rating, optional feedback
   placementSupportRating: z
@@ -206,8 +218,8 @@ export const feedbackSchema = z.object({
     .max(5, "Rating must be between 1 and 5"),
   placementSupportFeedback: z
     .string()
-    .min(10, "Please provide detailed feedback (minimum 10 characters)")
-    .max(2500, "Feedback must be less than 2500 characters"),
+    .min(100, "Please provide detailed feedback (minimum 100 characters)")
+    .max(5000, "Feedback must be less than 5000 characters"),
 
   // Administrative support - required rating, optional feedback
   administrativeSupportRating: z
@@ -216,8 +228,8 @@ export const feedbackSchema = z.object({
     .max(5, "Rating must be between 1 and 5"),
   administrativeSupportFeedback: z
     .string()
-    .min(10, "Please provide detailed feedback (minimum 10 characters)")
-    .max(2500, "Feedback must be less than 2500 characters"),
+    .min(100, "Please provide detailed feedback (minimum 100 characters)")
+    .max(5000, "Feedback must be less than 5000 characters"),
 
   // Hostel/accommodation - required rating, optional feedback
   hostelRating: z
@@ -226,8 +238,8 @@ export const feedbackSchema = z.object({
     .max(5, "Rating must be between 1 and 5"),
   hostelFeedback: z
     .string()
-    .min(10, "Please provide detailed feedback (minimum 10 characters)")
-    .max(2500, "Feedback must be less than 2500 characters"),
+    .min(100, "Please provide detailed feedback (minimum 100 characters)")
+    .max(5000, "Feedback must be less than 5000 characters"),
 
   // Extra-curricular activities - required rating, optional feedback
   extracurricularRating: z
@@ -236,27 +248,24 @@ export const feedbackSchema = z.object({
     .max(5, "Rating must be between 1 and 5"),
   extracurricularFeedback: z
     .string()
-    .min(10, "Please provide detailed feedback (minimum 10 characters)")
-    .max(2500, "Feedback must be less than 2500 characters"),
+    .min(100, "Please provide detailed feedback (minimum 100 characters)")
+    .max(5000, "Feedback must be less than 5000 characters"),
 
   // Suggestions for improvement - required
   improvementSuggestions: z
     .string()
     .min(
-      10,
-      "Please provide suggestions for improvement (minimum 10 characters)"
+      100,
+      "Please provide suggestions for improvement (minimum 100 characters)"
     )
-    .max(2500, "Suggestions must be less than 2500 characters"),
+    .max(5000, "Suggestions must be less than 5000 characters"),
 
   // College images - required (at least 1, max 6)
   collegeImages: z
     .array(z.instanceof(File))
     .min(1, "Please upload at least one college image")
     .max(6, "You can upload maximum 6 images"),
-});
 
-// Profile Verification Schema (Step 5)
-export const profileVerificationSchema = z.object({
   // Profile verification fields
   profilePicture: z.instanceof(File, {
     message: "Please upload a profile picture",
@@ -298,8 +307,7 @@ export const otpVerificationSchema = z.object({
 // Combined schema for complete form
 export const completeFormSchema = personalDetailsWithOtpSchema
   .merge(studentReviewSchema)
-  .merge(feedbackSchema)
-  .merge(profileVerificationSchema);
+  .merge(feedbackSchema);
 
 export type PersonalDetailsFormData = z.infer<typeof personalDetailsSchema>;
 export type PersonalDetailsWithOtpFormData = z.infer<
@@ -313,8 +321,5 @@ export type FinancialInformationFormData = z.infer<
 >;
 export type StudentReviewFormData = z.infer<typeof studentReviewSchema>;
 export type FeedbackFormData = z.infer<typeof feedbackSchema>;
-export type ProfileVerificationFormData = z.infer<
-  typeof profileVerificationSchema
->;
 export type CompleteFormData = z.infer<typeof completeFormSchema>;
 export type OtpVerificationFormData = z.infer<typeof otpVerificationSchema>;

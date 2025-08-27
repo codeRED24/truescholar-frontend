@@ -1,6 +1,5 @@
 "use client";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -9,21 +8,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { useFormContext } from "@/components/form-provider";
-import { StarRating } from "@/components/star-rating";
-import { ImageUpload } from "@/components/image-upload";
-import {
-  Camera,
-  GraduationCap,
-  MapPin,
-  BookOpen,
-  Calendar,
-} from "lucide-react";
+import { GraduationCap, BookOpen, Calendar, IndianRupee } from "lucide-react";
 import { Controller } from "react-hook-form";
 import { SuggestionInput } from "@/components/ui/suggestion-input";
-import { useUniSearch } from "@/hooks/useUniSearch";
 import { useOnlyCollegeIdCompare } from "@/hooks/useOnlyCollegeIdCompare";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 export function StudentReviewStep() {
   const { studentReviewForm } = useFormContext();
@@ -36,12 +27,18 @@ export function StudentReviewStep() {
 
   const selectedCollegeId = watch("collegeId");
 
-  const { results, loading: searchLoading, search } = useUniSearch();
   const { courses, loading: coursesLoading } =
     useOnlyCollegeIdCompare(selectedCollegeId);
 
-  const [selectedCollege, setSelectedCollege] = useState<any>(null);
   const [collegeOptions, setCollegeOptions] = useState<any[]>([]);
+  const [showScholarshipFields, setShowScholarshipFields] = useState(false);
+
+  const scholarshipAvailed = watch("scholarshipAvailed");
+
+  // Update conditional fields visibility
+  useEffect(() => {
+    setShowScholarshipFields(scholarshipAvailed === true);
+  }, [scholarshipAvailed]);
 
   // Create fetchSuggestions function for SuggestionInput
   const fetchCollegeSuggestions = useCallback(
@@ -89,7 +86,6 @@ export function StudentReviewStep() {
   const handleCollegeSelect = (collegeName: string) => {
     const college = getCollegeByName(collegeName);
     if (college) {
-      setSelectedCollege(college);
       const collegeDisplayName = college.college_name || college.name;
       const collegeId = Number(college.college_id || college.id);
       const collegeLocation = college.location || college.city || "";
@@ -139,29 +135,14 @@ export function StudentReviewStep() {
                 name="isAnonymous"
                 control={control}
                 render={({ field }) => (
-                  <div className="flex items-center space-x-4">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        {...field}
-                        value="false"
-                        checked={field.value === false}
-                        onChange={() => field.onChange(false)}
-                        className="mr-2"
-                      />
-                      No
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        {...field}
-                        value="true"
-                        checked={field.value === true}
-                        onChange={() => field.onChange(true)}
-                        className="mr-2"
-                      />
-                      Yes
-                    </label>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      checked={field.value === true}
+                      onCheckedChange={(checked) => field.onChange(checked)}
+                    />
+                    <span className="text-sm text-gray-600">
+                      {field.value === true ? "Yes" : "No"}
+                    </span>
                   </div>
                 )}
               />
@@ -467,6 +448,250 @@ export function StudentReviewStep() {
                   </p>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Financial Information Section */}
+        <div className="pt-10">
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">
+            Financial Information
+          </h3>
+          <div className="space-y-6">
+            {/* College Fees & Expenses */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Annual Tuition Fees */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="annualTuitionFees"
+                  className="flex items-center gap-2 text-sm font-medium"
+                >
+                  <IndianRupee className="w-4 h-4 text-teal-500" />
+                  Annual Tuition Fees <span className="text-teal-600">*</span>
+                </Label>
+                <Controller
+                  name="annualTuitionFees"
+                  control={control}
+                  render={({ field: { onChange, value, ...field } }) => (
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                        ₹
+                      </span>
+                      <Input
+                        {...field}
+                        value={value === 0 ? "" : value?.toString() || ""}
+                        onChange={(e) => {
+                          const numValue =
+                            e.target.value === "" ? 0 : Number(e.target.value);
+                          onChange(isNaN(numValue) ? 0 : numValue);
+                        }}
+                        id="annualTuitionFees"
+                        type="number"
+                        placeholder="Enter annual tuition fees"
+                        className={`border-gray-300 pl-8 ${
+                          errors.annualTuitionFees ? "border-red-500" : ""
+                        }`}
+                        min="0"
+                        step="1000"
+                      />
+                    </div>
+                  )}
+                />
+                {errors.annualTuitionFees && (
+                  <p className="text-sm text-red-600">
+                    {errors.annualTuitionFees.message as string}
+                  </p>
+                )}
+              </div>
+
+              {/* Hostel Fees */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="hostelFees"
+                  className="flex items-center gap-2 text-sm font-medium"
+                >
+                  <IndianRupee className="w-4 h-4 text-teal-500" />
+                  Hostel Fees (if applicable)
+                </Label>
+                <Controller
+                  name="hostelFees"
+                  control={control}
+                  render={({ field: { onChange, value, ...field } }) => (
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                        ₹
+                      </span>
+                      <Input
+                        {...field}
+                        value={value === 0 ? "" : value?.toString() || ""}
+                        onChange={(e) => {
+                          const numValue =
+                            e.target.value === "" ? 0 : Number(e.target.value);
+                          onChange(isNaN(numValue) ? 0 : numValue);
+                        }}
+                        id="hostelFees"
+                        type="number"
+                        placeholder="Enter hostel fees (if applicable)"
+                        className="border-gray-300 pl-8"
+                        min="0"
+                        step="1000"
+                      />
+                    </div>
+                  )}
+                />
+                {errors.hostelFees && (
+                  <p className="text-sm text-red-600">
+                    {errors.hostelFees.message as string}
+                  </p>
+                )}
+              </div>
+
+              {/* Any Other College Charges */}
+              <div className="space-y-2 md:col-span-2">
+                <Label
+                  htmlFor="otherCharges"
+                  className="flex items-center gap-2 text-sm font-medium"
+                >
+                  <IndianRupee className="w-4 h-4 text-teal-500" />
+                  Any Other College Charges
+                </Label>
+                <Controller
+                  name="otherCharges"
+                  control={control}
+                  render={({ field: { onChange, value, ...field } }) => (
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                        ₹
+                      </span>
+                      <Input
+                        {...field}
+                        value={value === 0 ? "" : value?.toString() || ""}
+                        onChange={(e) => {
+                          const numValue =
+                            e.target.value === "" ? 0 : Number(e.target.value);
+                          onChange(isNaN(numValue) ? 0 : numValue);
+                        }}
+                        id="otherCharges"
+                        type="number"
+                        placeholder="Enter any other college charges (exam fees, library fees, etc.)"
+                        className="border-gray-300 pl-8"
+                        min="0"
+                        step="100"
+                      />
+                    </div>
+                  )}
+                />
+                {errors.otherCharges && (
+                  <p className="text-sm text-red-600">
+                    {errors.otherCharges.message as string}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Scholarship Information */}
+            <div className="space-y-6">
+              {/* Scholarship/Fee Waiver Availed */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-sm font-medium">
+                  Scholarship / Fee Waiver Availed?
+                </Label>
+                <Controller
+                  name="scholarshipAvailed"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        checked={field.value === true}
+                        onCheckedChange={(checked) => field.onChange(checked)}
+                      />
+                      <span className="text-sm text-gray-600">
+                        {field.value === true ? "Yes" : "No"}
+                      </span>
+                    </div>
+                  )}
+                />
+              </div>
+
+              {/* Conditional Scholarship Fields */}
+              {showScholarshipFields && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-gray-50 rounded-lg">
+                  {/* Scholarship Name */}
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="scholarshipName"
+                      className="flex items-center gap-2 text-sm font-medium"
+                    >
+                      Scholarship Name <span className="text-teal-600">*</span>
+                    </Label>
+                    <Controller
+                      name="scholarshipName"
+                      control={control}
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          id="scholarshipName"
+                          placeholder="Enter scholarship name"
+                          className={`border-gray-300 ${
+                            errors.scholarshipName ? "border-red-500" : ""
+                          }`}
+                        />
+                      )}
+                    />
+                    {errors.scholarshipName && (
+                      <p className="text-sm text-red-600">
+                        {errors.scholarshipName.message as string}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Amount Covered by Scholarship */}
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="scholarshipAmount"
+                      className="flex items-center gap-2 text-sm font-medium"
+                    >
+                      Amount Covered by Scholarship{" "}
+                      <span className="text-teal-600">*</span>
+                    </Label>
+                    <Controller
+                      name="scholarshipAmount"
+                      control={control}
+                      render={({ field: { onChange, value, ...field } }) => (
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                            ₹
+                          </span>
+                          <Input
+                            {...field}
+                            value={value === 0 ? "" : value?.toString() || ""}
+                            onChange={(e) => {
+                              const numValue =
+                                e.target.value === ""
+                                  ? 0
+                                  : Number(e.target.value);
+                              onChange(isNaN(numValue) ? 0 : numValue);
+                            }}
+                            id="scholarshipAmount"
+                            type="number"
+                            placeholder="Enter scholarship amount"
+                            className={`border-gray-300 pl-8 ${
+                              errors.scholarshipAmount ? "border-red-500" : ""
+                            }`}
+                            min="0"
+                            step="1000"
+                          />
+                        </div>
+                      )}
+                    />
+                    {errors.scholarshipAmount && (
+                      <p className="text-sm text-red-600">
+                        {errors.scholarshipAmount.message as string}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

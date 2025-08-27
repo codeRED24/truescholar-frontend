@@ -5,6 +5,7 @@ export interface CreateUserRequest {
   contact_number?: string;
   country_of_origin?: string;
   college_roll_number?: string;
+  iAm?: string;
   college_id?: number;
   course_id?: number;
   college_location?: string;
@@ -26,6 +27,7 @@ export interface CreateUserResponse {
     contact_number?: string;
     country_of_origin?: string;
     college_roll_number?: string;
+    iAm?: string;
     college_id?: number;
     course_id?: number;
     college_location?: string;

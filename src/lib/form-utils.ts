@@ -10,7 +10,7 @@ interface BackendFormData {
   email: string;
   gender: string;
   contactNumber: string;
-  countryOfOrigin: string;
+  // countryOfOrigin: string;
   collegeId: number; // This is what backend needs
   courseId: number; // This will be college_wise_course_id from the API
   graduationYear: string;
@@ -35,7 +35,7 @@ export function formatFormDataForBackend(formData: any): BackendFormData {
     email: formData.email,
     gender: formData.gender,
     contactNumber: formData.contactNumber,
-    countryOfOrigin: formData.countryOfOrigin,
+    // countryOfOrigin: formData.countryOfOrigin,
     collegeId: formData.collegeId,
     courseId: formData.courseId, // This will contain college_wise_course_id
     graduationYear: formData.graduationYear,

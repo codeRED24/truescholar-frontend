@@ -35,6 +35,7 @@ export function PersonalDetailsStep() {
   } = personalDetailsForm;
 
   const isPhoneVerified = watch("isPhoneVerified") || false;
+  const iAmValue = watch("iAm");
 
   const formatDate = (d: Date) => {
     const y = d.getFullYear();
@@ -193,43 +194,6 @@ export function PersonalDetailsStep() {
           )}
         </div>
 
-        {/* Date of Birth */}
-        <div className="space-y-2">
-          <Label
-            htmlFor="dateOfBirth"
-            className="flex items-center gap-2 text-sm font-medium"
-          >
-            <Calendar className="w-4 h-4 text-teal-500" />
-            Date of Birth <span className="text-teal-600">*</span>
-          </Label>
-          <Controller
-            name="dateOfBirth"
-            control={control}
-            render={({ field }) => (
-              <Input
-                {...field}
-                id="dateOfBirth"
-                type="date"
-                min={minDate}
-                max={maxDate}
-                placeholder="Select your date of birth"
-                className={`border-gray-300  ${
-                  errors.dateOfBirth ? "border-red-500" : ""
-                }`}
-                onChange={(e) => {
-                  field.onChange(e);
-                  updateFormData({ dateOfBirth: e.target.value });
-                }}
-              />
-            )}
-          />
-          {errors.dateOfBirth && (
-            <p className="text-sm text-red-600">
-              {errors.dateOfBirth.message as string}
-            </p>
-          )}
-        </div>
-
         {/* Contact Number */}
         <div className="space-y-2">
           <Label className="flex items-center gap-2 text-sm font-medium">
@@ -283,7 +247,8 @@ export function PersonalDetailsStep() {
           )}
         </div>
 
-        {/* Country of Origin */}
+        {/* Country of Origin - Commented out */}
+        {/*
         <div className="space-y-2">
           <Label className="flex items-center gap-2 text-sm font-medium">
             <Globe className="w-4 h-4 text-teal-500" />
@@ -323,43 +288,130 @@ export function PersonalDetailsStep() {
             </p>
           )}
         </div>
+        */}
 
-        {/* College Roll Number */}
+        {/* I am */}
         <div className="space-y-2">
-          <Label
-            htmlFor="collegeRollNumber"
-            className="flex items-center gap-2 text-sm font-medium"
-          >
-            <CreditCard className="w-4 h-4 text-teal-500" />
-            College Roll Number <span className="text-teal-600">*</span>
+          <Label className="flex items-center gap-2 text-sm font-medium">
+            <Users className="w-4 h-4 text-teal-500" />I am{" "}
+            <span className="text-teal-600">*</span>
           </Label>
           <Controller
-            name="collegeRollNumber"
+            name="iAm"
+            control={control}
+            render={({ field }) => (
+              <Select
+                value={field.value}
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  updateFormData({ iAm: value });
+                  if (value !== "student") {
+                    setValue("collegeRollNumber", "");
+                    updateFormData({ collegeRollNumber: "" });
+                  }
+                }}
+              >
+                <SelectTrigger
+                  className={`border-gray-300 ${
+                    errors.iAm ? "border-red-500" : ""
+                  }`}
+                >
+                  <SelectValue placeholder="Select your role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="student">Student</SelectItem>
+                  <SelectItem value="alumni">Alumni</SelectItem>
+                  <SelectItem value="teaching-staff">Teaching Staff</SelectItem>
+                  <SelectItem value="non-teaching-staff">
+                    Non-teaching Staff
+                  </SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          />
+          {errors.iAm && (
+            <p className="text-sm text-red-600">
+              {errors.iAm.message as string}
+            </p>
+          )}
+        </div>
+
+        {/* College Roll Number */}
+        {iAmValue === "student" && (
+          <div className="space-y-2">
+            <Label
+              htmlFor="collegeRollNumber"
+              className="flex items-center gap-2 text-sm font-medium"
+            >
+              <CreditCard className="w-4 h-4 text-teal-500" />
+              College Roll Number <span className="text-teal-600">*</span>
+            </Label>
+            <Controller
+              name="collegeRollNumber"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  id="collegeRollNumber"
+                  placeholder="Enter your college roll number"
+                  className={`border-gray-300 ${
+                    errors.collegeRollNumber ? "border-red-500" : ""
+                  }`}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    updateFormData({ collegeRollNumber: e.target.value });
+                  }}
+                />
+              )}
+            />
+            {errors.collegeRollNumber && (
+              <p className="text-sm text-red-600">
+                {errors.collegeRollNumber.message as string}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Date of Birth */}
+        <div className="space-y-2">
+          <Label
+            htmlFor="dateOfBirth"
+            className="flex items-center gap-2 text-sm font-medium"
+          >
+            <Calendar className="w-4 h-4 text-teal-500" />
+            Date of Birth <span className="text-teal-600">*</span>
+          </Label>
+          <Controller
+            name="dateOfBirth"
             control={control}
             render={({ field }) => (
               <Input
                 {...field}
-                id="collegeRollNumber"
-                placeholder="Enter your college roll number"
-                className={`border-gray-300 ${
-                  errors.collegeRollNumber ? "border-red-500" : ""
+                id="dateOfBirth"
+                type="date"
+                min={minDate}
+                max={maxDate}
+                placeholder="Select your date of birth"
+                className={`border-gray-300  ${
+                  errors.dateOfBirth ? "border-red-500" : ""
                 }`}
                 onChange={(e) => {
                   field.onChange(e);
-                  updateFormData({ collegeRollNumber: e.target.value });
+                  updateFormData({ dateOfBirth: e.target.value });
                 }}
               />
             )}
           />
-          {errors.collegeRollNumber && (
+          {errors.dateOfBirth && (
             <p className="text-sm text-red-600">
-              {errors.collegeRollNumber.message as string}
+              {errors.dateOfBirth.message as string}
             </p>
           )}
         </div>
 
         {/* UPI ID */}
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <Label
             htmlFor="upiId"
             className="flex items-center gap-2 text-sm font-medium"
@@ -390,10 +442,10 @@ export function PersonalDetailsStep() {
               {errors.upiId.message as string}
             </p>
           )}
-        </div>
+        </div> */}
 
         {/* UPI Description */}
-        <div className="space-y-2 md:col-span-2">
+        {/* <div className="space-y-2 md:col-span-2">
           <p className="text-sm text-teal-700">
             Sharing Your UPI ID with TrueScholar is 100% safe, secure &
             confidential. Your UPI will be used solely to share rewards.{""}
@@ -404,7 +456,7 @@ export function PersonalDetailsStep() {
               Concerned About Privacy?
             </a>
           </p>
-        </div>
+        </div> */}
       </div>
     </div>
   );

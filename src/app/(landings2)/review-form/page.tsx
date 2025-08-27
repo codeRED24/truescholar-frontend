@@ -6,9 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { PersonalDetailsStep } from "@/components/form-steps/personal-details-step";
 import { StudentReviewStep } from "@/components/form-steps/student-review-step";
-import { FinancialInformationStep } from "@/components/form-steps/financial-information-step";
 import { FeedbackStep } from "@/components/form-steps/feedback-step";
-import { ProfileVerificationStep } from "@/components/form-steps/profile-verification-step";
 import { SuccessScreen } from "@/components/success-screen";
 import {
   FormProvider,
@@ -23,21 +21,15 @@ import { useSubmitReview } from "@/hooks/useSubmitReview";
 import { CreateUserRequest } from "@/api/users/createUser";
 import useOtpApi from "@/hooks/use-otp";
 import { toast } from "sonner";
-import { getCurrentLocation } from "@/utils/location";
 import { useSearchParams } from "next/navigation";
+import { getCurrentLocation } from "@/components/utils/utils";
 
 const OTP_COOLDOWN_SECONDS = 30;
 
 const STEPS = [
   { id: 1, title: "Personal Details", component: PersonalDetailsStep },
   { id: 2, title: "Academic Information", component: StudentReviewStep },
-  {
-    id: 3,
-    title: "Financial Information",
-    component: FinancialInformationStep,
-  },
-  { id: 4, title: "Feedback", component: FeedbackStep },
-  { id: 5, title: "Profile Verification", component: ProfileVerificationStep },
+  { id: 3, title: "Feedback", component: FeedbackStep },
 ];
 
 function ReviewFormContent() {
@@ -117,7 +109,6 @@ function ReviewFormContent() {
     validatePersonalDetailsWithOtp,
     studentReviewForm,
     feedbackForm,
-    profileVerificationForm,
     personalDetailsForm,
   } = useFormContext();
 
@@ -133,7 +124,8 @@ function ReviewFormContent() {
       currentData.gender !== lastCreatedUserData.gender ||
       currentData.dob !== lastCreatedUserData.dob ||
       currentData.contact_number !== lastCreatedUserData.contact_number ||
-      currentData.country_of_origin !== lastCreatedUserData.country_of_origin
+      currentData.country_of_origin !== lastCreatedUserData.country_of_origin ||
+      currentData.iAm !== lastCreatedUserData.iAm
     );
   };
 
@@ -177,11 +169,9 @@ function ReviewFormContent() {
         gender: step1Data.gender,
         dob: step1Data.dateOfBirth,
         contact_number: step1Data.contactNumber,
-        country_of_origin: step1Data.countryOfOrigin,
-        college_id: step1Data.collegeId,
-        course_id: step1Data.courseId,
-        college_location: step1Data.collegeLocation,
-        pass_year: step1Data.graduationYear,
+        // country_of_origin: step1Data.countryOfOrigin,
+        college_roll_number: step1Data.collegeRollNumber,
+        iAm: step1Data.iAm,
         user_type: "student",
       })
     ) {
@@ -282,9 +272,11 @@ function ReviewFormContent() {
           gender: step1Data.gender,
           dob: step1Data.dateOfBirth,
           contact_number: step1Data.contactNumber,
-          country_of_origin: step1Data.countryOfOrigin,
+          // country_of_origin: step1Data.countryOfOrigin,
           college_roll_number: step1Data.collegeRollNumber,
-          user_location: userLocation || undefined,
+          iAm: step1Data.iAm,
+          user_location:
+            `${userLocation.latitude}, ${userLocation.longitude}` || undefined,
           user_type: "student", // Default user type for review form
         };
 
@@ -385,9 +377,12 @@ function ReviewFormContent() {
             gender: step1Data.gender,
             dob: step1Data.dateOfBirth,
             contact_number: step1Data.contactNumber,
-            country_of_origin: step1Data.countryOfOrigin,
-            user_location: userLocation || undefined,
-            user_type: "student",
+            // country_of_origin: step1Data.countryOfOrigin,
+            college_roll_number: step1Data.collegeRollNumber,
+            user_location:
+              `${userLocation.latitude}, ${userLocation.longitude}` ||
+              undefined,
+            user_type: step1Data.iAm,
           };
 
           // Only create user if we haven't created one yet or if the data has changed
@@ -442,11 +437,10 @@ function ReviewFormContent() {
     // Get data from all steps
     const step2Data = studentReviewForm.getValues();
     const financialData = studentReviewForm.getValues(); // Financial data is in the same form
-    const feedbackData = feedbackForm.getValues(); // Get feedback data from step 4
-    const profileData = profileVerificationForm.getValues();
+    const feedbackData = feedbackForm.getValues(); // Get feedback data from step 3 (now includes profile verification)
 
     // Console log data from all steps excluding step 1
-    console.log("Step 2 (Academic Information) Data:", {
+    console.log("Step 2 (Academic & Financial Information) Data:", {
       collegeName: step2Data.collegeName,
       collegeId: step2Data.collegeId,
       collegeLocation: step2Data.collegeLocation,
@@ -458,9 +452,7 @@ function ReviewFormContent() {
       yearOfStudy: step2Data.yearOfStudy,
       modeOfStudy: step2Data.modeOfStudy,
       currentSemester: step2Data.currentSemester,
-    });
-
-    console.log("Step 3 (Financial Information) Data:", {
+      // Financial data
       annualTuitionFees: step2Data.annualTuitionFees,
       hostelFees: step2Data.hostelFees,
       otherCharges: step2Data.otherCharges,
@@ -469,8 +461,7 @@ function ReviewFormContent() {
       scholarshipAmount: step2Data.scholarshipAmount,
     });
 
-    console.log("Step 4 (Feedback) Data:", feedbackData);
-    console.log("Step 5 (Profile Verification) Data:", profileData);
+    console.log("Step 3 (Feedback & Profile Verification) Data:", feedbackData);
 
     // Map frontend fields to backend DTO + files and submit via hook
     try {
@@ -484,7 +475,7 @@ function ReviewFormContent() {
         collegeLocation: step2Data.collegeLocation,
         passYear: parseInt(step2Data.graduationYear),
 
-        // Financial Information (from step 2/3)
+        // Financial Information (from step 2)
         annualTuitionFees: step2Data.annualTuitionFees,
         hostelFees: step2Data.hostelFees,
         otherCharges: step2Data.otherCharges,
@@ -492,14 +483,14 @@ function ReviewFormContent() {
         scholarshipName: step2Data.scholarshipName,
         scholarshipAmount: step2Data.scholarshipAmount,
 
-        // Feedback from step 4 - this is the main review content
+        // Feedback from step 3 - this is the main review content
         reviewTitle: feedbackData.reviewTitle,
 
         // Overall satisfaction (required)
         overallSatisfactionRating: feedbackData.overallSatisfactionRating,
         overallExperienceFeedback: feedbackData.overallExperienceFeedback,
 
-        // All rating categories (all required as per step 4)
+        // All rating categories (all required as per step 3)
         teachingQualityRating: feedbackData.teachingQualityRating,
         teachingQualityFeedback: feedbackData.teachingQualityFeedback || "",
         infrastructureRating: feedbackData.infrastructureRating,
@@ -517,15 +508,15 @@ function ReviewFormContent() {
         extracurricularFeedback: feedbackData.extracurricularFeedback || "",
         improvementSuggestions: feedbackData.improvementSuggestions,
 
-        // College images from step 4
+        // College images from step 3
         collegeImages: feedbackData.collegeImages || [],
 
-        // Profile verification fields
-        profilePicture: profileData.profilePicture || null,
-        studentId: profileData.studentId || null,
-        markSheet: profileData.markSheet || null,
-        degreeCertificate: profileData.degreeCertificate || null,
-        linkedinProfile: profileData.linkedinProfile || undefined,
+        // Profile verification fields from step 3
+        profilePicture: feedbackData.profilePicture || null,
+        studentId: feedbackData.studentId || null,
+        markSheet: feedbackData.markSheet || null,
+        degreeCertificate: feedbackData.degreeCertificate || null,
+        linkedinProfile: feedbackData.linkedinProfile || undefined,
       };
 
       // Submit using our hook
@@ -549,7 +540,6 @@ function ReviewFormContent() {
         personalDetailsForm.reset();
         studentReviewForm.reset();
         feedbackForm.reset();
-        profileVerificationForm.reset();
 
         // Reset provider-level aggregated formData
         updateFormData(initialFormData);
