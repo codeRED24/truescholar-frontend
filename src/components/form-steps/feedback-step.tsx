@@ -7,15 +7,17 @@ import { useFormContext } from "@/components/form-provider";
 import { Controller } from "react-hook-form";
 import { StarRating } from "@/components/star-rating";
 import { ImageUpload } from "@/components/image-upload";
-import { Camera, FileText, Star } from "lucide-react";
+import { FileUpload } from "@/components/file-upload";
+import { Camera, FileText, Star, User, Linkedin, Upload } from "lucide-react";
 
 export function FeedbackStep() {
-  const { feedbackForm } = useFormContext();
+  const { feedbackForm, formData } = useFormContext();
   const {
     control,
     formState: { errors },
     watch,
   } = feedbackForm;
+  const profilePicture = watch("profilePicture");
 
   return (
     <div className="">
@@ -54,6 +56,26 @@ export function FeedbackStep() {
 
         {/* Overall Satisfaction */}
         <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            <span className="text-lg font-semibold text-teal-600">
+              Overall Satisfaction with College
+            </span>
+            <Controller
+              name="overallSatisfactionRating"
+              control={control}
+              render={({ field }) => (
+                <StarRating
+                  rating={field.value || 0}
+                  onRatingChange={(rating) => field.onChange(rating)}
+                />
+              )}
+            />
+            {errors.overallSatisfactionRating && (
+              <p className="text-sm text-red-500">
+                {errors.overallSatisfactionRating.message as string}
+              </p>
+            )}
+          </div>
           <div className="space-y-2">
             <Label className="text-sm font-medium">
               Tell us about your overall experience
@@ -81,12 +103,16 @@ export function FeedbackStep() {
               characters
             </div>
           </div>
+        </div>
+
+        {/* Teaching Quality */}
+        <div className="space-y-4">
           <div className="flex items-center gap-4">
             <span className="text-lg font-semibold text-teal-600">
-              Overall Satisfaction with College
+              Teaching Quality <span className="text-red-500">*</span>
             </span>
             <Controller
-              name="overallSatisfactionRating"
+              name="teachingQualityRating"
               control={control}
               render={({ field }) => (
                 <StarRating
@@ -95,16 +121,12 @@ export function FeedbackStep() {
                 />
               )}
             />
-            {errors.overallSatisfactionRating && (
+            {errors.teachingQualityRating && (
               <p className="text-sm text-red-500">
-                {errors.overallSatisfactionRating.message as string}
+                {errors.teachingQualityRating.message as string}
               </p>
             )}
           </div>
-        </div>
-
-        {/* Teaching Quality */}
-        <div className="space-y-4">
           <div className="space-y-2">
             <Label className="text-sm font-medium">
               How would you rate the faculty and teaching methods?
@@ -129,12 +151,16 @@ export function FeedbackStep() {
               {(watch("teachingQualityFeedback") || "").length}/2500 characters
             </div>
           </div>
+        </div>
+
+        {/* Infrastructure */}
+        <div className="space-y-4">
           <div className="flex items-center gap-4">
             <span className="text-lg font-semibold text-teal-600">
-              Teaching Quality <span className="text-red-500">*</span>
+              Infrastructure <span className="text-red-500">*</span>
             </span>
             <Controller
-              name="teachingQualityRating"
+              name="infrastructureRating"
               control={control}
               render={({ field }) => (
                 <StarRating
@@ -143,16 +169,12 @@ export function FeedbackStep() {
                 />
               )}
             />
-            {errors.teachingQualityRating && (
+            {errors.infrastructureRating && (
               <p className="text-sm text-red-500">
-                {errors.teachingQualityRating.message as string}
+                {errors.infrastructureRating.message as string}
               </p>
             )}
           </div>
-        </div>
-
-        {/* Infrastructure */}
-        <div className="space-y-4">
           <div className="space-y-2">
             <Label className="text-sm font-medium">
               Rate the college infrastructure (labs, classrooms, facilities,
@@ -178,12 +200,17 @@ export function FeedbackStep() {
               {(watch("infrastructureFeedback") || "").length}/2500 characters
             </div>
           </div>
+        </div>
+
+        {/* Library and Study Resources */}
+        <div className="space-y-4">
           <div className="flex items-center gap-4">
             <span className="text-lg font-semibold text-teal-600">
-              Infrastructure <span className="text-red-500">*</span>
+              Library and Study Resources{" "}
+              <span className="text-red-500">*</span>
             </span>
             <Controller
-              name="infrastructureRating"
+              name="libraryRating"
               control={control}
               render={({ field }) => (
                 <StarRating
@@ -192,16 +219,12 @@ export function FeedbackStep() {
                 />
               )}
             />
-            {errors.infrastructureRating && (
+            {errors.libraryRating && (
               <p className="text-sm text-red-500">
-                {errors.infrastructureRating.message as string}
+                {errors.libraryRating.message as string}
               </p>
             )}
           </div>
-        </div>
-
-        {/* Library and Study Resources */}
-        <div className="space-y-4">
           <div className="space-y-2">
             <Label className="text-sm font-medium">
               How would you rate the library and study resources?
@@ -226,13 +249,16 @@ export function FeedbackStep() {
               {(watch("libraryFeedback") || "").length}/2500 characters
             </div>
           </div>
+        </div>
+
+        {/* Placement Support */}
+        <div className="space-y-4">
           <div className="flex items-center gap-4">
             <span className="text-lg font-semibold text-teal-600">
-              Library and Study Resources{" "}
-              <span className="text-red-500">*</span>
+              Placement Support <span className="text-red-500">*</span>
             </span>
             <Controller
-              name="libraryRating"
+              name="placementSupportRating"
               control={control}
               render={({ field }) => (
                 <StarRating
@@ -241,16 +267,12 @@ export function FeedbackStep() {
                 />
               )}
             />
-            {errors.libraryRating && (
+            {errors.placementSupportRating && (
               <p className="text-sm text-red-500">
-                {errors.libraryRating.message as string}
+                {errors.placementSupportRating.message as string}
               </p>
             )}
           </div>
-        </div>
-
-        {/* Placement Support */}
-        <div className="space-y-4">
           <div className="space-y-2">
             <Label className="text-sm font-medium">
               Rate the placement and career support services
@@ -275,12 +297,16 @@ export function FeedbackStep() {
               {(watch("placementSupportFeedback") || "").length}/2500 characters
             </div>
           </div>
+        </div>
+
+        {/* Administrative Support */}
+        <div className="space-y-4">
           <div className="flex items-center gap-4">
             <span className="text-lg font-semibold text-teal-600">
-              Placement Support <span className="text-red-500">*</span>
+              Administrative Support <span className="text-red-500">*</span>
             </span>
             <Controller
-              name="placementSupportRating"
+              name="administrativeSupportRating"
               control={control}
               render={({ field }) => (
                 <StarRating
@@ -289,16 +315,12 @@ export function FeedbackStep() {
                 />
               )}
             />
-            {errors.placementSupportRating && (
+            {errors.administrativeSupportRating && (
               <p className="text-sm text-red-500">
-                {errors.placementSupportRating.message as string}
+                {errors.administrativeSupportRating.message as string}
               </p>
             )}
           </div>
-        </div>
-
-        {/* Administrative Support */}
-        <div className="space-y-4">
           <div className="space-y-2">
             <Label className="text-sm font-medium">
               How efficient is the administration and support staff?
@@ -324,12 +346,16 @@ export function FeedbackStep() {
               characters
             </div>
           </div>
+        </div>
+
+        {/* Hostel / Accommodation */}
+        <div className="space-y-4">
           <div className="flex items-center gap-4">
             <span className="text-lg font-semibold text-teal-600">
-              Administrative Support <span className="text-red-500">*</span>
+              Hostel / Accommodation <span className="text-red-500">*</span>
             </span>
             <Controller
-              name="administrativeSupportRating"
+              name="hostelRating"
               control={control}
               render={({ field }) => (
                 <StarRating
@@ -338,16 +364,12 @@ export function FeedbackStep() {
                 />
               )}
             />
-            {errors.administrativeSupportRating && (
+            {errors.hostelRating && (
               <p className="text-sm text-red-500">
-                {errors.administrativeSupportRating.message as string}
+                {errors.hostelRating.message as string}
               </p>
             )}
           </div>
-        </div>
-
-        {/* Hostel / Accommodation */}
-        <div className="space-y-4">
           <div className="space-y-2">
             <Label className="text-sm font-medium">
               Rate the hostel/accommodation facilities (if applicable)
@@ -372,12 +394,17 @@ export function FeedbackStep() {
               {(watch("hostelFeedback") || "").length}/2500 characters
             </div>
           </div>
+        </div>
+
+        {/* Extra-curricular Activities */}
+        <div className="space-y-4">
           <div className="flex items-center gap-4">
             <span className="text-lg font-semibold text-teal-600">
-              Hostel / Accommodation <span className="text-red-500">*</span>
+              Extra-curricular Activities{" "}
+              <span className="text-red-500">*</span>
             </span>
             <Controller
-              name="hostelRating"
+              name="extracurricularRating"
               control={control}
               render={({ field }) => (
                 <StarRating
@@ -386,16 +413,12 @@ export function FeedbackStep() {
                 />
               )}
             />
-            {errors.hostelRating && (
+            {errors.extracurricularRating && (
               <p className="text-sm text-red-500">
-                {errors.hostelRating.message as string}
+                {errors.extracurricularRating.message as string}
               </p>
             )}
           </div>
-        </div>
-
-        {/* Extra-curricular Activities */}
-        <div className="space-y-4">
           <div className="space-y-2">
             <Label className="text-sm font-medium">
               How would you rate sports, cultural activities, and student life?
@@ -420,32 +443,11 @@ export function FeedbackStep() {
               {(watch("extracurricularFeedback") || "").length}/2500 characters
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-lg font-semibold text-teal-600">
-              Extra-curricular Activities{" "}
-              <span className="text-red-500">*</span>
-            </span>
-            <Controller
-              name="extracurricularRating"
-              control={control}
-              render={({ field }) => (
-                <StarRating
-                  rating={field.value || 0}
-                  onRatingChange={(rating) => field.onChange(rating)}
-                />
-              )}
-            />
-            {errors.extracurricularRating && (
-              <p className="text-sm text-red-500">
-                {errors.extracurricularRating.message as string}
-              </p>
-            )}
-          </div>
         </div>
 
         {/* Suggestions for Improvement */}
         <div className="space-y-4">
-          <Label className="flex items-center gap-2 text-lg font-semibold text-blue-800">
+          <Label className="flex items-center gap-2 text-lg font-semibold text-teal-800">
             <Star className="w-5 h-5" />
             Suggestions for Improvement <span className="text-red-500">*</span>
           </Label>
@@ -497,6 +499,155 @@ export function FeedbackStep() {
               {errors.collegeImages.message as string}
             </p>
           )}
+        </div>
+
+        {/* Profile Verification Section */}
+        <div className="space-y-8 pt-8 border-t border-gray-200">
+          <h3 className="text-xl font-semibold text-gray-900 mb-6">
+            Profile Verification
+          </h3>
+
+          {/* Profile Picture */}
+          <div className="space-y-4">
+            <Label className="flex items-center gap-2 text-sm font-medium">
+              <User className="w-4 h-4 text-teal-500" />
+              Profile Picture <span className="text-red-500">*</span>
+            </Label>
+            <div className="flex items-center gap-6 p-4 bg-gray-50 rounded-lg">
+              <div className="w-20 h-20 rounded-full border-2 border-dashed border-teal-300 flex items-center justify-center bg-white overflow-hidden">
+                {profilePicture ? (
+                  <img
+                    src={URL.createObjectURL(profilePicture)}
+                    alt="Profile"
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                ) : (
+                  <User className="w-8 h-8 text-teal-300" />
+                )}
+              </div>
+              <Controller
+                name="profilePicture"
+                control={control}
+                render={({ field }) => (
+                  <>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] || undefined;
+                        field.onChange(file);
+                      }}
+                      className="hidden"
+                      id="profile-picture-upload"
+                    />
+                    <label
+                      htmlFor="profile-picture-upload"
+                      className="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg cursor-pointer"
+                    >
+                      <Upload className="w-4 h-4 mr-2 inline" />
+                      {profilePicture ? "Change Picture" : "Upload Picture"}
+                    </label>
+                  </>
+                )}
+              />
+            </div>
+            {errors.profilePicture && (
+              <p className="text-sm text-red-500">
+                {errors.profilePicture.message as string}
+              </p>
+            )}
+          </div>
+
+          {/* LinkedIn Profile */}
+          <div className="space-y-2">
+            <Label
+              htmlFor="linkedin"
+              className="flex items-center gap-2 text-sm font-medium"
+            >
+              <Linkedin className="w-4 h-4 text-blue-600" />
+              Your LinkedIn Profile
+            </Label>
+            <Controller
+              name="linkedinProfile"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  id="linkedin"
+                  {...field}
+                  placeholder="Enter LinkedIn Profile URL"
+                  className="border-gray-300"
+                />
+              )}
+            />
+            {errors.linkedinProfile && (
+              <p className="text-sm text-red-500">
+                {errors.linkedinProfile.message as string}
+              </p>
+            )}
+          </div>
+
+          {/* File Uploads */}
+          <div className="space-y-6">
+            <Controller
+              name="studentId"
+              control={control}
+              render={({ field }) => (
+                <div>
+                  <FileUpload
+                    label="Upload Student ID"
+                    file={field.value || null}
+                    onFileChange={(file) => field.onChange(file)}
+                    accept="image/*,.pdf"
+                  />
+                  {errors.studentId && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.studentId.message as string}
+                    </p>
+                  )}
+                </div>
+              )}
+            />
+
+            <Controller
+              name="markSheet"
+              control={control}
+              render={({ field }) => (
+                <div>
+                  <FileUpload
+                    label="Upload Mark Sheet"
+                    file={field.value || null}
+                    onFileChange={(file) => field.onChange(file)}
+                    accept="image/*,.pdf"
+                  />
+                  {errors.markSheet && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.markSheet.message as string}
+                    </p>
+                  )}
+                </div>
+              )}
+            />
+
+            <Controller
+              name="degreeCertificate"
+              control={control}
+              render={({ field }) => (
+                <div>
+                  <FileUpload
+                    label="Upload Degree Certificate"
+                    file={field.value || null}
+                    onFileChange={(file) => field.onChange(file)}
+                    accept="image/*,.pdf"
+                  />
+                  {errors.degreeCertificate && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.degreeCertificate.message as string}
+                    </p>
+                  )}
+                </div>
+              )}
+            />
+          </div>
         </div>
       </div>
     </div>

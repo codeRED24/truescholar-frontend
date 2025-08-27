@@ -92,6 +92,10 @@ export default {
           "8": "#FF3F00",
           brand: "#FB6534",
         },
+        input: "#D0D5DD",
+        background: "#FFFFFF",
+        foreground: "#101828",
+        ring: "#00A76F",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
