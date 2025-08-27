@@ -12,8 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Eye, EyeOff } from "lucide-react";
-import { useForm, Controller, useWatch } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import PhoneInput from "react-phone-input-2";
@@ -24,7 +23,6 @@ import { useSignupStore } from "@/stores/signupStore";
 import { createUser, CreateUserRequest } from "@/api/users/createUser";
 import { User, Mail, Users, Phone, CreditCard, Calendar } from "lucide-react";
 import { useMemo } from "react";
-import { countries } from "countries-list";
 import { personalDetailsSchema } from "@/lib/validation-schemas";
 
 // Form validation schema using personalDetailsSchema from validation-schemas.ts
@@ -191,6 +189,7 @@ export default function SignupPage() {
 
       // Store signup data in Zustand store
       setSignupData({
+        id: userResponse.data.id,
         name: data.name,
         email: data.email,
         gender: data.gender,

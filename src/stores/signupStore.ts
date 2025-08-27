@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 interface SignupData {
+  id: number;
   name: string;
   email: string;
   gender: string;

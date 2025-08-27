@@ -172,7 +172,7 @@ function ReviewFormContent() {
         // country_of_origin: step1Data.countryOfOrigin,
         college_roll_number: step1Data.collegeRollNumber,
         iAm: step1Data.iAm,
-        user_type: "student",
+        user_type: step1Data.iAm,
       })
     ) {
       // console.log("OTPs already sent for current data");
@@ -277,7 +277,7 @@ function ReviewFormContent() {
           iAm: step1Data.iAm,
           user_location:
             `${userLocation.latitude}, ${userLocation.longitude}` || undefined,
-          user_type: "student", // Default user type for review form
+          user_type: step1Data.iAm,
         };
 
         // Only create user if we haven't created one yet or if the data has changed
@@ -379,9 +379,9 @@ function ReviewFormContent() {
             contact_number: step1Data.contactNumber,
             // country_of_origin: step1Data.countryOfOrigin,
             college_roll_number: step1Data.collegeRollNumber,
-            user_location:
-              `${userLocation.latitude}, ${userLocation.longitude}` ||
-              undefined,
+            user_location: userLocation
+              ? `${userLocation.latitude}, ${userLocation.longitude}`
+              : undefined,
             user_type: step1Data.iAm,
           };
 

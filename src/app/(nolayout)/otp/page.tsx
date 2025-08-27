@@ -217,12 +217,6 @@ export default function VerifyPage() {
     }
   };
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
-  };
-
   const isLimitReached = () => {
     return otpState.otpSentCount >= 5;
   };
@@ -354,7 +348,6 @@ export default function VerifyPage() {
                   value={digit}
                   onChange={(e) => handleChangeEmail(index, e.target.value)}
                   className="w-12 h-12 text-center text-lg border-gray-300 focus:ring-teal-500 focus:border-teal-500"
-                  autoFocus={index === 0}
                 />
               ))}
             </div>
