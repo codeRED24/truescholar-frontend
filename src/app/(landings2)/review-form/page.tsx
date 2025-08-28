@@ -23,6 +23,7 @@ import useOtpApi from "@/hooks/use-otp";
 import { toast } from "sonner";
 import { useSearchParams } from "next/navigation";
 import { getCurrentLocation } from "@/components/utils/utils";
+import { useUserStore } from "@/stores/userStore";
 
 const OTP_COOLDOWN_SECONDS = 30;
 
@@ -53,6 +54,14 @@ function ReviewFormContent() {
   const [lastOtpSentTime, setLastOtpSentTime] = useState<number | null>(null);
   const [otpsAlreadySent, setOtpsAlreadySent] = useState(false);
   const [canResendOtp, setCanResendOtp] = useState(true);
+  const { isAuthenticated, user } = useUserStore();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      setCompletedSteps([1]);
+      setCurrentStep(2);
+    }
+  }, [isAuthenticated]);
 
   // Get referral code from URL parameters
   const searchParams = useSearchParams();
@@ -426,9 +435,9 @@ function ReviewFormContent() {
     if (!isValid) return;
 
     // Ensure we have a user ID before submitting
-    if (!createdUserId) {
+    if (!user?.id) {
       console.error("No user ID available for review submission");
-      toast.error("User information is missing. Please go back to step 1.");
+      // toast.error("User information is missing. Please go back to step 1.");
       return;
     }
 
@@ -512,7 +521,6 @@ function ReviewFormContent() {
         collegeImages: feedbackData.collegeImages || [],
 
         // Profile verification fields from step 3
-        profilePicture: feedbackData.profilePicture || null,
         studentId: feedbackData.studentId || null,
         markSheet: feedbackData.markSheet || null,
         degreeCertificate: feedbackData.degreeCertificate || null,

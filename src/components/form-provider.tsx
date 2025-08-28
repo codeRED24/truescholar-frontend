@@ -66,7 +66,6 @@ interface FormData {
   improvementSuggestions: string;
   collegeImages: File[];
 
-  profilePicture: File | undefined;
   linkedinProfile: string;
   studentId: File | undefined;
   markSheet: File | undefined;
@@ -129,7 +128,6 @@ export const initialFormData: FormData = {
   extracurricularFeedback: "",
   improvementSuggestions: "",
   collegeImages: [],
-  profilePicture: undefined,
   linkedinProfile: "",
   studentId: undefined,
   markSheet: undefined,

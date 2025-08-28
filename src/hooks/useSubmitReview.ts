@@ -54,7 +54,6 @@ interface UseSubmitReviewReturn extends UseSubmitReviewState {
 
     // Files
     collegeImages?: File[];
-    profilePicture?: File | null;
     studentId?: File | null;
     markSheet?: File | null;
     degreeCertificate?: File | null;
@@ -107,7 +106,6 @@ export const useSubmitReview = (): UseSubmitReviewReturn => {
     extracurricularFeedback?: string;
     improvementSuggestions?: string;
     collegeImages?: File[];
-    profilePicture?: File | null;
     studentId?: File | null;
     markSheet?: File | null;
     degreeCertificate?: File | null;
@@ -269,12 +267,6 @@ export const useSubmitReview = (): UseSubmitReviewReturn => {
       }
 
       // Files: append each with expected field names
-      if (payload.profilePicture)
-        form.append(
-          "profile_picture",
-          payload.profilePicture,
-          (payload.profilePicture as File).name
-        );
       if (payload.studentId)
         form.append(
           "student_id",

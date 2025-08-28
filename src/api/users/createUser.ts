@@ -15,6 +15,7 @@ export interface CreateUserRequest {
   user_type?: string;
   user_img_url?: string;
   custom_code?: string;
+  password?: string;
 }
 
 export interface CreateUserResponse {
@@ -56,7 +57,7 @@ export const createUser = async (
     throw new Error("API URL or Bearer token is missing.");
   }
 
-  const requestUrl = `${API_URL}/users`;
+  const requestUrl = `${API_URL}/auth/signup`;
 
   try {
     const controller = new AbortController();
