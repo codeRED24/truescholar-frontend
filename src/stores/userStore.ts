@@ -5,7 +5,8 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role: "student" | "admin" | "college";
+  role: string;
+  custom_code?: string;
 }
 
 interface UserState {

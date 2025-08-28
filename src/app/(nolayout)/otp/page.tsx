@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CheckCircle, RefreshCw, Clock } from "lucide-react";
+import { CheckCircle, RefreshCw, Clock, Loader } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useSignupStore } from "@/stores/signupStore";
@@ -190,28 +190,46 @@ export default function VerifyPage() {
     try {
       setIsResending(true);
 
-      // Verify both OTPs
-      await Promise.all([
+      // Verify both OTPs and get responses
+      const [emailResult, phoneResult] = await Promise.all([
         verifyEmailOtp(signupData.email, emailCode),
         verifyPhoneOtp(signupData.contactNumber, phoneCode),
       ]);
 
-      // Create user object and login
+      // Extract user data from the verification responses
+      const userData = emailResult.user || phoneResult.user;
+      const accessToken = emailResult.access_token || phoneResult.access_token;
+
+      if (!userData) {
+        throw new Error("User data not found in verification response");
+      }
+
+      // Store access token
+      if (accessToken) {
+        try {
+          localStorage.setItem("access_token", accessToken);
+        } catch (e) {
+          console.warn("Failed to store access token:", e);
+        }
+      }
+
+      // Set user data to user store (similar to use-auth.ts)
       const user = {
-        id: Date.now().toString(), // In real app, this would come from backend
-        name: signupData.name || signupData.email.split("@")[0], // Use name from signup data or email
-        email: signupData.email,
-        role: "student" as const,
+        id: userData.id,
+        name: userData.name || "",
+        email: userData.email || "",
+        role: userData.user_type || "student",
+        custom_code: userData.custom_code || "",
       };
 
       login(user);
       clearSignupData();
 
-      toast.success("✅ Verification successful! Welcome aboard!");
-      router.push("/dashboard"); // Redirect after success
+      toast.success("Verification successful! Welcome aboard!");
+      router.push("/"); // Redirect after success
     } catch (error) {
       console.error("OTP verification failed:", error);
-      toast.error("❌ Invalid OTP. Please try again.");
+      toast.error("Invalid OTP. Please try again.");
     } finally {
       setIsResending(false);
     }
@@ -223,9 +241,9 @@ export default function VerifyPage() {
 
   if (!signupData) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="h-screen w-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600">Loading...</p>
+          <Loader className="animate-spin text-gray-600" />
         </div>
       </div>
     );

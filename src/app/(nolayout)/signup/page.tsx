@@ -20,33 +20,41 @@ import "react-phone-input-2/lib/style.css";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useSignupStore } from "@/stores/signupStore";
+import { useUserStore } from "@/stores/userStore";
 import { createUser, CreateUserRequest } from "@/api/users/createUser";
-import { User, Mail, Users, Phone, CreditCard, Calendar } from "lucide-react";
+import {
+  User,
+  Mail,
+  Users,
+  Phone,
+  CreditCard,
+  Calendar,
+  Eye,
+  EyeOff,
+  Lock,
+} from "lucide-react";
 import { useMemo } from "react";
-import { personalDetailsSchema } from "@/lib/validation-schemas";
+import { personalDetailsSchema } from "@/schemas/page";
 
 // Form validation schema using personalDetailsSchema from validation-schemas.ts
 const signupSchema = personalDetailsSchema
-  .omit({ collegeRollNumber: true })
   .extend({
-    collegeRollNumber: z.string().optional(),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+      ),
+    confirmPassword: z.string(),
     agreeToTerms: z.boolean().refine((val) => val === true, {
       message: "You must agree to the terms and conditions",
     }),
   })
-  .refine(
-    (data) => {
-      // College roll number is required only for current students
-      if (data.iAm === "student") {
-        return data.collegeRollNumber && data.collegeRollNumber.length > 0;
-      }
-      return true;
-    },
-    {
-      message: "College roll number is required for current students",
-      path: ["collegeRollNumber"],
-    }
-  );
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 type SignupFormData = z.infer<typeof signupSchema>;
 
@@ -56,8 +64,11 @@ export default function SignupPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { signupData, setSignupData, setLoading } = useSignupStore();
+  const { user } = useUserStore();
 
-  console.log("SignupPage mounted/updated, signupData:", signupData);
+  if (user?.id) {
+    router.push("/");
+  }
 
   // Get initial form values from stored data or defaults
   const getInitialValues = (): SignupFormData => {
@@ -70,6 +81,8 @@ export default function SignupPage() {
         iAm: signupData.iAm || "",
         collegeRollNumber: signupData.collegeRollNumber || "",
         dateOfBirth: signupData.dateOfBirth || "",
+        password: "",
+        confirmPassword: "",
         agreeToTerms: true,
         upiId: "",
         isEmailVerified: false,
@@ -84,14 +97,14 @@ export default function SignupPage() {
       iAm: "",
       collegeRollNumber: "",
       dateOfBirth: "",
+      password: "",
+      confirmPassword: "",
       agreeToTerms: false,
       upiId: "",
       isEmailVerified: false,
       isPhoneVerified: false,
     };
   };
-
-  console.log("Initial values from getInitialValues:", getInitialValues());
 
   const {
     control,
@@ -139,7 +152,6 @@ export default function SignupPage() {
 
   // Update form when signupData changes (e.g., when navigating back)
   useEffect(() => {
-    console.log("SignupData changed:", signupData);
     if (signupData) {
       // Small delay to ensure form is ready
       setTimeout(() => {
@@ -151,14 +163,12 @@ export default function SignupPage() {
           iAm: signupData.iAm || "",
           collegeRollNumber: signupData.collegeRollNumber || "",
           dateOfBirth: signupData.dateOfBirth || "",
+          password: "",
+          confirmPassword: "",
           agreeToTerms: true,
           upiId: "",
           isEmailVerified: false,
           isPhoneVerified: false,
-        });
-        console.log("Form reset with data:", {
-          gender: signupData.gender,
-          iAm: signupData.iAm,
         });
         // Force re-render to ensure Select components update
         setForceUpdate((prev) => prev + 1);
@@ -180,16 +190,20 @@ export default function SignupPage() {
         iAm: data.iAm,
         college_roll_number: data.collegeRollNumber,
         dob: data.dateOfBirth,
-        user_type: "student",
+        user_type: data.iAm,
+        password: data.password,
       };
 
-      console.log("Creating user with payload:", userPayload);
       const userResponse = await createUser(userPayload);
       console.log("User response:", userResponse);
 
+      if (userResponse.status == 200) {
+        toast.error("User already exists. Login instead!");
+        return;
+      }
+
       // Store signup data in Zustand store
       setSignupData({
-        id: userResponse.data.id,
         name: data.name,
         email: data.email,
         gender: data.gender,
@@ -199,15 +213,7 @@ export default function SignupPage() {
         dateOfBirth: data.dateOfBirth,
       });
 
-      console.log("Storing signup data:", {
-        name: data.name,
-        email: data.email,
-        gender: data.gender,
-        contactNumber: data.contactNumber,
-        iAm: data.iAm,
-        collegeRollNumber: data.collegeRollNumber,
-        dateOfBirth: data.dateOfBirth,
-      });
+      console.log();
 
       // Redirect to OTP verification page
       router.push("/otp");
@@ -452,6 +458,96 @@ export default function SignupPage() {
                 )}
               </div>
 
+              {/* Password */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="password"
+                  className="flex items-center gap-2 text-sm font-medium"
+                >
+                  <Lock className="w-4 h-4 text-teal-500" />
+                  Password <span className="text-teal-600">*</span>
+                </Label>
+                <Controller
+                  name="password"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="relative">
+                      <Input
+                        {...field}
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Enter your password"
+                        className={`border-gray-300 pr-10 ${
+                          errors.password ? "border-red-500" : ""
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-gray-400" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-gray-400" />
+                        )}
+                      </button>
+                    </div>
+                  )}
+                />
+                {errors.password && (
+                  <p className="text-sm text-red-600">
+                    {errors.password.message as string}
+                  </p>
+                )}
+              </div>
+
+              {/* Confirm Password */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="confirmPassword"
+                  className="flex items-center gap-2 text-sm font-medium"
+                >
+                  <Lock className="w-4 h-4 text-teal-500" />
+                  Confirm Password <span className="text-teal-600">*</span>
+                </Label>
+                <Controller
+                  name="confirmPassword"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="relative">
+                      <Input
+                        {...field}
+                        id="confirmPassword"
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="Confirm your password"
+                        className={`border-gray-300 pr-10 ${
+                          errors.confirmPassword ? "border-red-500" : ""
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-4 w-4 text-gray-400" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-gray-400" />
+                        )}
+                      </button>
+                    </div>
+                  )}
+                />
+                {errors.confirmPassword && (
+                  <p className="text-sm text-red-600">
+                    {errors.confirmPassword.message as string}
+                  </p>
+                )}
+              </div>
+
               {/* I am */}
               <div className="space-y-2">
                 <Label className="flex items-center gap-2 text-sm font-medium">
@@ -503,7 +599,7 @@ export default function SignupPage() {
                     className="flex items-center gap-2 text-sm font-medium"
                   >
                     <CreditCard className="w-4 h-4 text-teal-500" />
-                    College Roll Number <span className="text-teal-600">*</span>
+                    College Roll Number
                   </Label>
                   <Controller
                     name="collegeRollNumber"

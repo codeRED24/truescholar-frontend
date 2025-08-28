@@ -3,7 +3,18 @@
 import { useState, useCallback } from "react";
 
 type SendOtpResponse = { message?: string };
-type VerifyOtpResponse = { message?: string };
+type VerifyOtpResponse = {
+  message?: string;
+  access_token?: string;
+  user?: {
+    id: string;
+    name?: string;
+    email?: string;
+    user_type?: string;
+    custom_code?: string;
+    contact_number?: string;
+  };
+};
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -11,39 +22,37 @@ export function useOtpApi() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleFetch = useCallback(
-    async (input: string, init?: RequestInit) => {
-      setLoading(true);
-      setError(null);
+  const handleFetch = useCallback(async (input: string, init?: RequestInit) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(input, init);
+      const text = await res.text();
+      // try parse json, fallback to text
+      let data: any = text;
       try {
-        const res = await fetch(input, init);
-        const text = await res.text();
-        // try parse json, fallback to text
-        let data: any = text;
-        try {
-          data = JSON.parse(text);
-        } catch (e) {
-          // ignore
-        }
-        if (!res.ok) {
-          const msg = data?.message || data?.error || res.statusText || "Request failed";
-          setError(msg);
-          throw new Error(msg);
-        }
-        return data;
-      } catch (err: any) {
-        setError(err?.message || "Unknown error");
-        throw err;
-      } finally {
-        setLoading(false);
+        data = JSON.parse(text);
+      } catch (e) {
+        // ignore
       }
-    },
-    []
-  );
+      if (!res.ok) {
+        const msg =
+          data?.message || data?.error || res.statusText || "Request failed";
+        setError(msg);
+        throw new Error(msg);
+      }
+      return data;
+    } catch (err: any) {
+      setError(err?.message || "Unknown error");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const sendEmailOtp = useCallback(
     async (email: string) => {
-      const url = `${API_BASE}/users/send-email-otp`;
+      const url = `${API_BASE}/auth/send-email-otp`;
       return handleFetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -55,7 +64,7 @@ export function useOtpApi() {
 
   const sendPhoneOtp = useCallback(
     async (phone: string, countryCode?: string) => {
-  const url = `${API_BASE}/users/send-phone-otp`;
+      const url = `${API_BASE}/auth/send-phone-otp`;
       return handleFetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -67,7 +76,7 @@ export function useOtpApi() {
 
   const verifyEmailOtp = useCallback(
     async (email: string, email_otp: string) => {
-  const url = `${API_BASE}/users/verify-email-otp`;
+      const url = `${API_BASE}/auth/verify-email-otp`;
       return handleFetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -79,7 +88,7 @@ export function useOtpApi() {
 
   const verifyPhoneOtp = useCallback(
     async (phone: string, phone_otp: string) => {
-  const url = `${API_BASE}/users/verify-phone-otp`;
+      const url = `${API_BASE}/auth/verify-phone-otp`;
       return handleFetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -91,10 +100,12 @@ export function useOtpApi() {
 
   const isOtpVerified = useCallback(
     async (email: string, phone: string) => {
-  const url = `${API_BASE}/users/is-otp-verified?email=${encodeURIComponent(
+      const url = `${API_BASE}/auth/is-otp-verified?email=${encodeURIComponent(
         email
       )}&phone=${encodeURIComponent(phone)}`;
-      return handleFetch(url, { method: "GET" }) as Promise<{ verified: boolean }>;
+      return handleFetch(url, { method: "GET" }) as Promise<{
+        verified: boolean;
+      }>;
     },
     [handleFetch]
   );

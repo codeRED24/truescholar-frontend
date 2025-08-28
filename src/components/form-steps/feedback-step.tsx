@@ -8,7 +8,7 @@ import { Controller } from "react-hook-form";
 import { StarRating } from "@/components/star-rating";
 import { ImageUpload } from "@/components/image-upload";
 import { FileUpload } from "@/components/file-upload";
-import { Camera, FileText, Star, User, Linkedin, Upload } from "lucide-react";
+import { Camera, FileText, Star, Linkedin } from "lucide-react";
 
 export function FeedbackStep() {
   const { feedbackForm, formData } = useFormContext();
@@ -17,7 +17,6 @@ export function FeedbackStep() {
     formState: { errors },
     watch,
   } = feedbackForm;
-  const profilePicture = watch("profilePicture");
 
   return (
     <div className="">
@@ -506,57 +505,6 @@ export function FeedbackStep() {
           <h3 className="text-xl font-semibold text-gray-900 mb-6">
             Profile Verification
           </h3>
-
-          {/* Profile Picture */}
-          <div className="space-y-4">
-            <Label className="flex items-center gap-2 text-sm font-medium">
-              <User className="w-4 h-4 text-teal-500" />
-              Profile Picture <span className="text-red-500">*</span>
-            </Label>
-            <div className="flex items-center gap-6 p-4 bg-gray-50 rounded-lg">
-              <div className="w-20 h-20 rounded-full border-2 border-dashed border-teal-300 flex items-center justify-center bg-white overflow-hidden">
-                {profilePicture ? (
-                  <img
-                    src={URL.createObjectURL(profilePicture)}
-                    alt="Profile"
-                    className="w-full h-full object-cover rounded-full"
-                  />
-                ) : (
-                  <User className="w-8 h-8 text-teal-300" />
-                )}
-              </div>
-              <Controller
-                name="profilePicture"
-                control={control}
-                render={({ field }) => (
-                  <>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0] || undefined;
-                        field.onChange(file);
-                      }}
-                      className="hidden"
-                      id="profile-picture-upload"
-                    />
-                    <label
-                      htmlFor="profile-picture-upload"
-                      className="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg cursor-pointer"
-                    >
-                      <Upload className="w-4 h-4 mr-2 inline" />
-                      {profilePicture ? "Change Picture" : "Upload Picture"}
-                    </label>
-                  </>
-                )}
-              />
-            </div>
-            {errors.profilePicture && (
-              <p className="text-sm text-red-500">
-                {errors.profilePicture.message as string}
-              </p>
-            )}
-          </div>
 
           {/* LinkedIn Profile */}
           <div className="space-y-2">

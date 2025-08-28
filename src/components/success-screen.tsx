@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Download, Share2, Copy } from "lucide-react";
 import { toast } from "sonner";
+import { useUserStore } from "@/stores/userStore";
 
 interface SuccessScreenProps {
   onReset?: () => void;
@@ -11,12 +12,14 @@ interface SuccessScreenProps {
 }
 
 export function SuccessScreen({ onReset, referralCode }: SuccessScreenProps) {
+  const { user } = useUserStore();
   // console.log("SuccessScreen received referralCode:", referralCode);
 
   const generateReferralUrl = () => {
-    if (!referralCode) return null;
+    const code = referralCode || user?.custom_code;
+    if (!code) return null;
     const baseUrl = window.location.origin;
-    return `${baseUrl}/review-form?ref=${encodeURIComponent(referralCode)}`;
+    return `${baseUrl}/review-form?ref=${encodeURIComponent(code)}`;
   };
 
   const handleCopyReferralUrl = async () => {
@@ -64,10 +67,10 @@ export function SuccessScreen({ onReset, referralCode }: SuccessScreenProps) {
           </div>
 
           {/* Referral Code Section */}
-          {referralCode && (
+          {(referralCode || user?.custom_code) && (
             <div className="bg-teal-50 border border-teal-200 rounded-lg p-6 mb-6">
               <h3 className="font-semibold text-teal-800 mb-2">
-                Your Referral Code
+                Your Referral Link
               </h3>
 
               {/* Referral URL Section */}

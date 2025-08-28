@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface LoginDialogProps {
   isOpen: boolean;
@@ -28,14 +28,17 @@ export function LoginDialog({
   userData,
 }: LoginDialogProps) {
   const handleSignIn = () => {
-    // TODO: Add login functionality later
-    toast.info("Sign in functionality will be added soon!");
-    onClose();
+    sessionStorage.setItem(
+      "redirectAfterLogin",
+      window.location.pathname + window.location.search
+    );
+    router.push("/signin");
   };
 
   const handleClose = () => {
     onClose();
   };
+  const router = useRouter();
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
