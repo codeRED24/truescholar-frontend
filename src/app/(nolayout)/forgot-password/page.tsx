@@ -13,6 +13,7 @@ import { Mail, Lock, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useOtpApi } from "@/hooks/use-otp";
 import { useForgotPassword } from "@/hooks/use-forgot-password";
+import Image from "next/image";
 
 const emailSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -116,9 +117,16 @@ export default function ForgetPasswordPage() {
       <div className="flex flex-col lg:flex-row overflow-hidden shadow-xl min-h-screen">
         {/* Left Side - Image and Content */}
         <div className="w-full hidden lg:w-8/12 p-6 md:p-8 lg:p-12 lg:flex flex-col items-center justify-center relative">
+          <Image
+            src="/lock.png"
+            alt="lock"
+            priority
+            fill
+            className="w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 xl:w-96 xl:h-96  object-contain z-10 absolute rotate-[15deg] opacity-10"
+          />
           <div className="inset-0 absolute bg-gradient-to-b from-[#142D55] to-[#4777C4]"></div>
           {/* Logo */}
-          <div className="absolute top-10 left-10">
+          {/* <div className="absolute top-10 left-10">
             <div className="flex flex-row items-center gap-2">
               <div className="flex flex-col text-right">
                 <span className="text-orange-400 text-xl font-bold">READY</span>
@@ -126,9 +134,9 @@ export default function ForgetPasswordPage() {
               </div>
               <span className="text-white text-8xl font-bold">RESET</span>
             </div>
-          </div>
+          </div> */}
           {/* Content */}
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 md:p-6 w-full max-w-md border border-white/20 absolute bottom-8 left-8">
+          {/* <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 md:p-6 w-full max-w-md border border-white/20 absolute bottom-8 left-8">
             <div className="flex items-center gap-2 mb-4">
               <Lock className="w-10 h-10 md:w-12 md:h-12 text-white" />
               <h3 className="text-white font-bold text-base md:text-lg">
@@ -156,6 +164,29 @@ export default function ForgetPasswordPage() {
                 </p>
               </div>
             </div>
+          </div> */}
+          <div className="absolute bottom-0 lg:right-28 xl:right-48 w-48 h-[300px] md:w-[280px] md:h-[400px] lg:w-[420px] lg:h-[580px] xl:w-[560px] xl:h-[770px] z-10">
+            <Image
+              src="/_0033.png"
+              alt="Students"
+              priority
+              fetchPriority="high"
+              width={560}
+              height={770}
+              className="w-full h-full object-contain"
+            />
+          </div>
+
+          <div className="absolute -bottom-10 -right-10 w-80 h-[520px] md:w-[400px] md:h-[600px] lg:w-[400px] lg:h-[650px] xl:w-[531px] xl:h-[861px] z-10">
+            <Image
+              src="/_0004.png"
+              alt="Students"
+              priority
+              fetchPriority="high"
+              width={531}
+              height={861}
+              className="w-full h-full object-contain"
+            />
           </div>
         </div>
 

@@ -66,9 +66,21 @@ export const personalDetailsSchema = z.object({
   // countryOfOrigin: z.string().min(1, "Please select your country of origin"),
   collegeRollNumber: z
     .string()
-    .min(1, "Please enter your college roll number")
-    .max(20, "College roll number must be less than 20 characters"),
+    .max(20, "College roll number must be less than 20 characters")
+    .optional()
+    .or(z.literal("")),
+
   iAm: z.string().min(1, "Please select your role"),
+  college: z
+    .string()
+    .max(100, "College name must be less than 100 characters")
+    .optional()
+    .or(z.literal("")),
+  referralCode: z
+    .string()
+    .max(20, "Referral code must be less than 20 characters")
+    .optional()
+    .or(z.literal("")),
   upiId: z
     .string()
     .min(3, "UPI ID must be at least 3 characters")
