@@ -38,11 +38,11 @@ export default function VerifyPage() {
   } = useOtpApi();
 
   // Redirect if no signup data
-  // useEffect(() => {
-  //   if (!signupData) {
-  //     router.push("/signup");
-  //   }
-  // }, [signupData, router]);
+  useEffect(() => {
+    if (!signupData) {
+      router.push("/signup");
+    }
+  }, [signupData, router]);
 
   // Send OTPs when component mounts (if signup data exists and OTPs haven't been sent)
   useEffect(() => {
