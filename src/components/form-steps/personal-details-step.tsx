@@ -304,6 +304,7 @@ export function PersonalDetailsStep() {
         <div className="space-y-2">
           <Label className="flex items-center gap-2 text-sm font-medium">
             <Users className="w-4 h-4 text-teal-500" />I am{" "}
+            <span className="text-teal-600">*</span>
           </Label>
           <Controller
             name="iAm"
