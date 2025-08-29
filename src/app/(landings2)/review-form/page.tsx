@@ -54,7 +54,7 @@ function ReviewFormContent() {
   const [lastOtpSentTime, setLastOtpSentTime] = useState<number | null>(null);
   const [otpsAlreadySent, setOtpsAlreadySent] = useState(false);
   const [canResendOtp, setCanResendOtp] = useState(true);
-  const { isAuthenticated, user } = useUserStore();
+  const { isAuthenticated, user, login } = useUserStore();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -287,6 +287,7 @@ function ReviewFormContent() {
           user_location:
             `${userLocation.latitude}, ${userLocation.longitude}` || undefined,
           user_type: step1Data.iAm,
+          referred_by: referredByCode || undefined, // Add referral code from URL
         };
 
         // Only create user if we haven't created one yet or if the data has changed
@@ -298,6 +299,17 @@ function ReviewFormContent() {
 
             setCreatedUserId(userResponse.data.id);
             setLastCreatedUserData(userPayload);
+
+            // Update user store with the created user data
+            const userData = {
+              id: userResponse.data.id.toString(),
+              name: userResponse.data.name || "",
+              email: userResponse.data.email || "",
+              role: userResponse.data.user_type || "student",
+              custom_code: userResponse.data.custom_code || "",
+            };
+            login(userData);
+
             // Reset OTP state when user data changes
             setOtpsAlreadySent(false);
 
@@ -392,6 +404,7 @@ function ReviewFormContent() {
               ? `${userLocation.latitude}, ${userLocation.longitude}`
               : undefined,
             user_type: step1Data.iAm,
+            referred_by: referredByCode || undefined, // Add referral code from URL
           };
 
           // Only create user if we haven't created one yet or if the data has changed
@@ -402,6 +415,17 @@ function ReviewFormContent() {
               // console.log("User created successfully:", userResponse);
               setCreatedUserId(userResponse.data.id);
               setLastCreatedUserData(userPayload);
+
+              // Update user store with the created user data
+              const userData = {
+                id: userResponse.data.id.toString(),
+                name: userResponse.data.name || "",
+                email: userResponse.data.email || "",
+                role: userResponse.data.user_type || "student",
+                custom_code: userResponse.data.custom_code || "",
+              };
+              login(userData);
+
               // Reset OTP state when user data changes
               setOtpsAlreadySent(false);
             } catch (error) {
@@ -626,55 +650,59 @@ function ReviewFormContent() {
         )}
 
         {/* Progress Header */}
-        <Card className="mb-8 p-6">
-          <div className="flex items-center justify-between mb-4">
-            {STEPS.map((step, index) => (
-              <div key={step.id} className="flex items-center">
-                <button
-                  onClick={() => handleStepClick(step.id)}
-                  className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-colors ${
-                    completedSteps.includes(step.id)
-                      ? "bg-green-500 border-green-500 text-white"
-                      : step.id === currentStep
-                      ? "bg-teal-500 border-teal-500 text-white"
-                      : "bg-white border-gray-300 text-gray-400"
-                  }`}
+        <Card className="mb-8 p-4 md:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-4 sm:gap-0">
+            <div className="flex items-center justify-between sm:justify-start w-full sm:w-auto">
+              {STEPS.map((step, index) => (
+                <div
+                  key={step.id}
+                  className="flex items-center flex-1 sm:flex-initial"
                 >
-                  {completedSteps.includes(step.id) ? (
-                    <CheckCircle className="w-6 h-6" />
-                  ) : (
-                    <Circle className="w-6 h-6" />
+                  <button
+                    onClick={() => handleStepClick(step.id)}
+                    className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-colors ${
+                      completedSteps.includes(step.id)
+                        ? "bg-green-500 border-green-500 text-white"
+                        : step.id === currentStep
+                        ? "bg-teal-500 border-teal-500 text-white"
+                        : "bg-white border-gray-300 text-gray-400"
+                    }`}
+                  >
+                    {completedSteps.includes(step.id) ? (
+                      <CheckCircle className="w-4 h-4 sm:w-6 sm:h-6" />
+                    ) : (
+                      <Circle className="w-4 h-4 sm:w-6 sm:h-6" />
+                    )}
+                  </button>
+                  <span
+                    className={`ml-2 sm:ml-3 text-xs sm:text-sm font-medium ${
+                      step.id === currentStep
+                        ? "text-teal-600"
+                        : completedSteps.includes(step.id)
+                        ? "text-green-600"
+                        : "text-gray-400"
+                    }`}
+                  >
+                    <span className="hidden xs:inline">{step.title}</span>
+                    <span className="xs:hidden">
+                      {step.title.split(" ")[0]}
+                    </span>
+                  </span>
+                  {index < STEPS.length - 1 && (
+                    <div className="flex-1 h-0.5 bg-gray-200 mx-2 sm:mx-4 min-w-[20px] sm:min-w-[50px] md:min-w-[100px]">
+                      <div
+                        className={`h-full transition-colors ${
+                          completedSteps.includes(step.id)
+                            ? "bg-green-500"
+                            : "bg-gray-200"
+                        }`}
+                      />
+                    </div>
                   )}
-                </button>
-                <span
-                  className={`ml-3 text-sm font-medium ${
-                    step.id === currentStep
-                      ? "text-teal-600"
-                      : completedSteps.includes(step.id)
-                      ? "text-green-600"
-                      : "text-gray-400"
-                  }`}
-                >
-                  {step.title}
-                </span>
-                {index < STEPS.length - 1 && (
-                  <div className="flex-1 h-0.5 bg-gray-200 mx-4 min-w-[100px]">
-                    <div
-                      className={`h-full transition-colors ${
-                        completedSteps.includes(step.id)
-                          ? "bg-green-500"
-                          : "bg-gray-200"
-                      }`}
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
+                </div>
+              ))}
+            </div>
           </div>
-          <Progress
-            value={(currentStep / STEPS.length) * 100}
-            className="h-2"
-          />
         </Card>
 
         {/* Form Content */}

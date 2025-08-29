@@ -20,6 +20,8 @@ interface FormData {
   countryOfOrigin: string;
   collegeRollNumber: string;
   iAm: string;
+  college: string;
+  referralCode: string;
   collegeName: string;
   collegeId: number;
   collegeLocation: string;
@@ -95,6 +97,8 @@ export const initialFormData: FormData = {
   countryOfOrigin: "",
   collegeRollNumber: "",
   iAm: "",
+  college: "",
+  referralCode: "",
   upiId: "",
   isEmailVerified: false,
   isPhoneVerified: false,
@@ -155,6 +159,9 @@ export function FormProvider({ children }: { children: ReactNode }) {
       dateOfBirth: "",
       contactNumber: "",
       collegeRollNumber: "",
+      iAm: "",
+      college: "",
+      referralCode: "",
       upiId: "",
       isEmailVerified: false,
       isPhoneVerified: false,

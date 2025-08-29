@@ -4,12 +4,13 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CheckCircle, RefreshCw, Clock, Loader } from "lucide-react";
+import { CheckCircle, RefreshCw, Clock, Loader, Star } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useSignupStore } from "@/stores/signupStore";
 import { useUserStore } from "@/stores/userStore";
 import useOtpApi from "@/hooks/use-otp";
+import Image from "next/image";
 
 export default function VerifyPage() {
   const [phoneOtp, setPhoneOtp] = useState<string[]>(["", "", "", "", "", ""]);
@@ -37,11 +38,11 @@ export default function VerifyPage() {
   } = useOtpApi();
 
   // Redirect if no signup data
-  useEffect(() => {
-    if (!signupData) {
-      router.push("/signup");
-    }
-  }, [signupData, router]);
+  // useEffect(() => {
+  //   if (!signupData) {
+  //     router.push("/signup");
+  //   }
+  // }, [signupData, router]);
 
   // Send OTPs when component mounts (if signup data exists and OTPs haven't been sent)
   useEffect(() => {
@@ -252,44 +253,73 @@ export default function VerifyPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Left Side - Image & Character */}
-      <div className="w-full lg:w-2/3 relative overflow-hidden lg:flex items-center justify-center p-4 md:p-8 hidden">
+      <div className="w-full lg:w-7/12 relative overflow-y-clip lg:flex items-center justify-center p-4 md:p-8 hidden">
         <div className="inset-0 absolute bg-gradient-to-b from-[#142D55] to-[#4777C4]"></div>
-
+        <Image
+          src="/lock.png"
+          alt="lock"
+          priority
+          fetchPriority="high"
+          fill
+          className="w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 xl:w-96 xl:h-96  object-contain z-10 absolute rotate-[15deg] opacity-10"
+        />
         {/* Daily Dash Feature Card */}
-        <div className="absolute bottom-10 left-10 z-20 bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20 shadow-lg max-w-xs mx-auto mt-10">
-          <div className="flex items-center gap-2 mb-3">
-            <img
-              src="https://i.imgur.com/rFfRtQV.png"
+        <div className="absolute bottom-8 left-8 z-20 flex flex-col items-center">
+          <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg  w-full max-w-md border border-white/20">
+            <Image
+              src="/gift.gif"
               alt="Gift"
-              className="w-8 h-8"
+              width={40}
+              height={40}
+              className="w-20 h-20 md:w-20 md:h-20 object-contain absolute -left-5 z-[1000]"
             />
-            <h3 className="text-white font-bold text-sm">
+            <h3 className="text-white font-bold text-base md:text-lg pl-14">
               Introducing Our Daily Dash Feature!
             </h3>
           </div>
-          <ul className="text-white/90 text-xs space-y-2">
-            <li className="flex items-start gap-1">
-              <span className="text-yellow-400">🔥</span>
-              <span>
-                <strong>Maintain Your Daily Dash:</strong> Engage every day and
-                make your Daily Dash – it's like a daily mission for awesome
-                rewards!
-              </span>
-            </li>
-            <li className="flex items-start gap-1">
-              <span className="text-yellow-400">🏆</span>
-              <span>
-                <strong>Level Up:</strong> Keep the Daily Dash alive to level up
-                and unlock cool prizes. Reach milestones like 100 days, 200
-                days, and beyond for extra bonuses!
-              </span>
-            </li>
-          </ul>
+          <div className="bg-white/10 w-[96%]  rounded-lg p-4 md:p-6  max-w-md border-l border-r border-b rounded-t-none border-white/20 ">
+            <div className="space-y-3 text-white/90 text-xs md:text-sm">
+              <div className="flex items-start gap-2">
+                <Star
+                  fill="currentColor"
+                  className="w-4 h-4 text-yellow-400 mt-1 flex-shrink-0"
+                />
+                <p>
+                  <strong>Maintain Your Daily Dash:</strong> Engage every day
+                  and make your Daily Dash – it's like a daily mission for
+                  awesome rewards!
+                </p>
+              </div>
+              <div className="flex items-start gap-2">
+                <Star
+                  fill="currentColor"
+                  className="w-4 h-4 text-yellow-400 mt-1 flex-shrink-0"
+                />
+                <p>
+                  <strong>Level Up:</strong> Keep the Daily Dash alive to level
+                  up and unlock cool prizes. Reach milestones like 100 days, 200
+                  days, and beyond for extra bonuses!
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="absolute -bottom-10 -right-10 w-80 h-[520px] md:w-[400px] md:h-[600px] lg:w-[400px] lg:h-[650px] xl:w-[531px] xl:h-[861px] z-10">
+          <Image
+            src="/_0013.png"
+            alt="Students"
+            priority
+            fetchPriority="high"
+            width={531}
+            height={861}
+            className="w-full h-full object-contain z-30"
+          />
         </div>
       </div>
 
       {/* Right Side - Form */}
-      <div className="w-full lg:w-1/3 bg-white p-6 md:p-8 flex flex-col justify-center">
+      <div className="w-full lg:w-5/12 bg-white p-6 md:p-8 flex flex-col justify-center">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
             <span className="text-blue-600">VERIFY</span>

@@ -33,8 +33,10 @@ import {
   EyeOff,
   Lock,
 } from "lucide-react";
-import { useMemo } from "react";
-import { personalDetailsSchema } from "@/schemas/page";
+import { useMemo, useCallback } from "react";
+import { personalDetailsSchema } from "@/lib/validation-schemas";
+import { SuggestionInput } from "@/components/ui/suggestion-input";
+import Image from "next/image";
 
 // Form validation schema using personalDetailsSchema from validation-schemas.ts
 const signupSchema = personalDetailsSchema
@@ -50,6 +52,7 @@ const signupSchema = personalDetailsSchema
     agreeToTerms: z.boolean().refine((val) => val === true, {
       message: "You must agree to the terms and conditions",
     }),
+    referralCode: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -87,6 +90,7 @@ export default function SignupPage() {
         upiId: "",
         isEmailVerified: false,
         isPhoneVerified: false,
+        referralCode: "",
       };
     }
     return {
@@ -103,6 +107,7 @@ export default function SignupPage() {
       upiId: "",
       isEmailVerified: false,
       isPhoneVerified: false,
+      referralCode: "",
     };
   };
 
@@ -129,6 +134,57 @@ export default function SignupPage() {
 
   // Force re-render when signupData changes
   const [forceUpdate, setForceUpdate] = useState(0);
+
+  // College suggestions state
+  const [collegeOptions, setCollegeOptions] = useState<any[]>([]);
+
+  // Create fetchSuggestions function for SuggestionInput
+  const fetchCollegeSuggestions = useCallback(
+    async (query: string): Promise<string[]> => {
+      if (!query || query.length < 2) {
+        return [];
+      }
+
+      try {
+        const url = `${
+          process.env.NEXT_PUBLIC_API_URL
+        }/college-search?q=${encodeURIComponent(query)}`;
+        const res = await fetch(url);
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const data = await res.json();
+        const colleges = data.data.colleges || [];
+
+        // Store colleges for later use in selection
+        setCollegeOptions(colleges);
+
+        return colleges.map(
+          (college: any) => college.college_name || college.name
+        );
+      } catch (error) {
+        console.error("Error fetching college suggestions:", error);
+        return [];
+      }
+    },
+    []
+  );
+
+  // Get college by name from stored options
+  const getCollegeByName = useCallback(
+    (collegeName: string) => {
+      return collegeOptions.find(
+        (college: any) => (college.college_name || college.name) === collegeName
+      );
+    },
+    [collegeOptions]
+  );
+
+  // Handle college selection
+  const handleCollegeSelect = (collegeName: string) => {
+    // For signup, we just store the college name as string
+    // No need to extract ID or location like in review form
+  };
 
   const formatDate = (d: Date) => {
     const y = d.getFullYear();
@@ -169,6 +225,7 @@ export default function SignupPage() {
           upiId: "",
           isEmailVerified: false,
           isPhoneVerified: false,
+          referralCode: "",
         });
         // Force re-render to ensure Select components update
         setForceUpdate((prev) => prev + 1);
@@ -188,10 +245,12 @@ export default function SignupPage() {
         gender: data.gender,
         contact_number: data.contactNumber,
         iAm: data.iAm,
+        college: data.college || undefined,
         college_roll_number: data.collegeRollNumber,
         dob: data.dateOfBirth,
         user_type: data.iAm,
         password: data.password,
+        referred_by: data.referralCode || undefined,
       };
 
       const userResponse = await createUser(userPayload);
@@ -231,7 +290,7 @@ export default function SignupPage() {
       {/* Split Layout */}
       <div className="flex flex-col lg:flex-row overflow-hidden shadow-xl min-h-screen">
         {/* Left Side - Image and Content */}
-        <div className="w-full hidden lg:w-8/12 p-6 md:p-8 lg:p-12 lg:flex flex-col items-center justify-center relative">
+        <div className="w-full hidden lg:w-7/12 p-6 md:p-8 lg:p-12 lg:flex flex-col items-center justify-center relative">
           <div className="inset-0 absolute bg-gradient-to-b from-[#142D55] to-[#4777C4]"></div>
           {/* Logo */}
           <div className="absolute top-10 left-10">
@@ -244,60 +303,79 @@ export default function SignupPage() {
             </div>
           </div>
           {/* 3D Characters */}
-          {/* <div className="w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 mb-8 flex justify-center">
-            <img
-              src="https://i.imgur.com/6XkWvZJ.png"
+          <div className="absolute bottom-0 -right-10 w-80 h-[520px] md:w-[400px] md:h-[600px] lg:w-[500px] lg:h-[750px] z-10">
+            <Image
+              src="/_0005.png"
               alt="Students"
+              priority
+              fetchPriority="high"
+              width={700}
+              height={1000}
               className="w-full h-full object-contain"
             />
-          </div> */}
+          </div>
+          <div className="absolute bottom-0 -right-40 w-80 h-[520px] md:w-[400px] md:h-[600px] lg:w-[500px] lg:h-[750px] z-10">
+            <Image
+              src="/_0028.png"
+              alt="Students"
+              priority
+              fetchPriority="high"
+              width={700}
+              height={1000}
+              className="w-full h-full object-contain"
+            />
+          </div>
           {/* Daily Dash Feature */}
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 md:p-6 w-full max-w-md border border-white/20 absolute bottom-8 left-8">
-            <div className="flex items-center gap-2 mb-4">
-              <img
-                src="https://i.imgur.com/rFfRtQV.png"
+          <div className="absolute bottom-8 left-8 z-20 flex flex-col items-center">
+            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg  w-full max-w-md border border-white/20">
+              <Image
+                src="/gift.gif"
                 alt="Gift"
-                className="w-10 h-10 md:w-12 md:h-12"
+                width={40}
+                height={40}
+                className="w-20 h-20 md:w-20 md:h-20 object-contain absolute -left-5 z-[1000]"
               />
-              <h3 className="text-white font-bold text-base md:text-lg">
+              <h3 className="text-white font-bold text-base md:text-lg pl-14">
                 Introducing Our Daily Dash Feature!
               </h3>
             </div>
-            <div className="space-y-3 text-white/90 text-xs md:text-sm">
-              <div className="flex items-start gap-2">
-                <svg
-                  className="w-4 h-4 md:w-5 md:h-5 text-yellow-400 mt-1 flex-shrink-0"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.12a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.12a1 1 0 00-1.175 0l-3.976 2.12c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.12c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                </svg>
-                <p>
-                  <strong>Maintain Your Daily Dash:</strong> Engage every day
-                  and make your Daily Dash – it's like a daily mission for
-                  awesome rewards!
-                </p>
-              </div>
-              <div className="flex items-start gap-2">
-                <svg
-                  className="w-4 h-4 md:w-5 md:h-5 text-yellow-400 mt-1 flex-shrink-0"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.12a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.12a1 1 0 00-1.175 0l-3.976 2.12c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.12c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                </svg>
-                <p>
-                  <strong>Level Up:</strong> Keep the Daily Dash alive to level
-                  up and unlock cool prizes. Reach milestones like 100 days, 200
-                  days, and beyond for extra bonuses!
-                </p>
+            <div className="bg-white/10 w-[96%]  rounded-lg p-4 md:p-6  max-w-md border-l border-r border-b rounded-t-none border-white/20 ">
+              <div className="space-y-3 text-white/90 text-xs md:text-sm">
+                <div className="flex items-start gap-2">
+                  <svg
+                    className="w-4 h-4 md:w-5 md:h-5 text-yellow-400 mt-1 flex-shrink-0"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.12a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.12a1 1 0 00-1.175 0l-3.976 2.12c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.12c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                  </svg>
+                  <p>
+                    <strong>Maintain Your Daily Dash:</strong> Engage every day
+                    and make your Daily Dash – it's like a daily mission for
+                    awesome rewards!
+                  </p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <svg
+                    className="w-4 h-4 md:w-5 md:h-5 text-yellow-400 mt-1 flex-shrink-0"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.12a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.12a1 1 0 00-1.175 0l-3.976 2.12c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.12c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                  </svg>
+                  <p>
+                    <strong>Level Up:</strong> Keep the Daily Dash alive to
+                    level up and unlock cool prizes. Reach milestones like 100
+                    days, 200 days, and beyond for extra bonuses!
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Right Side - Form */}
-        <div className="w-full lg:w-4/12 bg-gradient-to-br from-white to-gray-100 p-6 md:p-8 flex flex-col justify-center">
+        <div className="w-full lg:w-5/12 bg-gradient-to-br from-white to-gray-100 p-6 md:p-8 flex flex-col justify-center">
           <div className="text-center mb-6 md:mb-8">
             <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">
               <span className="text-blue-600">GET</span>{" "}
@@ -591,6 +669,34 @@ export default function SignupPage() {
                 )}
               </div>
 
+              {/* College */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-sm font-medium">
+                  <Users className="w-4 h-4 text-teal-500" />
+                  College
+                </Label>
+                <Controller
+                  name="college"
+                  control={control}
+                  render={({ field }) => (
+                    <SuggestionInput
+                      {...field}
+                      placeholder="Search and select your college (optional)"
+                      fetchSuggestions={fetchCollegeSuggestions}
+                      onSelect={handleCollegeSelect}
+                      className={`border-gray-300 ${
+                        errors.college ? "border-red-500" : ""
+                      }`}
+                    />
+                  )}
+                />
+                {errors.college && (
+                  <p className="text-sm text-red-600">
+                    {errors.college.message as string}
+                  </p>
+                )}
+              </div>
+
               {/* College Roll Number - Conditional */}
               {watch("iAm") === "student" && (
                 <div className="space-y-2">
@@ -652,6 +758,36 @@ export default function SignupPage() {
                 {errors.dateOfBirth && (
                   <p className="text-sm text-red-600">
                     {errors.dateOfBirth.message as string}
+                  </p>
+                )}
+              </div>
+
+              {/* Referral Code */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="referralCode"
+                  className="flex items-center gap-2 text-sm font-medium"
+                >
+                  <CreditCard className="w-4 h-4 text-teal-500" />
+                  Referral Code
+                </Label>
+                <Controller
+                  name="referralCode"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      id="referralCode"
+                      placeholder="Enter referral code (optional)"
+                      className={`border-gray-300 ${
+                        errors.referralCode ? "border-red-500" : ""
+                      }`}
+                    />
+                  )}
+                />
+                {errors.referralCode && (
+                  <p className="text-sm text-red-600">
+                    {errors.referralCode.message as string}
                   </p>
                 )}
               </div>
@@ -721,7 +857,7 @@ export default function SignupPage() {
             <p>
               Been here before, eh? Skip the formalities and{" "}
               <a
-                href="/login"
+                href="/signin"
                 className="text-blue-600 hover:text-blue-800 font-medium"
               >
                 Log in

@@ -22,7 +22,7 @@ import {
 import { Controller } from "react-hook-form";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { countries } from "countries-list";
 
 export function PersonalDetailsStep() {
@@ -33,6 +33,16 @@ export function PersonalDetailsStep() {
     watch,
     setValue,
   } = personalDetailsForm;
+
+  // Auto-fill referral code from URL parameter if present
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const referralCode = urlParams.get("ref");
+    if (referralCode && !formData.referralCode) {
+      setValue("referralCode", referralCode);
+      updateFormData({ referralCode });
+    }
+  }, [setValue, updateFormData, formData.referralCode]);
 
   const isPhoneVerified = watch("isPhoneVerified") || false;
   const iAmValue = watch("iAm");
@@ -294,7 +304,6 @@ export function PersonalDetailsStep() {
         <div className="space-y-2">
           <Label className="flex items-center gap-2 text-sm font-medium">
             <Users className="w-4 h-4 text-teal-500" />I am{" "}
-            <span className="text-teal-600">*</span>
           </Label>
           <Controller
             name="iAm"
@@ -406,6 +415,40 @@ export function PersonalDetailsStep() {
           {errors.dateOfBirth && (
             <p className="text-sm text-red-600">
               {errors.dateOfBirth.message as string}
+            </p>
+          )}
+        </div>
+
+        {/* Referral Code */}
+        <div className="space-y-2">
+          <Label
+            htmlFor="referralCode"
+            className="flex items-center gap-2 text-sm font-medium"
+          >
+            <CreditCard className="w-4 h-4 text-teal-500" />
+            Referral Code
+          </Label>
+          <Controller
+            name="referralCode"
+            control={control}
+            render={({ field }) => (
+              <Input
+                {...field}
+                id="referralCode"
+                placeholder="Enter referral code (optional)"
+                className={`border-gray-300 ${
+                  errors.referralCode ? "border-red-500" : ""
+                }`}
+                onChange={(e) => {
+                  field.onChange(e);
+                  updateFormData({ referralCode: e.target.value });
+                }}
+              />
+            )}
+          />
+          {errors.referralCode && (
+            <p className="text-sm text-red-600">
+              {errors.referralCode.message as string}
             </p>
           )}
         </div>

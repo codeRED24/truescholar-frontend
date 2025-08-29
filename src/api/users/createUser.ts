@@ -6,6 +6,7 @@ export interface CreateUserRequest {
   country_of_origin?: string;
   college_roll_number?: string;
   iAm?: string;
+  college?: string;
   college_id?: number;
   course_id?: number;
   college_location?: string;
@@ -16,6 +17,7 @@ export interface CreateUserRequest {
   user_img_url?: string;
   custom_code?: string;
   password?: string;
+  referred_by?: string;
 }
 
 export interface CreateUserResponse {
