@@ -52,7 +52,11 @@ export async function generateMetadata(props: {
     const { college_information, scholarship_section } = college;
     const collegeName =
       college_information.college_name || "College Scholarships";
-    const canonicalUrl = `${BASE_URL}/colleges/${college_information.slug}-${collegeId}/scholarship`;
+
+    const baseSlug = college_information.slug?.replace(/(?:-\d+)+$/, "") || "";
+    const correctSlugId = `${baseSlug}-${collegeId}`;
+
+    const canonicalUrl = `${BASE_URL}/colleges/${correctSlugId}/scholarship`;
     const metaDesc =
       scholarship_section?.[0]?.meta_desc ||
       "Explore scholarship opportunities at this college.";
