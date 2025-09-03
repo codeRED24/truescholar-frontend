@@ -27,11 +27,103 @@ interface ChatbotWidgetProps {
   cardConfig: any;
 }
 
+const dummyQuestions: Record<string, Record<string, string[]>> = {
+  Colleges: {
+    All: [
+      "What are the top colleges in India?",
+      "How to choose the right college?",
+      "What are admission requirements?",
+    ],
+    Admissions: [
+      "What is the admission process?",
+      "What documents are needed?",
+      "When are application deadlines?",
+    ],
+    Fees: [
+      "What are the tuition fees?",
+      "Are there scholarships available?",
+      "What are payment options?",
+    ],
+    Facility: [
+      "What facilities are available?",
+      "What is the campus like?",
+      "Are there hostels?",
+    ],
+    Placements: [
+      "What are placement statistics?",
+      "Which companies visit?",
+      "What is the average salary?",
+    ],
+  },
+  Exams: {
+    All: [
+      "What exams should I take?",
+      "How to prepare for entrance exams?",
+      "What are the exam patterns?",
+    ],
+    Syllabus: [
+      "What is the exam syllabus?",
+      "Which topics are important?",
+      "How to cover the syllabus?",
+    ],
+    Dates: [
+      "When are the exam dates?",
+      "What is the application timeline?",
+      "Are there multiple exam sessions?",
+    ],
+    Eligibility: [
+      "What are the eligibility criteria?",
+      "What qualifications are required?",
+      "Are there age restrictions?",
+    ],
+  },
+  Scholarships: {
+    All: [
+      "What scholarships are available?",
+      "How to apply for scholarships?",
+      "What are the eligibility criteria?",
+    ],
+    Government: [
+      "What government scholarships exist?",
+      "How to apply for government schemes?",
+      "What documents are needed?",
+    ],
+    Private: [
+      "What private scholarships are available?",
+      "How to find private funding?",
+      "What are the application processes?",
+    ],
+    "By College": [
+      "Which colleges offer scholarships?",
+      "What are college-specific scholarships?",
+      "How to apply through colleges?",
+    ],
+  },
+  "College Predictions": {
+    All: [
+      "How to predict college admission?",
+      "What factors affect predictions?",
+      "How accurate are predictions?",
+    ],
+    "By Rank": [
+      "How does rank affect admission?",
+      "What ranks get which colleges?",
+      "How to improve my rank?",
+    ],
+    "By Score": [
+      "How do scores affect admission?",
+      "What scores are required?",
+      "How to calculate admission chances?",
+    ],
+  },
+};
+
 export default function ChatbotWidget({ cardConfig }: ChatbotWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [view, setView] = useState<"questions" | "chat">("questions");
   const [activeTab, setActiveTab] = useState<string>("Colleges");
   const [activeSubTab, setActiveSubTab] = useState<string>("All");
+  const [loading, setLoading] = useState(true);
   const [questions, setQuestions] = useState<
     Record<string, Record<string, string[]>>
   >({});
@@ -40,6 +132,7 @@ export default function ChatbotWidget({ cardConfig }: ChatbotWidgetProps) {
   // Fetch questions with browser caching
   useEffect(() => {
     const fetchQuestions = async () => {
+      setLoading(true);
       const cacheKey = "chatbotQuestions";
       const now = Date.now();
       let data: Record<string, Record<string, string[]>> = {};
@@ -50,6 +143,9 @@ export default function ChatbotWidget({ cardConfig }: ChatbotWidgetProps) {
           const { questions: cachedQuestions, expiry } = JSON.parse(cachedData);
           if (expiry > now) {
             data = cachedQuestions;
+            setQuestions(data);
+            setLoading(false);
+            return;
           } else {
             localStorage.removeItem(cacheKey); // Expired cache
           }
@@ -77,6 +173,7 @@ export default function ChatbotWidget({ cardConfig }: ChatbotWidgetProps) {
       }
 
       setQuestions(data);
+      setLoading(false);
     };
 
     fetchQuestions();
@@ -237,6 +334,8 @@ export default function ChatbotWidget({ cardConfig }: ChatbotWidgetProps) {
               const currentSubTab = card.subTabs.includes(activeSubTab)
                 ? activeSubTab
                 : card.subTabs[0];
+              const questionsToShow =
+                Object.keys(questions).length > 0 ? questions : dummyQuestions;
               return (
                 <div
                   key={tabName}
@@ -327,24 +426,25 @@ export default function ChatbotWidget({ cardConfig }: ChatbotWidgetProps) {
 
                   {/* Predefined Questions */}
                   <div className="mt-2 space-y-2">
-                    {Object.keys(questions).length === 0 && (
+                    {loading ? (
                       <div className="flex justify-center p-4">
                         <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary-main"></div>
                       </div>
-                    )}
-                    {questions[tabName]?.[currentSubTab]?.map(
-                      (q: string, i: number) => (
-                        <div
-                          key={i}
-                          className="flex cursor-pointer items-center justify-between rounded-lg bg-white/80 p-2 text-xs shadow-sm hover:bg-white"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleQuestionClick(q);
-                          }}
-                        >
-                          <span className="pr-2">{q}</span>
-                          <ArrowRight className="h-4 w-4 flex-shrink-0 text-gray-400" />
-                        </div>
+                    ) : (
+                      questionsToShow[tabName]?.[currentSubTab]?.map(
+                        (q: string, i: number) => (
+                          <div
+                            key={i}
+                            className="flex cursor-pointer items-center justify-between rounded-lg bg-white/80 p-2 text-xs shadow-sm hover:bg-white"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleQuestionClick(q);
+                            }}
+                          >
+                            <span className="pr-2">{q}</span>
+                            <ArrowRight className="h-4 w-4 flex-shrink-0 text-gray-400" />
+                          </div>
+                        )
                       )
                     )}
                   </div>
