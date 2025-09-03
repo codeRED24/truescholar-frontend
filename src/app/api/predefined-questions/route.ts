@@ -1,8 +1,10 @@
 import { cardConfig } from "@/lib/ai-questions";
 import { gateway } from "@ai-sdk/gateway";
-import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
 import { NextRequest, NextResponse } from "next/server";
+import NodeCache from "node-cache";
+
+const questionsCache = new NodeCache({ stdTTL: 86400 }); // 1 day in seconds
 
 async function generateAllQuestions() {
   const topics = Object.keys(cardConfig).join(", ");
@@ -40,10 +42,20 @@ Do not include any other text or markdown formatting in your response. Just the 
 
 export async function GET(request: NextRequest) {
   try {
+    // Check cache first
+    const cachedQuestions = questionsCache.get("predefined-questions");
+    if (cachedQuestions) {
+      return NextResponse.json(cachedQuestions);
+    }
+
+    // Generate new questions
     const rawResponse = await generateAllQuestions();
     // Clean the response by removing markdown code block fences
     const cleanedResponse = rawResponse.replace(/```json\n|```/g, "").trim();
     const jsonResponse = JSON.parse(cleanedResponse);
+
+    // Cache the response
+    questionsCache.set("predefined-questions", jsonResponse);
 
     return NextResponse.json(jsonResponse);
   } catch (error) {
