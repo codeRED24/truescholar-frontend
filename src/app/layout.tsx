@@ -1,4 +1,3 @@
-import ChatbotContainer from "@/components/ChatbotContainer";
 import JsonLd from "@/lib/jsonld";
 import { Barlow, Public_Sans } from "next/font/google";
 import Script from "next/script";
@@ -127,7 +126,6 @@ export default function RootLayout({
         <GTMScript gtmId="G-5CMGT07LVZ" />
         <BreadcrumbProvider />
         {children}
-        <ChatbotContainer />
         <Toaster />
       </body>
     </html>

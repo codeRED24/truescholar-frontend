@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "../globals.css";
 import dynamic from "next/dynamic";
 import { Toaster } from "@/components/ui/sonner";
+import ChatbotWidget from "@/components/ChatbotWidget";
+import { cardConfig } from "@/lib/ai-questions";
 const Footer = dynamic(() => import("@/components/layout/footer/Footer"));
 const Header = dynamic(() => import("@/components/layout/header/Header"));
 
@@ -55,6 +57,8 @@ export default function MainLayout({
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow min-h-screen">{children}</main>
+      <ChatbotWidget cardConfig={cardConfig} />
+
       <Toaster />
       <Footer />
     </div>
