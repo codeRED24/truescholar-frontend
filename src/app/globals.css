@@ -105,3 +105,47 @@ input:focus {
     --radius: 0.5rem;
   }
 }
+
+@keyframes eyeBlink {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  40% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0);
+  }
+  60% {
+    transform: scaleY(1);
+  }
+}
+
+.eye {
+  animation: eyeBlink 2s infinite ease-in-out;
+  transform-origin: center center; /* keeps scaling natural */
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  70% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+.pulse-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px; /* full circle */
+  border: 2px solid rgba(0, 167, 111, 0.6); /* match your theme */
+  animation: pulseRing 2s infinite;
+}
