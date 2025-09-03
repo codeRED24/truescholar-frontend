@@ -45,11 +45,7 @@ export async function GET(request: NextRequest) {
     const cleanedResponse = rawResponse.replace(/```json\n|```/g, "").trim();
     const jsonResponse = JSON.parse(cleanedResponse);
 
-    return NextResponse.json(jsonResponse, {
-      headers: {
-        "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=300", // CDN/browser caching
-      },
-    });
+    return NextResponse.json(jsonResponse);
   } catch (error) {
     console.error("Error in GET:", error);
     return NextResponse.json(
