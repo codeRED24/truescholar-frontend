@@ -50,9 +50,10 @@ export async function generateMetadata(props: {
     if (!college) return notFound();
 
     const { college_information } = college;
+    const baseSlug = college_information.slug?.replace(/(?:-\d+)+$/, "") || "";
     const collegeName =
       college_information.college_name || "College Facilities";
-    const canonicalUrl = `${BASE_URL}/colleges/${college_information.slug}-${collegeId}/facilities`;
+    const canonicalUrl = `${BASE_URL}/colleges/${baseSlug}-${collegeId}/facilities`;
     const metaDesc = `Explore the facilities at ${collegeName}, including hostels, campus infrastructure, and more.`;
 
     return {
@@ -74,115 +75,111 @@ export async function generateMetadata(props: {
 const CollegeFacilities = async (props: {
   params: Promise<{ "slug-id": string }>;
 }) => {
-  try {
-    const params = await props.params;
-    const { "slug-id": slugId } = params;
-    const parsed = parseSlugId(slugId);
-    if (!parsed) return notFound();
+  const params = await props.params;
+  const { "slug-id": slugId } = params;
+  const parsed = parseSlugId(slugId);
+  if (!parsed) return notFound();
 
-    const { collegeId } = parsed;
-    const facilitiesData = await getCollegeData(collegeId);
-    if (!facilitiesData) {
-      return notFound();
-    }
-
-    const { college_information, infrastructure, news_section } =
-      facilitiesData;
-    const correctSlugId = `${college_information.slug}-${collegeId}`;
-
-    if (slugId !== correctSlugId) {
-      redirect(`/colleges/${correctSlugId}/facilities`);
-    }
-
-    const hasFacilityData =
-      infrastructure.content.length > 0 ||
-      infrastructure.hostel_and_campus.length > 0 ||
-      infrastructure.college_gallery.length > 0 ||
-      infrastructure.college_video.length > 0;
-
-    const jsonLD = [
-      generateJSONLD("CollegeOrUniversity", {
-        name: college_information.college_name,
-        logo: college_information.logo_img,
-        url: college_information.college_website,
-        email: college_information.college_email,
-        telephone: college_information.college_phone,
-        address: college_information.location,
-        additionalProperty: hasFacilityData
-          ? {
-              "@type": "PropertyValue",
-              name: "Facilities",
-              value: "Hostels, Campus Infrastructure, Gallery, Videos",
-            }
-          : undefined,
-      }),
-    ];
-
-    const extractedData = {
-      college_id: college_information.college_id,
-      college_name: college_information.college_name,
-      college_logo: college_information.logo_img,
-      city: college_information.city,
-      state: college_information.state,
-      title: infrastructure?.[0]?.title,
-      location: college_information.location,
-      college_brochure: college_information.college_brochure || "/",
-    };
-
-    return (
-      <>
-        <Script
-          id="college-facilities-ld-json"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLD) }}
-        />
-        <CollegeHead data={extractedData} />
-        <CollegeNav data={college_information} />
-        <section className="container-body md:grid grid-cols-4 gap-4 py-4">
-          <div className="col-span-3 order-none md:order-1">
-            <CollegeCourseContent
-              content={infrastructure.content}
-              news={news_section}
-            />
-            <RatingComponent />
-            {!hasFacilityData && (
-              <div className="article-content-body">
-                <h3 className="content-title mb-4">Facilities Information</h3>
-                <p>No detailed facility information is currently available.</p>
-              </div>
-            )}
-            {infrastructure.hostel_and_campus.length > 0 && (
-              <div className="article-content-body">
-                <h3 className="content-title mb-4">Hostel and Campus</h3>
-                {/* Add custom rendering for hostel_and_campus if needed */}
-                <p>Details coming soon.</p>
-              </div>
-            )}
-            {infrastructure.college_gallery.length > 0 && (
-              <div className="article-content-body">
-                <h3 className="content-title mb-4">Gallery</h3>
-                {/* Add gallery rendering logic here */}
-                <p>Gallery images coming soon.</p>
-              </div>
-            )}
-            {infrastructure.college_video.length > 0 && (
-              <div className="article-content-body">
-                <h3 className="content-title mb-4">Videos</h3>
-                {/* Add video rendering logic here */}
-                <p>Videos coming soon.</p>
-              </div>
-            )}
-          </div>
-          <div className="col-span-1 mt-4">
-            <Image src="/ads/static.svg" height={250} width={500} alt="ads" />
-            <CollegeNews news={news_section} clgSlug={correctSlugId} />
-          </div>
-        </section>
-      </>
-    );
-  } catch (error) {
+  const { collegeId } = parsed;
+  const facilitiesData = await getCollegeData(collegeId);
+  if (!facilitiesData) {
     return notFound();
   }
+
+  const { college_information, infrastructure, news_section } = facilitiesData;
+
+  const baseSlug = college_information.slug?.replace(/(?:-\d+)+$/, "") || "";
+  const correctSlugId = `${baseSlug}-${collegeId}`;
+  if (slugId !== correctSlugId) {
+    redirect(`/colleges/${correctSlugId}/facilities`);
+  }
+
+  const hasFacilityData =
+    infrastructure.content.length > 0 ||
+    infrastructure.hostel_and_campus.length > 0 ||
+    infrastructure.college_gallery.length > 0 ||
+    infrastructure.college_video.length > 0;
+
+  const jsonLD = [
+    generateJSONLD("CollegeOrUniversity", {
+      name: college_information.college_name,
+      logo: college_information.logo_img,
+      url: college_information.college_website,
+      email: college_information.college_email,
+      telephone: college_information.college_phone,
+      address: college_information.location,
+      additionalProperty: hasFacilityData
+        ? {
+            "@type": "PropertyValue",
+            name: "Facilities",
+            value: "Hostels, Campus Infrastructure, Gallery, Videos",
+          }
+        : undefined,
+    }),
+  ];
+
+  const extractedData = {
+    college_id: college_information.college_id,
+    college_name: college_information.college_name,
+    college_logo: college_information.logo_img,
+    city: college_information.city,
+    state: college_information.state,
+    title: infrastructure?.[0]?.title,
+    location: college_information.location,
+    college_brochure: college_information.college_brochure || "/",
+  };
+
+  return (
+    <>
+      <Script
+        id="college-facilities-ld-json"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLD) }}
+      />
+      <CollegeHead data={extractedData} />
+      <CollegeNav data={college_information} />
+      <section className="container-body md:grid grid-cols-4 gap-4 py-4">
+        <div className="col-span-3 order-none md:order-1">
+          <CollegeCourseContent
+            content={infrastructure.content}
+            news={news_section}
+          />
+          <RatingComponent />
+          {!hasFacilityData && (
+            <div className="article-content-body">
+              <h3 className="content-title mb-4">Facilities Information</h3>
+              <p>No detailed facility information is currently available.</p>
+            </div>
+          )}
+          {infrastructure.hostel_and_campus.length > 0 && (
+            <div className="article-content-body">
+              <h3 className="content-title mb-4">Hostel and Campus</h3>
+              {/* Add custom rendering for hostel_and_campus if needed */}
+              <p>Details coming soon.</p>
+            </div>
+          )}
+          {infrastructure.college_gallery.length > 0 && (
+            <div className="article-content-body">
+              <h3 className="content-title mb-4">Gallery</h3>
+              {/* Add gallery rendering logic here */}
+              <p>Gallery images coming soon.</p>
+            </div>
+          )}
+          {infrastructure.college_video.length > 0 && (
+            <div className="article-content-body">
+              <h3 className="content-title mb-4">Videos</h3>
+              {/* Add video rendering logic here */}
+              <p>Videos coming soon.</p>
+            </div>
+          )}
+        </div>
+        <div className="col-span-1 mt-4">
+          <Image src="/ads/static.svg" height={250} width={500} alt="ads" />
+          <CollegeNews news={news_section} clgSlug={correctSlugId} />
+        </div>
+      </section>
+    </>
+  );
 };
 
 export default CollegeFacilities;

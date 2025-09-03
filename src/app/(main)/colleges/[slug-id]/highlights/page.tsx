@@ -33,7 +33,7 @@ export async function generateMetadata(props: {
   if (!college) return { title: "College Not Found" };
 
   const { college_information, highlight_section } = college;
-  const collegeSlug = college_information?.slug.replace(/-\d+$/, "");
+  const collegeSlug = college_information?.slug.replace(/(?:-\d+)+$/, "");
   const highlight = highlight_section?.[0] || {};
 
   return {
@@ -72,12 +72,11 @@ const CollegeHighlights = async (props: {
   if (!college) return notFound();
 
   const { college_information, highlight_section, news_section } = college;
-  const trimmedSlug =
-    college_information?.slug.replace(/-\d+$/, "") || "default-college";
+  const trimmedSlug = college_information?.slug.replace(/(?:-\d+)+$/, "") || "";
   const correctSlugId = `${trimmedSlug}-${collegeId}`;
 
   if (slugId !== correctSlugId) {
-    return redirect(`/colleges/${correctSlugId}`);
+    return redirect(`/colleges/${correctSlugId}/highlights`);
   }
   const highlight = highlight_section?.[0] || {};
   const description = highlight.description || "";

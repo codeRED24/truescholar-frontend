@@ -55,10 +55,13 @@ export async function generateMetadata({
   if (!college) return { title: "College Not Found" };
 
   const { college_information: collegeInfo, courses_section } = college;
-  const collegeSlug = collegeInfo.slug.replace(/-\d+$/, "");
   const courseSection = courses_section.content_section[0] || {};
   const collegeName = collegeInfo.college_name || "College Courses";
-  const canonicalUrl = `${BASE_URL}/colleges/${collegeSlug}-${collegeId}/courses`;
+
+  const baseSlug = collegeInfo.slug?.replace(/(?:-\d+)+$/, "") || "";
+  const correctSlugId = `${baseSlug}-${collegeId}`;
+
+  const canonicalUrl = `${BASE_URL}/colleges/${correctSlugId}/courses`;
 
   return {
     title: courseSection.title || collegeName,
@@ -92,9 +95,9 @@ const CourseInCollege = async ({
     collegeData;
 
   const collegeName = parsed.slug.replace(/-\d+$/, "");
-  const correctSlugId = `${collegeName
-    .toLowerCase()
-    .replace(/\s+/g, "-")}-${collegeId}`;
+
+  const baseSlug = college_information.slug?.replace(/(?:-\d+)+$/, "") || "";
+  const correctSlugId = `${baseSlug}-${collegeId}`;
 
   if (slugId !== correctSlugId) {
     redirect(`/colleges/${correctSlugId}/courses`);

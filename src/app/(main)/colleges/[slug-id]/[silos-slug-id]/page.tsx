@@ -56,14 +56,14 @@ export default async function CoursesByClg({
     resolvedParams;
 
   if (courseSlugCourseId === "admission-process") {
-    redirect(`/colleges/${slugId}/admission`);
+    redirect(`/colleges/${slugId}/admission-process`);
   }
 
   let dynamicParam = courseSlugCourseId.split("-");
   dynamicParam = dynamicParam.slice(1);
   courseSlugCourseId = dynamicParam.join("-");
 
-  const courseMatch = courseSlugCourseId.match(/(.+)-(\d+)$/);
+  const courseMatch = courseSlugCourseId.match(/(.*)-(?:\d+)+$/);
   if (!courseMatch) return notFound();
 
   const courseId = Number(courseMatch[2]);
@@ -84,7 +84,7 @@ export default async function CoursesByClg({
   const collegeId = college_information?.college_id;
 
   const trimmedCollegeName = clgName
-    .replace(/-\d+$/, "")
+    .replace(/(?:-\d+)+$/, "")
     .replace(/\s+/g, "-")
     .toLowerCase();
   const correctSlugId = `${trimmedCollegeName}-${collegeId}`;

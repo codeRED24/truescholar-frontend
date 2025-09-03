@@ -56,8 +56,9 @@ export async function generateMetadata(props: {
     if (!college) return { title: "College Not Found" };
 
     const { college_information, cutoff_content } = college;
+    const baseSlug = college_information.slug?.replace(/(?:-\d+)+$/, "") || "";
     const collegeName = college_information.college_name || "College Cutoffs";
-    const canonicalUrl = `${BASE_URL}/colleges/${college_information.slug}-${collegeId}/cutoffs`;
+    const canonicalUrl = `${BASE_URL}/colleges/${baseSlug}-${collegeId}/cutoffs`;
     const metaDesc =
       cutoff_content?.[0]?.meta_desc ||
       "Find cutoff details and trends for this college.";
@@ -80,114 +81,95 @@ export async function generateMetadata(props: {
 const CollegeCutoffs = async (props: {
   params: Promise<{ "slug-id": string }>;
 }) => {
-  try {
-    const params = await props.params;
-    const { "slug-id": slugId } = params;
-    const parsed = parseSlugId(slugId);
-    if (!parsed) return notFound();
+  const params = await props.params;
+  const { "slug-id": slugId } = params;
+  const parsed = parseSlugId(slugId);
+  if (!parsed) return notFound();
 
-    const { collegeId } = parsed;
-    const cutoffData = await getCollegeData(collegeId);
-    if (!cutoffData) return notFound();
+  const { collegeId } = parsed;
+  const cutoffData = await getCollegeData(collegeId);
+  if (!cutoffData) return notFound();
 
-    const { college_information, cutoff_content, news_section, college_dates } =
-      cutoffData;
+  const { college_information, cutoff_content, news_section, college_dates } =
+    cutoffData;
 
-    // Ensure the college slug doesn't already contain the college ID (strip one or more trailing -<digits> segments)
-    const baseSlug = college_information.slug?.replace(/(?:-\d+)+$/, "") || "";
-    const correctSlugId = `${baseSlug}-${collegeId}`;
+  const cutoffDataVal = await getCollegeCutoffsData(collegeId);
 
-    const cutoffDataVal = await getCollegeCutoffsData(collegeId);
-
-    if (
-      !cutoffData?.college_information?.dynamic_fields?.cutoff &&
-      !cutoffData?.college_information?.additional_fields.college_cutoff_present
-    )
-      return notFound();
-
-    const cutoffVal = cutoffDataVal?.cutoffs_data?.grouped_by_exam;
-
-    if (slugId !== correctSlugId) {
-      redirect(`/colleges/${correctSlugId}/cutoffs`);
-    }
-
-    const jsonLD: object[] = [
-      generateJSONLD("CollegeOrUniversity", {
-        name: college_information.college_name,
-        logo: college_information.logo_img,
-        url: college_information.college_website,
-        email: college_information.college_email,
-        telephone: college_information.college_phone,
-        address: college_information.location,
-      }),
-      ...college_dates.map((date: CollegeDateDTO, index: number) =>
-        generateJSONLD("Event", {
-          name: date.event,
-          startDate: date.start_date,
-          endDate: date.end_date,
-          location: {
-            "@type": "Place",
-            name: college_information.college_name,
-            address: college_information.location,
-          },
-          eventStatus: date.is_confirmed ? "EventScheduled" : "EventPostponed",
-        })
-      ),
-    ];
-
-    const extractedData = {
-      college_id: college_information.college_id,
-      college_name: college_information.college_name,
-      college_logo: college_information.logo_img,
-      city: college_information.city,
-      state: college_information.state,
-      title: cutoff_content?.[0]?.title,
-      location: college_information.location,
-      college_brochure: college_information.college_brochure || "/",
-    };
-
-    return (
-      <>
-        <Script
-          id="college-cutoffs-ld-json"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLD) }}
-        />
-        <CollegeHead data={extractedData} />
-        <CollegeNav data={college_information} />
-        <section className="container-body md:grid grid-cols-4 gap-4 py-4">
-          <div className="col-span-3 order-none md:order-1">
-            <CollegeCourseContent
-              content={cutoff_content}
-              news={news_section}
-            />
-            <CutoffTable data={cutoffVal} collegeId={collegeId} />
-            {college_dates?.length > 0 && (
-              <CutoffDatesTable data={college_dates} />
-            )}
-            <RatingComponent />
-          </div>
-          <div className="col-span-1 mt-4">
-            <Image src="/ads/static.svg" height={250} width={500} alt="ads" />
-            <CollegeNews news={news_section} clgSlug={correctSlugId} />
-          </div>
-        </section>
-      </>
-    );
-  } catch (error) {
-    // If Next threw a redirect/found exception, rethrow so Next can handle it
-    const err: any = error;
-    if (
-      err?.message?.includes?.("NEXT_REDIRECT") ||
-      err?.message?.includes?.("NEXT_FOUND")
-    ) {
-      throw err;
-    }
-
-    console.log(error);
-
+  if (
+    !cutoffData?.college_information?.dynamic_fields?.cutoff &&
+    !cutoffData?.college_information?.additional_fields.college_cutoff_present
+  )
     return notFound();
+
+  const cutoffVal = cutoffDataVal?.cutoffs_data?.grouped_by_exam;
+
+  const baseSlug = college_information.slug?.replace(/(?:-\d+)+$/, "") || "";
+  const correctSlugId = `${baseSlug}-${collegeId}`;
+
+  if (slugId !== correctSlugId) {
+    redirect(`/colleges/${correctSlugId}/cutoffs`);
   }
+
+  const jsonLD: object[] = [
+    generateJSONLD("CollegeOrUniversity", {
+      name: college_information.college_name,
+      logo: college_information.logo_img,
+      url: college_information.college_website,
+      email: college_information.college_email,
+      telephone: college_information.college_phone,
+      address: college_information.location,
+    }),
+    ...college_dates.map((date: CollegeDateDTO, index: number) =>
+      generateJSONLD("Event", {
+        name: date.event,
+        startDate: date.start_date,
+        endDate: date.end_date,
+        location: {
+          "@type": "Place",
+          name: college_information.college_name,
+          address: college_information.location,
+        },
+        eventStatus: date.is_confirmed ? "EventScheduled" : "EventPostponed",
+      })
+    ),
+  ];
+
+  const extractedData = {
+    college_id: college_information.college_id,
+    college_name: college_information.college_name,
+    college_logo: college_information.logo_img,
+    city: college_information.city,
+    state: college_information.state,
+    title: cutoff_content?.[0]?.title,
+    location: college_information.location,
+    college_brochure: college_information.college_brochure || "/",
+  };
+
+  return (
+    <>
+      <Script
+        id="college-cutoffs-ld-json"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLD) }}
+      />
+      <CollegeHead data={extractedData} />
+      <CollegeNav data={college_information} />
+      <section className="container-body md:grid grid-cols-4 gap-4 py-4">
+        <div className="col-span-3 order-none md:order-1">
+          <CollegeCourseContent content={cutoff_content} news={news_section} />
+          <CutoffTable data={cutoffVal} collegeId={collegeId} />
+          {college_dates?.length > 0 && (
+            <CutoffDatesTable data={college_dates} />
+          )}
+          <RatingComponent />
+        </div>
+        <div className="col-span-1 mt-4">
+          <Image src="/ads/static.svg" height={250} width={500} alt="ads" />
+          <CollegeNews news={news_section} clgSlug={correctSlugId} />
+        </div>
+      </section>
+    </>
+  );
 };
 
 export default CollegeCutoffs;

@@ -51,7 +51,11 @@ export async function generateMetadata(props: {
 
     const { college_information, faqData } = college;
     const collegeName = college_information.college_name || "College FAQs";
-    const canonicalUrl = `${BASE_URL}/colleges/${college_information.slug}-${collegeId}/faqs`;
+
+    const baseSlug = college_information.slug?.replace(/(?:-\d+)+$/, "") || "";
+    const correctSlugId = `${baseSlug}-${collegeId}`;
+
+    const canonicalUrl = `${BASE_URL}/colleges/${correctSlugId}/faq`;
     const metaDesc =
       faqData[0]?.meta_desc ||
       "Find answers to frequently asked questions about this college.";
@@ -74,82 +78,85 @@ export async function generateMetadata(props: {
 const CollegeFAQs = async (props: {
   params: Promise<{ "slug-id": string }>;
 }) => {
-  try {
-    const params = await props.params;
-    const { "slug-id": slugId } = params;
-    const parsed = parseSlugId(slugId);
-    if (!parsed) return notFound();
-
-    const { collegeId } = parsed;
-    const faqDataa = await getCollegeData(collegeId);
-    if (!faqDataa) return notFound();
-
-    const { college_information, faqData, news_section } = faqDataa;
-
-    const correctSlugId = `${college_information.slug}`;
-
-    if (slugId !== correctSlugId) {
-      redirect(`/colleges/${correctSlugId}/faqs`);
-    }
-
-    // Parse FAQs from HTML content
-    const parsedFAQs = parseFAQFromHTML(faqData[0]?.description || "");
-
-    const jsonLD = [
-      generateJSONLD("CollegeOrUniversity", {
-        name: college_information.college_name,
-        logo: college_information.logo_img,
-        url: college_information.college_website,
-        email: college_information.college_email,
-        telephone: college_information.college_phone,
-        address: college_information.location,
-        college_brochure: college_information.college_brochure || "/",
-      }),
-      generateJSONLD("FAQPage", {
-        mainEntity: parsedFAQs.map((faq, index) => ({
-          "@type": "Question",
-          name: faq.question || `FAQ ${index + 1}`,
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: faq.answer || "Answer not available",
-          },
-        })),
-      }),
-    ];
-
-    const extractedData = {
-      college_id: college_information.college_id,
-      college_name: college_information.college_name,
-      college_logo: college_information.logo_img,
-      city: college_information.city,
-      state: college_information.state,
-      title: faqData[0]?.title || "College FAQs",
-      location: college_information.location,
-    };
-
-    return (
-      <>
-        <Script
-          id="college-faqs-ld-json"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLD) }}
-        />
-        <CollegeHead data={extractedData} />
-        <CollegeNav data={college_information} />
-        <section className="container-body md:grid grid-cols-4 gap-4 py-4">
-          <div className="col-span-3 order-none md:order-1">
-            <CollegeCourseContent content={faqData} news={news_section} />
-          </div>
-          <div className="col-span-1 mt-4">
-            <Image src="/ads/static.svg" height={250} width={500} alt="ads" />
-            <CollegeNews news={news_section} clgSlug={correctSlugId} />
-          </div>
-        </section>
-      </>
-    );
-  } catch (error) {
+  const params = await props.params;
+  const { "slug-id": slugId } = params;
+  const parsed = parseSlugId(slugId);
+  if (!parsed) {
+    console.log("********");
     return notFound();
   }
+
+  const { collegeId } = parsed;
+  const faqDataa = await getCollegeData(collegeId);
+  if (!faqDataa) {
+    console.log("********");
+    return notFound();
+  }
+
+  const { college_information, faqData, news_section } = faqDataa;
+
+  const baseSlug = college_information.slug?.replace(/(?:-\d+)+$/, "") || "";
+  const correctSlugId = `${baseSlug}-${collegeId}`;
+
+  if (slugId !== correctSlugId) {
+    redirect(`/colleges/${correctSlugId}/faq`);
+  }
+
+  // Parse FAQs from HTML content
+  const parsedFAQs = parseFAQFromHTML(faqData[0]?.description || "");
+
+  const jsonLD = [
+    generateJSONLD("CollegeOrUniversity", {
+      name: college_information.college_name,
+      logo: college_information.logo_img,
+      url: college_information.college_website,
+      email: college_information.college_email,
+      telephone: college_information.college_phone,
+      address: college_information.location,
+      college_brochure: college_information.college_brochure || "/",
+    }),
+    generateJSONLD("FAQPage", {
+      mainEntity: parsedFAQs.map((faq, index) => ({
+        "@type": "Question",
+        name: faq.question || `FAQ ${index + 1}`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: faq.answer || "Answer not available",
+        },
+      })),
+    }),
+  ];
+
+  const extractedData = {
+    college_id: college_information.college_id,
+    college_name: college_information.college_name,
+    college_logo: college_information.logo_img,
+    city: college_information.city,
+    state: college_information.state,
+    title: faqData[0]?.title || "College FAQs",
+    location: college_information.location,
+  };
+
+  return (
+    <>
+      <Script
+        id="college-faqs-ld-json"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLD) }}
+      />
+      <CollegeHead data={extractedData} />
+      <CollegeNav data={college_information} />
+      <section className="container-body md:grid grid-cols-4 gap-4 py-4">
+        <div className="col-span-3 order-none md:order-1">
+          <CollegeCourseContent content={faqData} news={news_section} />
+        </div>
+        <div className="col-span-1 mt-4">
+          <Image src="/ads/static.svg" height={250} width={500} alt="ads" />
+          <CollegeNews news={news_section} clgSlug={correctSlugId} />
+        </div>
+      </section>
+    </>
+  );
 };
 
 export default CollegeFAQs;
