@@ -24,25 +24,63 @@ import { Response } from "@/components/response";
 import AnimatedBlobLogo from "./ai-blob";
 
 interface ChatbotWidgetProps {
-  questions: Record<string, Record<string, string[]>>;
   cardConfig: any;
 }
 
-export default function ChatbotWidget({
-  questions: initialQuestions,
-  cardConfig,
-}: ChatbotWidgetProps) {
+export default function ChatbotWidget({ cardConfig }: ChatbotWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [view, setView] = useState<"questions" | "chat">("questions");
   const [activeTab, setActiveTab] = useState<string>("Colleges");
   const [activeSubTab, setActiveSubTab] = useState<string>("All");
-  const [questions, setQuestions] = useState(initialQuestions);
+  const [questions, setQuestions] = useState<
+    Record<string, Record<string, string[]>>
+  >({});
   const [isSmallScreen, setIsSmallScreen] = useState(false);
 
-  // Update questions when they change externally
+  // Fetch questions with browser caching
   useEffect(() => {
-    setQuestions(initialQuestions);
-  }, [initialQuestions]);
+    const fetchQuestions = async () => {
+      const cacheKey = "chatbotQuestions";
+      const now = Date.now();
+      let data: Record<string, Record<string, string[]>> = {};
+
+      const cachedData = localStorage.getItem(cacheKey);
+      if (cachedData) {
+        try {
+          const { questions: cachedQuestions, expiry } = JSON.parse(cachedData);
+          if (expiry > now) {
+            data = cachedQuestions;
+          } else {
+            localStorage.removeItem(cacheKey); // Expired cache
+          }
+        } catch (e) {
+          localStorage.removeItem(cacheKey); // Invalid cache
+        }
+      }
+
+      if (Object.keys(data).length === 0) {
+        try {
+          const baseUrl =
+            process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+          const response = await fetch(`${baseUrl}/api/predefined-questions`);
+          if (response.ok) {
+            data = await response.json();
+            const expiry = now + 24 * 60 * 60 * 1000; // 24 hours
+            localStorage.setItem(
+              cacheKey,
+              JSON.stringify({ questions: data, expiry })
+            );
+          }
+        } catch (error) {
+          console.error("Failed to fetch predefined questions:", error);
+        }
+      }
+
+      setQuestions(data);
+    };
+
+    fetchQuestions();
+  }, []);
 
   // Detect small screen size
   useEffect(() => {
