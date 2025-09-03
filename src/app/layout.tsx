@@ -3,6 +3,7 @@ import { Barlow, Public_Sans } from "next/font/google";
 import Script from "next/script";
 import BreadcrumbProvider from "@/components/providers/BreadcrumbProvider";
 import { Toaster } from "@/components/ui/sonner";
+import ChatbotWidget from "@/components/ChatbotWidget";
 
 // Define website schema data
 const websiteLD = {
@@ -126,6 +127,7 @@ export default function RootLayout({
         <GTMScript gtmId="G-5CMGT07LVZ" />
         <BreadcrumbProvider />
         {children}
+        <ChatbotWidget />
         <Toaster />
       </body>
     </html>
