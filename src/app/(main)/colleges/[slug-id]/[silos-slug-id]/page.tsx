@@ -63,7 +63,7 @@ export default async function CoursesByClg({
   dynamicParam = dynamicParam.slice(1);
   courseSlugCourseId = dynamicParam.join("-");
 
-  const courseMatch = courseSlugCourseId.match(/(.*)-(?:\d+)+$/);
+  const courseMatch = courseSlugCourseId.match(/(.*)-(\d+)$/);
   if (!courseMatch) return notFound();
 
   const courseId = Number(courseMatch[2]);
