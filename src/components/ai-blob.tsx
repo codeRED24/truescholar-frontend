@@ -1,11 +1,7 @@
 /**
- * AnimatedBlobLogo (CSS Animation version)
- * ------------------------------------------------------------
- * A single-file React component that renders
- * a layered, rotating blob logo without framer-motion.
- *
- * Uses pure CSS keyframe animations for rotation.
+ * AnimatedBlobLogo (CSS Animation version, faster + irregular blobs)
  */
+
 export default function AnimatedBlobLogo({
   title = "Your Brand",
   subtitle = "",
@@ -14,6 +10,14 @@ export default function AnimatedBlobLogo({
   rounded = true,
   glass = false,
   className = "",
+}: {
+  title?: string;
+  subtitle?: string;
+  size?: number;
+  palette?: string;
+  rounded?: boolean;
+  glass?: boolean;
+  className?: string;
 }) {
   const palettes = {
     aurora: {
@@ -52,13 +56,14 @@ export default function AnimatedBlobLogo({
     "place-items-center",
     glass ? "bg-white/5 backdrop-blur-xl ring-1 ring-white/10" : "",
     rounded ? "rounded-2xl" : "",
-    "overflow-hidden",
+    // removed "overflow-hidden"
     "select-none",
     className,
   ]
     .filter(Boolean)
     .join(" ");
 
+  // More irregular blob shapes
   const blobPaths = [
     "M 100 600 q 0 -500,500 -500 t 500 500 t -500 500 T 100 600 z",
     "M 150 600 q 0 -400,500 -500 t 500 500 t -500 500 T 150 600 z",
@@ -96,7 +101,7 @@ export default function AnimatedBlobLogo({
         width={size}
         height={size}
         viewBox="0 0 1200 1200"
-        className="absolute inset-0"
+        className="overflow-visible absolute inset-0"
         role="img"
       >
         <defs>
@@ -129,9 +134,9 @@ export default function AnimatedBlobLogo({
             key={`base-${i}`}
             transform={`rotate(${i * 10} 600 600)`}
             className="blob-spin"
-            style={{ animationDuration: `${20 + i * 6}s` }}
+            style={{ animationDuration: `${12 + i * 4}s` }} // faster
             filter="url(#glow)"
-            opacity={0.8 - i * 0.12}
+            opacity={0.85 - i * 0.12}
           >
             <path d={blobPaths[i]} fill={`url(#g-base-${i})`} />
           </g>
@@ -143,7 +148,7 @@ export default function AnimatedBlobLogo({
             key={`alt-${i}`}
             transform={`rotate(${40 + i * 10} 600 600)`}
             className="blob-spin-reverse"
-            style={{ animationDuration: `${25 + i * 8}s` }}
+            style={{ animationDuration: `${14 + i * 5}s` }} // faster
             filter="url(#glow)"
             opacity={0.7 - i * 0.12}
           >
@@ -158,9 +163,17 @@ export default function AnimatedBlobLogo({
       {/* TEXT OVERLAY */}
       <div className="relative z-10 grid place-items-center text-center px-6">
         <div className="space-y-1">
-          <h1 className="text-white text-2xl md:text-3xl font-semibold drop-shadow">
+          {/* <h1
+            className={
+              "text-white text-2xl md:text-3xl font-semibold drop-shadow "
+            }
+          >
             {title}
-          </h1>
+          </h1> */}
+          <div className=" flex pb-4 gap-3 items-center justify-center">
+            <div className="eye h-4 w-3 rounded-full bg-white"></div>
+            <div className="eye h-4 w-3 rounded-full bg-white"></div>
+          </div>
           {subtitle && (
             <p className="text-white/80 text-sm md:text-base drop-shadow-sm">
               {subtitle}

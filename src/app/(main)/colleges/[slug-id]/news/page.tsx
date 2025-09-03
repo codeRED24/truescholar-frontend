@@ -47,7 +47,7 @@ export async function generateMetadata(props: {
   const { college_information, scholarship_section } = college;
   const { college_name, slug } = college_information;
   const scholarship = scholarship_section?.[0];
-  const collegeSlug = slug.replace(/-\d+$/, "");
+  const collegeSlug = slug.replace(/(?:-\d+)+$/, "");
 
   return {
     title: scholarship?.title || `${college_name} News`,
@@ -91,7 +91,7 @@ const CollegeNews = async ({
   const collegeName =
     college.college_information?.college_name || "Unknown College";
   const trimmedCollegeName =
-    college.college_information?.slug?.replace(/-\d+$/, "") ||
+    college.college_information?.slug?.replace(/(?:-\d+)+$/, "") ||
     collegeName.toLowerCase().replace(/\s+/g, "-");
   const correctSlugId = `${trimmedCollegeName}-${collegeId}`;
 

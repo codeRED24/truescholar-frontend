@@ -291,9 +291,7 @@ export default function ChatbotWidget({ cardConfig }: ChatbotWidgetProps) {
               <ArrowLeft className="h-5 w-5 text-gray-500" />
             </Button>
           )}
-          <Bot className="h-7 w-7 mr-2 text-primary-main" />
-
-          <h3 className="font-bold text-gray-800">TrueScholar AI</h3>
+          <h3 className="font-bold text-gray-800 ml-2">TrueScholar AI</h3>
         </div>
         <Button
           variant="ghost"

@@ -55,7 +55,12 @@ export async function generateMetadata(props: {
     const { college_information, admission_process } = college;
     const collegeName =
       college_information.college_name || "College Admission Process";
-    const canonicalUrl = `${BASE_URL}/colleges/${college_information.slug}-${collegeId}/admission-process`;
+
+    const baseSlug = college_information.slug?.replace(/(?:-\d+)+$/, "") || "";
+    const correctSlugId = `${baseSlug}-${collegeId}`;
+
+    const canonicalUrl = `${BASE_URL}/colleges/${correctSlugId}/admission-process`;
+
     const metaDesc =
       admission_process?.content?.[0]?.meta_desc ||
       "Find details of admission process of this college.";
@@ -78,75 +83,70 @@ export async function generateMetadata(props: {
 const CollegeAdmissionProcess = async (props: {
   params: Promise<{ "slug-id": string }>;
 }) => {
-  try {
-    const params = await props.params;
-    const { "slug-id": slugId } = params;
+  const params = await props.params;
+  const { "slug-id": slugId } = params;
 
-    const parsed = parseSlugId(slugId);
-    if (!parsed) return notFound();
+  const parsed = parseSlugId(slugId);
+  if (!parsed) return notFound();
 
-    const { collegeId } = parsed;
-    const admissionData = await getCollegeData(collegeId);
-    if (!admissionData) return notFound();
+  const { collegeId } = parsed;
+  const admissionData = await getCollegeData(collegeId);
+  if (!admissionData) return notFound();
 
-    const { college_information, admission_process, news_section } =
-      admissionData;
-    const correctSlugId = `${college_information.slug}`;
+  const { college_information, admission_process, news_section } =
+    admissionData;
+  const baseSlug = college_information.slug?.replace(/(?:-\d+)+$/, "") || "";
+  const correctSlugId = `${baseSlug}-${collegeId}`;
 
-    if (slugId !== correctSlugId) {
-      redirect(`/colleges/${correctSlugId}/admission-process`);
-    }
-
-    const jsonLD = [
-      generateJSONLD("CollegeOrUniversity", {
-        name: college_information.college_name,
-        logo: college_information.logo_img,
-        url: college_information.college_website,
-        email: college_information.college_email,
-        telephone: college_information.college_phone,
-        address: college_information.location,
-      }),
-    ];
-    const extractedData = {
-      college_id: college_information.college_id,
-      college_name: college_information.college_name,
-      college_logo: college_information.logo_img,
-      city: college_information.city,
-      state: college_information.state,
-      title: admission_process?.content?.[0].title,
-      location: college_information.location,
-      college_brochure: college_information.college_brochure || "/",
-    };
-
-    return (
-      <>
-        <Script
-          id="college-ld-json"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLD) }}
-        />
-        <CollegeHead data={extractedData} />
-        <CollegeNav data={college_information} />
-        <section className="container-body md:grid grid-cols-4 gap-4 py-4">
-          <div className="col-span-3 order-none md:order-1">
-            <CollegeCourseContent
-              content={admission_process?.content}
-              news={news_section}
-            />
-            <RatingComponent />
-          </div>
-          <div className="col-span-1 mt-4">
-            <Image src="/ads/static.svg" height={250} width={500} alt="ads" />
-            <CollegeNews news={news_section} clgSlug={correctSlugId} />
-          </div>
-        </section>
-      </>
-    );
-  } catch (error) {
-    console.log(error);
-
-    return notFound();
+  if (slugId !== correctSlugId) {
+    redirect(`/colleges/${correctSlugId}/admission-process`);
   }
+
+  const jsonLD = [
+    generateJSONLD("CollegeOrUniversity", {
+      name: college_information.college_name,
+      logo: college_information.logo_img,
+      url: college_information.college_website,
+      email: college_information.college_email,
+      telephone: college_information.college_phone,
+      address: college_information.location,
+    }),
+  ];
+  const extractedData = {
+    college_id: college_information.college_id,
+    college_name: college_information.college_name,
+    college_logo: college_information.logo_img,
+    city: college_information.city,
+    state: college_information.state,
+    title: admission_process?.content?.[0].title,
+    location: college_information.location,
+    college_brochure: college_information.college_brochure || "/",
+  };
+
+  return (
+    <>
+      <Script
+        id="college-ld-json"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLD) }}
+      />
+      <CollegeHead data={extractedData} />
+      <CollegeNav data={college_information} />
+      <section className="container-body md:grid grid-cols-4 gap-4 py-4">
+        <div className="col-span-3 order-none md:order-1">
+          <CollegeCourseContent
+            content={admission_process?.content}
+            news={news_section}
+          />
+          <RatingComponent />
+        </div>
+        <div className="col-span-1 mt-4">
+          <Image src="/ads/static.svg" height={250} width={500} alt="ads" />
+          <CollegeNews news={news_section} clgSlug={correctSlugId} />
+        </div>
+      </section>
+    </>
+  );
 };
 
 export default CollegeAdmissionProcess;
