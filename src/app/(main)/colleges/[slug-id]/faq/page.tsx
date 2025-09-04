@@ -82,14 +82,12 @@ const CollegeFAQs = async (props: {
   const { "slug-id": slugId } = params;
   const parsed = parseSlugId(slugId);
   if (!parsed) {
-    console.log("********");
     return notFound();
   }
 
   const { collegeId } = parsed;
   const faqDataa = await getCollegeData(collegeId);
   if (!faqDataa) {
-    console.log("********");
     return notFound();
   }
 

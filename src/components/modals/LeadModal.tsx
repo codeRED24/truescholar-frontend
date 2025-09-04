@@ -45,6 +45,7 @@ type LeadModalProps = {
     | "secondary"
     | null;
   brochureUrl?: string;
+  onClick?: () => void;
 };
 
 const defaultHeader = (
@@ -76,6 +77,7 @@ const LeadModal: React.FC<LeadModalProps> = ({
   btnHeight = "h-10",
   btnVariant = "default",
   brochureUrl,
+  onClick,
 }) => {
   const [clgData, setClgData] = useState<CollegeDTO[]>([]);
   const [courseData, setCourseData] = useState<CourseDTO[]>([]);
@@ -157,6 +159,7 @@ const LeadModal: React.FC<LeadModalProps> = ({
             padding: btnPadding,
           }}
           className={`w-full md:w-auto ${btnHeight} px-4`}
+          onClick={onClick}
         >
           {triggerText}
         </Button>

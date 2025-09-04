@@ -2,9 +2,7 @@ import { cardConfig } from "@/lib/ai-questions";
 import { gateway } from "@ai-sdk/gateway";
 import { generateText } from "ai";
 import { NextRequest, NextResponse } from "next/server";
-import NodeCache from "node-cache";
-
-const questionsCache = new NodeCache({ stdTTL: 86400 }); // 1 day in seconds
+import { unstable_cache } from "next/cache";
 
 async function generateAllQuestions() {
   const topics = Object.keys(cardConfig).join(", ");
@@ -15,7 +13,7 @@ ${Object.entries(cardConfig)
   .map(([topic, { subTabs }]) => `- ${topic}: ${subTabs.join(", ")}`)
   .join("\n")}
 
-The questions should be around 10 words and highly relevant to an Indian student seeking information about higher education. The questions should cover a diverse range of aspects within each subtopic.
+The questions should be around 10 words and highly relevant to an Indian student seeking information about higher education. The questions should cover a diverse range of aspects within each subtopic. Questions should not be generic.
 
 Format the output as a single JSON object. The keys of the object should be the main topics. The value for each main topic should be another object where keys are the sub-topics and values are an array of 3 question strings.
 
@@ -40,24 +38,26 @@ Do not include any other text or markdown formatting in your response. Just the 
   return text;
 }
 
-export async function GET(request: NextRequest) {
-  try {
-    // Check cache first
-    const cachedQuestions = questionsCache.get("predefined-questions");
-    if (cachedQuestions) {
-      return NextResponse.json(cachedQuestions);
-    }
-
-    // Generate new questions
+// Create a cached version of the function
+const getCachedQuestions = unstable_cache(
+  async () => {
     const rawResponse = await generateAllQuestions();
     // Clean the response by removing markdown code block fences
     const cleanedResponse = rawResponse.replace(/```json\n|```/g, "").trim();
     const jsonResponse = JSON.parse(cleanedResponse);
+    return jsonResponse;
+  },
+  ["predefined-questions"], // Cache key
+  {
+    revalidate: 86400, // Revalidate every 24 hours (86400 seconds)
+    tags: ["questions"], // Cache tags for manual invalidation if needed
+  }
+);
 
-    // Cache the response
-    questionsCache.set("predefined-questions", jsonResponse);
-
-    return NextResponse.json(jsonResponse);
+export async function GET(request: NextRequest) {
+  try {
+    const questions = await getCachedQuestions();
+    return NextResponse.json(questions);
   } catch (error) {
     console.error("Error in GET:", error);
     return NextResponse.json(

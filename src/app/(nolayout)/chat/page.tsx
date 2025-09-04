@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import {
   X,
   Send,
@@ -15,7 +16,6 @@ import {
   TrendingUp,
   Bot,
   Headset,
-  ArrowUpRight,
 } from "lucide-react";
 
 import { useChat } from "@ai-sdk/react";
@@ -23,12 +23,8 @@ import { DefaultChatTransport } from "ai";
 import { Conversation, ConversationContent } from "@/components/conversation";
 import { Message, MessageContent, MessageAvatar } from "@/components/message";
 import { Response } from "@/components/response";
-import AnimatedBlobLogo from "./ai-blob";
-import Link from "next/link";
-
-interface ChatbotWidgetProps {
-  cardConfig: any;
-}
+import AnimatedBlobLogo from "@/components/ai-blob";
+import LeadModal from "@/components/modals/LeadModal";
 
 const dummyQuestions: Record<string, Record<string, string[]>> = {
   Colleges: {
@@ -121,8 +117,32 @@ const dummyQuestions: Record<string, Record<string, string[]>> = {
   },
 };
 
-export default function ChatbotWidget({ cardConfig }: ChatbotWidgetProps) {
-  const [isOpen, setIsOpen] = useState(false);
+// Mock cardConfig - you might want to pass this as props or fetch it
+const cardConfig = {
+  Colleges: {
+    subTabs: ["All", "Admissions", "Fees", "Facility", "Placements"],
+    icon: "GraduationCap",
+    description: "Find the perfect college",
+  },
+  Exams: {
+    subTabs: ["All", "Syllabus", "Dates", "Eligibility"],
+    icon: "FileText",
+    description: "Prepare for entrance exams",
+  },
+  Scholarships: {
+    subTabs: ["All", "Government", "Private", "By College"],
+    icon: "Award",
+    description: "Explore funding options",
+  },
+  "College Predictions": {
+    subTabs: ["All", "By Rank", "By Score"],
+    icon: "TrendingUp",
+    description: "Predict your admission chances",
+  },
+};
+
+export default function ChatbotPage() {
+  const router = useRouter();
   const [view, setView] = useState<"questions" | "chat">("questions");
   const [activeTab, setActiveTab] = useState<string>("Colleges");
   const [activeSubTab, setActiveSubTab] = useState<string>("All");
@@ -130,7 +150,20 @@ export default function ChatbotWidget({ cardConfig }: ChatbotWidgetProps) {
   const [questions, setQuestions] = useState<
     Record<string, Record<string, string[]>>
   >({});
-  const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const [input, setInput] = useState("");
+  const subTabsContainerRef = useRef<HTMLDivElement>(null);
+  const cardsContainerRef = useRef<HTMLDivElement>(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
+
+  const { messages, sendMessage, status, error, setMessages } = useChat({
+    transport: new DefaultChatTransport({
+      api: "/api/chat",
+    }),
+    onFinish: () => {
+      setView("chat");
+    },
+  });
 
   // Fetch questions with browser caching
   useEffect(() => {
@@ -181,33 +214,6 @@ export default function ChatbotWidget({ cardConfig }: ChatbotWidgetProps) {
 
     fetchQuestions();
   }, []);
-
-  // Detect small screen size
-  useEffect(() => {
-    const handleResize = () => {
-      setIsSmallScreen(window.innerWidth < 640); // Tailwind sm breakpoint
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  const [input, setInput] = useState("");
-  const subTabsContainerRef = useRef<HTMLDivElement>(null);
-  const cardsContainerRef = useRef<HTMLDivElement>(null);
-  const [showLeftArrow, setShowLeftArrow] = useState(false);
-  const [showRightArrow, setShowRightArrow] = useState(false);
-
-  const { messages, sendMessage, status, error, setMessages } = useChat({
-    transport: new DefaultChatTransport({
-      api: "/api/chat",
-    }),
-    onFinish: () => {
-      setView("chat");
-    },
-  });
 
   const handleQuestionClick = (question: string) => {
     if (status !== "ready") return;
@@ -271,68 +277,59 @@ export default function ChatbotWidget({ cardConfig }: ChatbotWidgetProps) {
     }
   };
 
-  // Function to trigger footer LeadModal
-  const triggerFooterModal = () => {
-    // Find footer modal button by data attribute
-    const footerModalContainer = document.querySelector(
-      '[data-footer-lead-modal="true"]'
-    );
-    if (footerModalContainer) {
-      const button = footerModalContainer.querySelector("button");
-      if (button) {
-        button.click();
-      }
-    }
-    // Close widget after triggering modal
-    setTimeout(() => setIsOpen(false), 150);
-  };
-
-  // Extract shared widget content
-  const widgetContent = (
-    <>
+  return (
+    <div className="fixed inset-0  flex flex-col bg-white">
       {/* Header */}
-      <div
-        className={`flex flex-shrink-0 items-center justify-between p-3 text-black ${
-          !isSmallScreen ? "rounded-t-2xl" : ""
-        }`}
-      >
+      <div className="flex flex-shrink-0 items-center justify-between p-3 text-black border-b">
         <div className="flex items-center">
-          {view === "chat" && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => {
-                setView("questions");
-                setMessages([]); // Clear chat history when going back
-              }}
-              className="mr-1 h-8 w-8 rounded-full"
-            >
-              <ArrowLeft className="h-5 w-5 text-gray-500" />
-            </Button>
-          )}
-          <h3 className="font-bold text-gray-800 ml-2">TrueScholar AI</h3>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link href="/chat">
-            <ArrowUpRight className="h-5 w-5 text-gray-500" />
-          </Link>
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setIsOpen(false)}
-            className="h-8 w-8 rounded-full"
+            onClick={() => {
+              if (view === "chat") {
+                setView("questions");
+                setMessages([]); // Clear chat history when going back
+              } else {
+                router.back();
+              }
+            }}
+            className="mr-1 h-8 w-8 rounded-full"
           >
-            <X className="h-5 w-5 text-gray-500" />
+            <ArrowLeft className="h-5 w-5 text-gray-500" />
           </Button>
+          <h3 className="font-bold text-gray-800 ml-2">TrueScholar AI</h3>
         </div>
       </div>
 
       {view === "questions" && (
-        <div className="flex-grow overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="container mx-auto flex flex-col flex-grow overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          {/* Get Free Counselling Button */}
+          {view === "questions" && (
+            // <div className="flex justify-center pt-4">
+            //   <Button
+            //     variant="outline"
+            //     // className="w-full"
+            //     onClick={() => handleQuestionClick("I want counselling")}
+            //   >
+            //     <span className="mr-2 h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+            //     Get Free Counselling
+            //   </Button>
+            // </div>
+            <div className="justify-center py-4 mx-auto max-w-60">
+              <LeadModal
+                triggerText={
+                  <span className="flex items-center gap-2">
+                    <Headset /> Get FREE counselling!
+                  </span>
+                }
+              />
+            </div>
+          )}
+
           <div className="flex-grow" />
           <div>
             <div className="flex flex-col items-center px-4 pt-4">
-              <div className="mb-16 mt-10">
+              <div className="mb-16">
                 <AnimatedBlobLogo size={100} title="TS" palette="tealGreen" />
               </div>
             </div>
@@ -362,7 +359,7 @@ export default function ChatbotWidget({ cardConfig }: ChatbotWidgetProps) {
                       setActiveTab(tabName);
                       scrollToCard(index);
                     }}
-                    className={`w-[370px] flex-shrink-0 snap-center rounded-xl p-4 backdrop-blur-sm ${
+                    className={`w-96 flex-shrink-0 snap-center rounded-xl p-4 backdrop-blur-sm ${
                       activeTab === tabName
                         ? "bg-gray-100/80"
                         : "bg-gray-100/50"
@@ -478,7 +475,7 @@ export default function ChatbotWidget({ cardConfig }: ChatbotWidgetProps) {
       )}
 
       {view === "chat" && (
-        <div className="flex flex-1 flex-col overflow-hidden">
+        <div className="container mx-auto flex flex-1 flex-col overflow-hidden">
           <Conversation className="h-full">
             <ConversationContent className="space-y-3">
               {messages.map((message) => (
@@ -522,93 +519,31 @@ export default function ChatbotWidget({ cardConfig }: ChatbotWidgetProps) {
         </div>
       )}
 
-      {/* Get Free Counselling Button */}
-      {view === "questions" && (
-        // <div className="p-4">
-        //   <Button
-        //     variant="outline"
-        //     className="w-full"
-        //     onClick={() => handleQuestionClick("I want counselling")}
-        //   >
-        //     <span className="mr-2 h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-        //     Get Free Counselling
-        //   </Button>
-        // </div>
-        <div className="justify-center py-4 mx-auto max-w-60">
-          <Button onClick={triggerFooterModal} className="w-full">
-            <span className="flex items-center gap-2">
-              <Headset /> Get FREE counselling!
-            </span>
-          </Button>
-        </div>
-      )}
-
       {/* Input Area */}
-      <div
-        className={`flex-shrink-0 border-t border-gray-200/80 bg-white/60 p-3 backdrop-blur-xl ${
-          !isSmallScreen ? "rounded-b-2xl" : ""
-        }`}
-      >
-        <form onSubmit={handleFormSubmit} className="relative">
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Write your query on colleges, exam here..."
-            disabled={status !== "ready"}
-            className="w-full rounded-full border-2 border-gray-300 bg-white py-3 pl-5 pr-14 text-sm shadow-sm transition-colors focus:border-teal-500 focus:outline-none focus:ring-0"
-          />
-          <Button
-            type="submit"
-            size="icon"
-            disabled={!input.trim() || status !== "ready"}
-            className="absolute right-2 top-1/2 h-9 w-9 -translate-y-1/2 rounded-full bg-gray-700 text-white shadow-md hover:bg-gray-800 disabled:bg-gray-300"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
-        </form>
-        <p className="mt-2 text-center text-xs text-gray-400">
-          TrueScholar AI is experimental & accuracy might vary
-        </p>
+      <div className="container mx-auto border-t border-gray-200/80">
+        <div className="flex-shrink-0  bg-white/60 p-3 backdrop-blur-xl">
+          <form onSubmit={handleFormSubmit} className="relative">
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Write your query on colleges, exam here..."
+              disabled={status !== "ready"}
+              className="w-full rounded-full border-2 border-gray-300 bg-white py-3 pl-5 pr-14 text-sm shadow-sm transition-colors focus:border-teal-500 focus:outline-none focus:ring-0"
+            />
+            <Button
+              type="submit"
+              size="icon"
+              disabled={!input.trim() || status !== "ready"}
+              className="absolute right-2 top-1/2 h-9 w-9 -translate-y-1/2 rounded-full bg-gray-700 text-white shadow-md hover:bg-gray-800 disabled:bg-gray-300"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </form>
+          <p className="mt-2 text-center text-xs text-gray-400">
+            TrueScholar AI is experimental & accuracy might vary
+          </p>
+        </div>
       </div>
-    </>
-  );
-
-  return (
-    <>
-      {/* Chat Toggle Button */}
-      <Button
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-[119] h-12 w-12 rounded-full bg-primary-main p-0 shadow-lg hover:bg-primary-5"
-        aria-label="Toggle chatbot"
-      >
-        {!isOpen && (
-          <div className="">
-            <span className="pulse-ring"></span>
-
-            {/* Notification indicator */}
-            <span className="absolute -top-0 -right-0 h-3 w-3 rounded-full bg-red-500 border-2 border-white" />
-
-            <div className=" flex pb-1 gap-1 items-center justify-center h-6 w-6">
-              <div className="eye h-3 w-4 rounded-full bg-white"></div>
-              <div className="eye h-3 w-4 rounded-full bg-white"></div>
-            </div>
-          </div>
-        )}
-      </Button>
-
-      {/* Chat Widget - Desktop */}
-      {isOpen && !isSmallScreen && (
-        <div className="fixed bottom-4 right-4 z-[120] flex h-[calc(100vh-6rem)] w-[430px] max-w-[calc(100vw-1rem)] flex-col rounded-2xl border border-gray-200/80 bg-white/90 shadow-2xl backdrop-blur-xl sm:h-[40rem]">
-          {widgetContent}
-        </div>
-      )}
-
-      {/* Chat Widget - Mobile Full Screen Dialog */}
-      {isOpen && isSmallScreen && (
-        <div className="fixed inset-0 z-[120] flex flex-col bg-white">
-          {widgetContent}
-        </div>
-      )}
-    </>
+    </div>
   );
 }
