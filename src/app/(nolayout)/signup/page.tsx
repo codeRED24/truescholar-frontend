@@ -314,7 +314,7 @@ export default function SignupPage() {
               className="w-full h-full object-contain"
             />
           </div>
-          <div className="absolute bottom-0 -right-40 w-80 h-[520px] md:w-[400px] md:h-[600px] lg:w-[500px] lg:h-[750px] z-10">
+          <div className="absolute bottom-0 -right-36 w-80 h-[520px] md:w-[400px] md:h-[600px] lg:w-[500px] lg:h-[750px] z-10 pointer-events-none">
             <Image
               src="/_0028.png"
               alt="Students"
