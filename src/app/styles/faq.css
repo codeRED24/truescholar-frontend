@@ -38,8 +38,8 @@
 
 .faq-ques {
   font-size: 16px;
-  font-weight: 600;
-  color: #1c252e;
+  font-weight: 600 !important;
+  color: #1c252e !important;
   line-height: 1.5;
   text-align: left;
   display: flex;
@@ -49,9 +49,10 @@
 }
 
 .faq-ans {
+  margin-top: 10px;
   font-size: 16px;
   font-weight: 300;
-  color: #1c252e;
+  color: #1c252e !important;
   max-height: 0;
   overflow: hidden;
   opacity: 0;

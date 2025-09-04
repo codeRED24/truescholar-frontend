@@ -11,13 +11,15 @@ const Words = () => {
           Confusion chhodo, <span className="text-primary-1">EXPERT</span> ki
           suno
         </p>
-        <LeadModal
-          triggerText={
-            <span className="flex items-center gap-2">
-              <Headset /> Get FREE counselling!
-            </span>
-          }
-        />
+        <div data-footer-lead-modal="true">
+          <LeadModal
+            triggerText={
+              <span className="flex items-center gap-2">
+                <Headset /> Get FREE counselling!
+              </span>
+            }
+          />
+        </div>
       </div>
       <div className="col-span-1 font-semibold text-white text-lg space-y-4 flex justify-center flex-col text-center sm:text-start">
         <p>

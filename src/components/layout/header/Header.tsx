@@ -25,10 +25,12 @@ import {
   ChevronRight,
   Search,
   ArrowUpDown,
+  UserIcon,
 } from "lucide-react";
 import { formatName } from "@/components/utils/utils";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
+import { useUserStore } from "@/stores/userStore";
 import {
   Carousel,
   CarouselContent,
@@ -85,6 +87,7 @@ const Header: React.FC = () => {
   const [showMoreStreams, setShowMoreStreams] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false); // State for mobile Sheet
   const isTablet = useIsTablet();
+  const { user } = useUserStore();
   const searchModalRef = useRef<HTMLDivElement>(null);
 
   const additionalStreams = overStreamData.filter(
@@ -571,13 +574,20 @@ const Header: React.FC = () => {
               </NavigationMenuList>
               <SearchModal />
             </NavigationMenu>
-            <div className="bg-[#141A21] text-white rounded-full">
-              <LeadModal
-                triggerText={<User />}
-                btnColor="#141A21"
-                btnHeight="h-9"
-              />
-            </div>
+            {user && user.name ? (
+              <div className="bg-[#141A21] text-white rounded-full h-9 w-12 flex items-center justify-center">
+                <span className="text-lg">
+                  {user.name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            ) : (
+              <Link
+                href="/signup"
+                className="bg-[#141A21] text-white rounded-full h-9 w-12 flex items-center justify-center"
+              >
+                <UserIcon className="h-4 w-4 text-gray-3" />
+              </Link>
+            )}
           </div>
         </div>
       )}
