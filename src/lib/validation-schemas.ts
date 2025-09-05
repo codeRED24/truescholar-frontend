@@ -332,3 +332,136 @@ export type StudentReviewFormData = z.infer<typeof studentReviewSchema>;
 export type FeedbackFormData = z.infer<typeof feedbackSchema>;
 export type CompleteFormData = z.infer<typeof completeFormSchema>;
 export type OtpVerificationFormData = z.infer<typeof otpVerificationSchema>;
+
+// Basic Details Schema for Profile Editing
+export const basicDetailsSchema = z.object({
+  name: z
+    .string()
+    .min(2, "Name must be at least 2 characters")
+    .max(50, "Name must be less than 50 characters")
+    .regex(/^[a-zA-Z\s]+$/, "Name can only contain letters and spaces"),
+  country: z
+    .string()
+    .min(1, "Please enter your country and city")
+    .max(100, "Country and city must be less than 100 characters"),
+  birthday: z
+    .string()
+    .min(1, "Please enter your birthday")
+    .regex(/^\d{2}\.\d{2}\.\d{4}$/, "Birthday must be in DD.MM.YYYY format"),
+  email: z
+    .string()
+    .email("Please enter a valid email address")
+    .max(100, "Email must be less than 100 characters"),
+  phone: z
+    .string()
+    .min(1, "Please enter your phone number")
+    .regex(/^[\+]?[\d\s\-\(\)]+$/, "Please enter a valid phone number"),
+  date: z.string().optional(), // Registration date is read-only
+});
+
+export type BasicDetailsFormData = z.infer<typeof basicDetailsSchema>;
+
+// Single Education Details Schema
+export const educationDetailsSchema = z.object({
+  id: z.string(),
+  institution: z
+    .string()
+    .min(2, "Institution name must be at least 2 characters")
+    .max(100, "Institution name must be less than 100 characters"),
+  degree: z
+    .string()
+    .min(2, "Degree must be at least 2 characters")
+    .max(100, "Degree must be less than 100 characters"),
+  fieldOfStudy: z
+    .string()
+    .min(2, "Field of study must be at least 2 characters")
+    .max(100, "Field of study must be less than 100 characters"),
+  graduationYear: z
+    .string()
+    .regex(/^\d{4}$/, "Graduation year must be a valid 4-digit year")
+    .refine((val) => {
+      const year = parseInt(val);
+      const currentYear = new Date().getFullYear();
+      return year >= 1950 && year <= currentYear + 10;
+    }, "Graduation year must be between 1950 and 10 years in the future"),
+  grade: z
+    .string()
+    .max(20, "Grade must be less than 20 characters")
+    .optional()
+    .or(z.literal("")),
+  activities: z
+    .string()
+    .max(500, "Activities must be less than 500 characters")
+    .optional()
+    .or(z.literal("")),
+});
+
+// Education Details Array Schema
+export const educationDetailsArraySchema = z
+  .array(educationDetailsSchema)
+  .min(1, "At least one education entry is required");
+
+export type EducationDetailsFormData = z.infer<typeof educationDetailsSchema>;
+export type EducationDetailsArrayFormData = z.infer<
+  typeof educationDetailsArraySchema
+>;
+
+// Single Work Experience Schema
+export const workExperienceSchema = z.object({
+  id: z.string(),
+  company: z
+    .string()
+    .min(2, "Company name must be at least 2 characters")
+    .max(100, "Company name must be less than 100 characters"),
+  position: z
+    .string()
+    .min(2, "Position must be at least 2 characters")
+    .max(100, "Position must be less than 100 characters"),
+  startDate: z
+    .string()
+    .regex(/^\d{2}\.\d{4}$/, "Start date must be in MM.YYYY format"),
+  endDate: z
+    .string()
+    .regex(/^\d{2}\.\d{4}$/, "End date must be in MM.YYYY format")
+    .or(z.literal("Present")),
+  description: z
+    .string()
+    .max(1000, "Description must be less than 1000 characters")
+    .optional()
+    .or(z.literal("")),
+  location: z
+    .string()
+    .max(100, "Location must be less than 100 characters")
+    .optional()
+    .or(z.literal("")),
+});
+
+// Work Experience Array Schema
+export const workExperienceArraySchema = z
+  .array(workExperienceSchema)
+  .min(1, "At least one work experience entry is required");
+
+// Engagement Activity Schema
+export const engagementActivitySchema = z.object({
+  activityType: z.enum(["review", "question", "answer", "comment"]),
+  title: z
+    .string()
+    .min(5, "Title must be at least 5 characters")
+    .max(200, "Title must be less than 200 characters"),
+  description: z
+    .string()
+    .min(10, "Description must be at least 10 characters")
+    .max(1000, "Description must be less than 1000 characters"),
+  date: z
+    .string()
+    .regex(/^\d{2}\.\d{2}\.\d{4}$/, "Date must be in DD.MM.YYYY format"),
+  status: z.enum(["active", "completed", "pending"]),
+});
+
+export type WorkExperienceFormData = z.infer<typeof workExperienceSchema>;
+export type WorkExperienceArrayFormData = z.infer<
+  typeof workExperienceArraySchema
+>;
+export type EngagementActivityFormData = z.infer<
+  typeof engagementActivitySchema
+>;
