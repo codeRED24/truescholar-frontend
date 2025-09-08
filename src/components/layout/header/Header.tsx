@@ -39,6 +39,12 @@ import {
 import Autoplay from "embla-carousel-autoplay";
 import Image from "next/image";
 import { useIsTablet } from "@/components/utils/useTablet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const DialogTitle = dynamic(
   () => import("@/components/ui/dialog").then((mod) => mod.DialogTitle),
@@ -87,7 +93,7 @@ const Header: React.FC = () => {
   const [showMoreStreams, setShowMoreStreams] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false); // State for mobile Sheet
   const isTablet = useIsTablet();
-  const { user } = useUserStore();
+  const { user, logout } = useUserStore();
   const searchModalRef = useRef<HTMLDivElement>(null);
 
   const additionalStreams = overStreamData.filter(
@@ -575,11 +581,23 @@ const Header: React.FC = () => {
               <SearchModal />
             </NavigationMenu>
             {user && user.name ? (
-              <div className="bg-[#141A21] text-white rounded-full h-9 w-12 flex items-center justify-center">
-                <span className="text-lg">
-                  {user.name.charAt(0).toUpperCase()}
-                </span>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <div className="bg-[#141A21] text-white rounded-full h-9 w-12 flex items-center justify-center cursor-pointer">
+                    <span className="text-lg">
+                      {user.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem className="cursor-pointer" asChild>
+                    <Link href="/profile">Profile</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer" onClick={logout}>
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <Link
                 href="/signup"

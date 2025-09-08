@@ -191,198 +191,205 @@ export default function ForgetPasswordPage() {
         </div>
 
         {/* Right Side - Form */}
-        <div className="w-full lg:w-4/12 bg-gradient-to-br from-white to-gray-100 p-6 md:p-8 flex flex-col justify-center">
-          {step === "email" ? (
-            <>
-              <h2 className="text-2xl font-bold text-center text-gray-800">
-                Forgot Password
+        <div className="w-full relative h-screen lg:w-4/12 bg-gradient-to-br from-white to-gray-100 p-6 md:p-8 flex flex-col justify-center">
+          <Link
+            href={"/"}
+            className="text-primary-main text-3xl md:text-4xl font-extrabold text-center mb-4"
+          >
+            True<span className="text-gray-800">Scholar</span>
+          </Link>
+        {step === "email" ? (
+          <>
+            <h2 className="text-xl text-center md:text-2xl font-bold text-gray-800 mb-2">
+              <span className="text-blue-600">FORGOT</span>{" "}
+              <span className="text-orange-500">PASSWORD</span>
+            </h2>
+            <p className="text-center mb-10 text-sm">
+              Enter your email address and we'll send you a verification code.
+            </p>
+
+            <form
+              onSubmit={emailForm.handleSubmit(onEmailSubmit)}
+              className="space-y-4"
+            >
+              <div className="space-y-2">
+                <Label
+                  htmlFor="email"
+                  className="flex items-center gap-2 text-sm font-medium"
+                >
+                  <Mail className="w-4 h-4 text-teal-500" />
+                  Email Address
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email address"
+                  {...emailForm.register("email")}
+                  className={`border-gray-300 ${
+                    emailForm.formState.errors.email ? "border-red-500" : ""
+                  }`}
+                />
+                {emailForm.formState.errors.email && (
+                  <p className="text-sm text-red-600">
+                    {emailForm.formState.errors.email.message}
+                  </p>
+                )}
+              </div>
+
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-blue-900 hover:bg-blue-800 text-white font-medium py-2.5 rounded-lg"
+              >
+                {loading ? "Sending OTP..." : "Send OTP"}
+              </Button>
+
+              <p className="text-sm text-center mt-4">
+                Remember your password?{" "}
+                <Link href="/signin" className="text-blue-800">
+                  Sign In
+                </Link>
+              </p>
+            </form>
+          </>
+        ) : step === "otp" ? (
+          <>
+            <div className="flex items-center gap-2 mb-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleBack}
+                className="p-0 h-auto"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+              <h2 className="text-2xl font-bold text-gray-800">Enter OTP</h2>
+            </div>
+            <p className="text-center mb-10 text-sm">
+              We've sent a 6-digit code to {email}
+            </p>
+
+            <form
+              onSubmit={otpForm.handleSubmit(onOtpSubmit)}
+              className="space-y-4"
+            >
+              <div className="space-y-2">
+                <Label
+                  htmlFor="otp"
+                  className="flex items-center gap-2 text-sm font-medium"
+                >
+                  <Lock className="w-4 h-4 text-teal-500" />
+                  Verification Code
+                </Label>
+                <Input
+                  key={`otp-${step}`} // Force re-render when step changes
+                  id="otp"
+                  type="text"
+                  placeholder="Enter 6-digit OTP"
+                  maxLength={6}
+                  {...otpForm.register("otp")}
+                  className={`border-gray-300 text-center text-lg tracking-widest ${
+                    otpForm.formState.errors.otp ? "border-red-500" : ""
+                  }`}
+                />
+                {otpForm.formState.errors.otp && (
+                  <p className="text-sm text-red-600">
+                    {otpForm.formState.errors.otp.message}
+                  </p>
+                )}
+              </div>
+
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-blue-900 hover:bg-blue-800 text-white font-medium py-2.5 rounded-lg"
+              >
+                {loading ? "Verifying..." : "Verify OTP"}
+              </Button>
+            </form>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center gap-2 mb-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleBack}
+                className="p-0 h-auto"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+              <h2 className="text-2xl font-bold text-gray-800">
+                Set New Password
               </h2>
-              <p className="text-center mb-10 text-sm">
-                Enter your email address and we'll send you a verification code.
-              </p>
+            </div>
+            <p className="text-center mb-10 text-sm">
+              Enter your new password below.
+            </p>
 
-              <form
-                onSubmit={emailForm.handleSubmit(onEmailSubmit)}
-                className="space-y-4"
-              >
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="email"
-                    className="flex items-center gap-2 text-sm font-medium"
-                  >
-                    <Mail className="w-4 h-4 text-teal-500" />
-                    Email Address
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="Enter your email address"
-                    {...emailForm.register("email")}
-                    className={`border-gray-300 ${
-                      emailForm.formState.errors.email ? "border-red-500" : ""
-                    }`}
-                  />
-                  {emailForm.formState.errors.email && (
-                    <p className="text-sm text-red-600">
-                      {emailForm.formState.errors.email.message}
-                    </p>
-                  )}
-                </div>
-
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-blue-900 hover:bg-blue-800 text-white font-medium py-2.5 rounded-lg"
-                >
-                  {loading ? "Sending OTP..." : "Send OTP"}
-                </Button>
-
-                <p className="text-sm text-center mt-4">
-                  Remember your password?{" "}
-                  <Link href="/signin" className="text-blue-800">
-                    Sign In
-                  </Link>
-                </p>
-              </form>
-            </>
-          ) : step === "otp" ? (
-            <>
-              <div className="flex items-center gap-2 mb-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleBack}
-                  className="p-0 h-auto"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                </Button>
-                <h2 className="text-2xl font-bold text-gray-800">Enter OTP</h2>
+            <form
+              onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}
+              className="space-y-4"
+            >
+              <div className="space-y-2">
+                <Label htmlFor="newPassword" className="text-sm font-medium">
+                  New Password
+                </Label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  placeholder="Enter new password"
+                  {...passwordForm.register("newPassword")}
+                  className={`border-gray-300 ${
+                    passwordForm.formState.errors.newPassword
+                      ? "border-red-500"
+                      : ""
+                  }`}
+                />
+                {passwordForm.formState.errors.newPassword && (
+                  <p className="text-sm text-red-600">
+                    {passwordForm.formState.errors.newPassword.message}
+                  </p>
+                )}
               </div>
-              <p className="text-center mb-10 text-sm">
-                We've sent a 6-digit code to {email}
-              </p>
 
-              <form
-                onSubmit={otpForm.handleSubmit(onOtpSubmit)}
-                className="space-y-4"
-              >
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="otp"
-                    className="flex items-center gap-2 text-sm font-medium"
-                  >
-                    <Lock className="w-4 h-4 text-teal-500" />
-                    Verification Code
-                  </Label>
-                  <Input
-                    key={`otp-${step}`} // Force re-render when step changes
-                    id="otp"
-                    type="text"
-                    placeholder="Enter 6-digit OTP"
-                    maxLength={6}
-                    {...otpForm.register("otp")}
-                    className={`border-gray-300 text-center text-lg tracking-widest ${
-                      otpForm.formState.errors.otp ? "border-red-500" : ""
-                    }`}
-                  />
-                  {otpForm.formState.errors.otp && (
-                    <p className="text-sm text-red-600">
-                      {otpForm.formState.errors.otp.message}
-                    </p>
-                  )}
-                </div>
-
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-blue-900 hover:bg-blue-800 text-white font-medium py-2.5 rounded-lg"
+              <div className="space-y-2">
+                <Label
+                  htmlFor="confirmPassword"
+                  className="text-sm font-medium"
                 >
-                  {loading ? "Verifying..." : "Verify OTP"}
-                </Button>
-              </form>
-            </>
-          ) : (
-            <>
-              <div className="flex items-center gap-2 mb-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleBack}
-                  className="p-0 h-auto"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                </Button>
-                <h2 className="text-2xl font-bold text-gray-800">
-                  Set New Password
-                </h2>
+                  Confirm New Password
+                </Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="Confirm new password"
+                  {...passwordForm.register("confirmPassword")}
+                  className={`border-gray-300 ${
+                    passwordForm.formState.errors.confirmPassword
+                      ? "border-red-500"
+                      : ""
+                  }`}
+                />
+                {passwordForm.formState.errors.confirmPassword && (
+                  <p className="text-sm text-red-600">
+                    {passwordForm.formState.errors.confirmPassword.message}
+                  </p>
+                )}
               </div>
-              <p className="text-center mb-10 text-sm">
-                Enter your new password below.
-              </p>
 
-              <form
-                onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}
-                className="space-y-4"
+              <Button
+                type="submit"
+                disabled={passwordLoading}
+                className="w-full bg-blue-900 hover:bg-blue-800 text-white font-medium py-2.5 rounded-lg"
               >
-                <div className="space-y-2">
-                  <Label htmlFor="newPassword" className="text-sm font-medium">
-                    New Password
-                  </Label>
-                  <Input
-                    id="newPassword"
-                    type="password"
-                    placeholder="Enter new password"
-                    {...passwordForm.register("newPassword")}
-                    className={`border-gray-300 ${
-                      passwordForm.formState.errors.newPassword
-                        ? "border-red-500"
-                        : ""
-                    }`}
-                  />
-                  {passwordForm.formState.errors.newPassword && (
-                    <p className="text-sm text-red-600">
-                      {passwordForm.formState.errors.newPassword.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="confirmPassword"
-                    className="text-sm font-medium"
-                  >
-                    Confirm New Password
-                  </Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    placeholder="Confirm new password"
-                    {...passwordForm.register("confirmPassword")}
-                    className={`border-gray-300 ${
-                      passwordForm.formState.errors.confirmPassword
-                        ? "border-red-500"
-                        : ""
-                    }`}
-                  />
-                  {passwordForm.formState.errors.confirmPassword && (
-                    <p className="text-sm text-red-600">
-                      {passwordForm.formState.errors.confirmPassword.message}
-                    </p>
-                  )}
-                </div>
-
-                <Button
-                  type="submit"
-                  disabled={passwordLoading}
-                  className="w-full bg-blue-900 hover:bg-blue-800 text-white font-medium py-2.5 rounded-lg"
-                >
-                  {passwordLoading ? "Resetting..." : "Reset Password"}
-                </Button>
-              </form>
-            </>
-          )}
-        </div>
+                {passwordLoading ? "Resetting..." : "Reset Password"}
+              </Button>
+            </form>
+          </>
+        )}
       </div>
+    </div>
     </div>
   );
 }

@@ -11,6 +11,7 @@ import { useSignupStore } from "@/stores/signupStore";
 import { useUserStore } from "@/stores/userStore";
 import useOtpApi from "@/hooks/use-otp";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function VerifyPage() {
   const [phoneOtp, setPhoneOtp] = useState<string[]>(["", "", "", "", "", ""]);
@@ -169,6 +170,28 @@ export default function VerifyPage() {
     }
   };
 
+  const handleKeyDownPhone = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace') {
+      if (!phoneOtp[index] && index > 0) {
+        const newOtp = [...phoneOtp];
+        newOtp[index - 1] = '';
+        setPhoneOtp(newOtp);
+        document.getElementById(`phone-otp-${index - 1}`)?.focus();
+      }
+    }
+  };
+
+  const handleKeyDownEmail = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace') {
+      if (!emailOtp[index] && index > 0) {
+        const newOtp = [...emailOtp];
+        newOtp[index - 1] = '';
+        setEmailOtp(newOtp);
+        document.getElementById(`email-otp-${index - 1}`)?.focus();
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -321,6 +344,7 @@ export default function VerifyPage() {
       {/* Right Side - Form */}
       <div className="w-full lg:w-5/12 bg-white p-6 md:p-8 flex flex-col justify-center">
         <div className="text-center mb-8">
+        <Link href={"/"} className="text-primary-main text-3xl md:text-4xl font-extrabold mb-4">True<span className="text-gray-800">Scholar</span></Link>
           <h1 className="text-3xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
             <span className="text-blue-600">VERIFY</span>
             <CheckCircle className="w-6 h-6 text-green-500" />
@@ -346,6 +370,7 @@ export default function VerifyPage() {
                   maxLength={1}
                   value={digit}
                   onChange={(e) => handleChangePhone(index, e.target.value)}
+                  onKeyDown={(e) => handleKeyDownPhone(index, e)}
                   className="w-12 h-12 text-center text-lg border-gray-300 focus:ring-teal-500 focus:border-teal-500"
                   autoFocus={index === 0}
                 />
@@ -395,6 +420,7 @@ export default function VerifyPage() {
                   maxLength={1}
                   value={digit}
                   onChange={(e) => handleChangeEmail(index, e.target.value)}
+                  onKeyDown={(e) => handleKeyDownEmail(index, e)}
                   className="w-12 h-12 text-center text-lg border-gray-300 focus:ring-teal-500 focus:border-teal-500"
                 />
               ))}
@@ -450,7 +476,7 @@ export default function VerifyPage() {
             onClick={() => router.push("/signup")}
             className="text-blue-600 hover:text-blue-800 font-medium"
           >
-            ← Back to Sign Up
+            Go to Sign Up
           </button>
         </div>
       </div>

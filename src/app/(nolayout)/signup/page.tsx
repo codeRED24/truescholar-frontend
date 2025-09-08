@@ -37,6 +37,7 @@ import { useMemo, useCallback } from "react";
 import { personalDetailsSchema } from "@/lib/validation-schemas";
 import { SuggestionInput } from "@/components/ui/suggestion-input";
 import Image from "next/image";
+import Link from "next/link";
 
 // Form validation schema using personalDetailsSchema from validation-schemas.ts
 const signupSchema = personalDetailsSchema
@@ -377,6 +378,7 @@ export default function SignupPage() {
         {/* Right Side - Form */}
         <div className="w-full lg:w-5/12 bg-gradient-to-br from-white to-gray-100 p-6 md:p-8 flex flex-col justify-center">
           <div className="text-center mb-6 md:mb-8">
+          <Link href={"/"} className="text-primary-main text-3xl md:text-4xl font-extrabold mb-4">True<span className="text-gray-800">Scholar</span></Link>
             <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">
               <span className="text-blue-600">GET</span>{" "}
               <span className="text-orange-500">STARTED</span>

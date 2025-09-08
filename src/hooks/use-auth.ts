@@ -28,6 +28,14 @@ export default function useAuth() {
       });
 
       if (!res.ok) {
+        // Check for 401 Unauthorized specifically
+        if (res.status === 401) {
+          const msg = "Incorrect credentials";
+          setError(msg);
+          return { success: false, message: msg };
+        }
+
+        // Handle other error statuses
         const err = await res.json().catch(() => ({}));
         const msg = err?.message || "Invalid credentials";
         setError(msg);
