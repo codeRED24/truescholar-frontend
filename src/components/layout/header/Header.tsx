@@ -593,6 +593,9 @@ const Header: React.FC = () => {
                   <DropdownMenuItem className="cursor-pointer" asChild>
                     <Link href="/profile">Profile</Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer" asChild>
+                    <Link href="/review-form">Write Review</Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem className="cursor-pointer" onClick={logout}>
                     Logout
                   </DropdownMenuItem>

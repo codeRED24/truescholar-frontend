@@ -16,19 +16,27 @@ import Link from "next/link";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useUserStore } from "@/stores/userStore";
 import { useRouter } from "next/navigation";
-import { LogOut, User, GraduationCap, Briefcase, Activity } from "lucide-react";
+import {
+  LogOut,
+  User,
+  GraduationCap,
+  Briefcase,
+  Activity,
+  BookOpen,
+} from "lucide-react";
 
 const tabs = [
   { id: "basic-details", label: "Basic Details", icon: User },
   { id: "education-details", label: "Education details", icon: GraduationCap },
-  { id: "work-experience", label: "Work Experience", icon: Briefcase },
-  { id: "engagement-activity", label: "Engagement activity", icon: Activity },
+  { id: "reviews", label: "Reviews", icon: BookOpen },
+  // { id: "work-experience", label: "Work Experience", icon: Briefcase },
+  // { id: "engagement-activity", label: "Engagement activity", icon: Activity },
 ];
 
 export default function Page() {
   const [activeTab, setActiveTab] = useState("basic-details");
   const isMobile = useIsMobile();
-  const { logout } = useUserStore();
+  const { user, isAuthenticated, logout } = useUserStore();
   const router = useRouter();
 
   const handleLogout = () => {
@@ -36,6 +44,9 @@ export default function Page() {
     router.push("/");
   };
 
+  if (!isAuthenticated && !user?.id) {
+    router.push("/");
+  }
   return (
     <SidebarProvider className="bg-[#dfebfb]">
       <Sidebar className="bg-[#4A4A6A] text-white overflow-visible">

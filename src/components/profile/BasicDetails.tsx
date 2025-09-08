@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Card } from "../ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
@@ -10,16 +10,23 @@ import {
   basicDetailsSchema,
   BasicDetailsFormData,
 } from "../../lib/validation-schemas";
-import { Edit, Save, X } from "lucide-react";
+import { Edit, Save, X, Camera } from "lucide-react";
+import { useUserStore } from "@/stores/userStore";
 
 const BasicDetails = () => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user } = useUserStore();
+
   const {
     basicDetails,
     isEditing,
     isLoading,
     error,
+    profilePicture,
     setIsEditing,
     setBasicDetails,
+    setProfilePicture,
+    loadProfile,
     saveProfile,
   } = useProfileStore();
 
@@ -33,6 +40,16 @@ const BasicDetails = () => {
     defaultValues: basicDetails,
   });
 
+  useEffect(() => {
+    if (user?.id) {
+      loadProfile(Number(user?.id));
+    }
+  }, [user?.id, loadProfile]);
+
+  useEffect(() => {
+    reset(basicDetails);
+  }, [basicDetails, reset]);
+
   const handleEdit = () => {
     setIsEditing(true);
     reset(basicDetails);
@@ -41,11 +58,25 @@ const BasicDetails = () => {
   const handleCancel = () => {
     setIsEditing(false);
     reset(basicDetails);
+    setProfilePicture(null);
   };
 
   const onSubmit = async (data: BasicDetailsFormData) => {
     setBasicDetails(data);
     await saveProfile();
+  };
+
+  const handleProfilePictureChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setProfilePicture(file);
+    }
+  };
+
+  const handleProfilePictureClick = () => {
+    fileInputRef.current?.click();
   };
 
   return (
@@ -88,13 +119,37 @@ const BasicDetails = () => {
 
         <div className="flex flex-col md:flex-row items-center md:items-start w-full bg-white gap-6">
           {/* Avatar */}
-          <div className="flex-shrink-0 flex items-center justify-center w-32 h-32 rounded-full bg-[#d1c4e9] overflow-hidden">
+          <div className="flex-shrink-0 flex items-center justify-center w-32 h-32 rounded-full bg-[#d1c4e9] overflow-hidden relative">
             <Avatar className="w-32 h-32">
-              <AvatarImage alt="" src={"/avatar.png"} />
+              <AvatarImage
+                alt=""
+                src={
+                  profilePicture
+                    ? URL.createObjectURL(profilePicture)
+                    : basicDetails.name
+                    ? undefined
+                    : "/avatar.png"
+                }
+              />
               <AvatarFallback className="text-3xl font-bold">
-                {basicDetails?.name[0]}
+                {basicDetails?.name ? basicDetails.name[0] : "U"}
               </AvatarFallback>
             </Avatar>
+            {isEditing && (
+              <div
+                className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center cursor-pointer"
+                onClick={handleProfilePictureClick}
+              >
+                <Camera className="text-white h-8 w-8" />
+              </div>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleProfilePictureChange}
+              className="hidden"
+            />
           </div>
           {/* Details */}
           <div className="flex-1 flex flex-col justify-between h-full w-full">
@@ -105,15 +160,7 @@ const BasicDetails = () => {
                   {basicDetails.name}
                 </h2>
                 <div className="text-gray-500 text-sm mb-1">
-                  <span className="font-medium text-gray-400">
-                    Registration Date:
-                  </span>{" "}
-                  <span className="text-gray-700">{basicDetails.date}</span>
-                </div>
-                <div className="text-gray-500 text-sm mb-1">
-                  <span className="font-medium text-gray-400">
-                    Country, City:
-                  </span>{" "}
+                  <span className="font-medium text-gray-400"> Country: </span>{" "}
                   <span className="text-gray-700">{basicDetails.country}</span>
                 </div>
                 <div className="text-gray-500 text-sm mb-1">
@@ -182,10 +229,12 @@ const BasicDetails = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     E-mail
                   </label>
+                  {/* disabled as email and phone input functionality not present now */}
                   <Input
                     {...register("email")}
                     type="email"
                     className={errors.email ? "border-red-500" : ""}
+                    disabled
                   />
                   {errors.email && (
                     <p className="text-red-500 text-xs mt-1">
@@ -198,9 +247,11 @@ const BasicDetails = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Phone
                   </label>
+                  {/* disabled as email and phone input functionality not present now */}
                   <Input
                     {...register("phone")}
                     className={errors.phone ? "border-red-500" : ""}
+                    disabled
                   />
                   {errors.phone && (
                     <p className="text-red-500 text-xs mt-1">
