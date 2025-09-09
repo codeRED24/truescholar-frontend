@@ -18,10 +18,10 @@ export function middleware(req: any) {
     pathname = pathname.replace(/\/scholarships$/, "/scholarship");
 
     // Case 4: if /colleges/... has NO numeric ID at the end → redirect to /
-    const hasId = /-\d+$/.test(pathname);
-    if (!hasId) {
-      pathname = "/colleges";
-    }
+    // const hasId = /-\d+$/.test(pathname);
+    // if (!hasId) {
+    //   pathname = "/colleges";
+    // }
   }
 
   // If we changed the path → redirect
