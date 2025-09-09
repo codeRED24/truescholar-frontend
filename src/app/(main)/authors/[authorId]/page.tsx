@@ -8,7 +8,7 @@ async function getAuthor(authorId: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/authors/${authorId}`,
     {
-      next: { revalidate: 10800 },
+      next: { revalidate: 60 * 30 }, // Revalidate every 30 minutes
     }
   );
   if (!res.ok) return null;

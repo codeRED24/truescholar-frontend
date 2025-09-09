@@ -26,6 +26,11 @@ import {
   Search,
   ArrowUpDown,
   UserIcon,
+  Pen,
+  LogOut,
+  UserCircle,
+  UserPlus,
+  LogIn,
 } from "lucide-react";
 import { formatName } from "@/components/utils/utils";
 import dynamic from "next/dynamic";
@@ -60,10 +65,6 @@ const SearchModal = dynamic(
   }
 );
 
-const LeadModal = dynamic(() => import("@/components/modals/LeadModal"), {
-  ssr: false,
-});
-
 const streamNames: Record<number, { name: string; icon: JSX.Element }> = {
   10: { name: "Engineering", icon: <University size={16} /> },
   21: { name: "Management", icon: <BriefcaseBusiness size={16} /> },
@@ -93,12 +94,17 @@ const Header: React.FC = () => {
   const [showMoreStreams, setShowMoreStreams] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false); // State for mobile Sheet
   const isTablet = useIsTablet();
-  const { user, logout } = useUserStore();
+  const { user, logout, isAuthenticated } = useUserStore();
   const searchModalRef = useRef<HTMLDivElement>(null);
 
   const additionalStreams = overStreamData.filter(
     (stream) => !Object.keys(streamNames).includes(stream.stream_id.toString())
   );
+
+  const mobileLogout = () => {
+    logout();
+    closeNavbar();
+  };
 
   const fetchNavData = useCallback(async () => {
     setLoading(true);
@@ -324,6 +330,25 @@ const Header: React.FC = () => {
             >
               <Search className="w-6 h-6 text-gray-700" />
             </button>
+            {isAuthenticated ? (
+              <Link
+                href="/profile"
+                className="focus:outline-none p-2 hover:bg-gray-100 rounded-full"
+                onClick={closeNavbar}
+              >
+                <div className="size-6 rounded-full bg-gray-100 border border-gray-700 flex items-center justify-center p-4 text-gray-700">
+                  <span>{user?.name?.charAt(0).toUpperCase()}</span>
+                </div>
+              </Link>
+            ) : (
+              <Link
+                href="/signin"
+                className="focus:outline-none p-2 hover:bg-gray-100 rounded-full"
+                onClick={closeNavbar}
+              >
+                <UserCircle className="w-6 h-6 text-gray-700" />
+              </Link>
+            )}
 
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
@@ -470,7 +495,62 @@ const Header: React.FC = () => {
                         <ArrowUpDown className="w-4 h-4" /> Compare Colleges
                       </Link>
                     </li>
+                    <li>
+                      <Link
+                        href="/review-form"
+                        className="flex items-center gap-2 text-[#374151] font-semibold  py-3 hover:underline"
+                        onClick={closeNavbar}
+                      >
+                        <Pen className="w-4 h-4" /> Write Review
+                      </Link>
+                    </li>
+                    {isAuthenticated && (
+                      <>
+                        <li>
+                          <Link
+                            href="/profile"
+                            className="flex items-center gap-2 text-[#374151] font-semibold  py-3 hover:underline"
+                            onClick={closeNavbar}
+                          >
+                            <UserCircle className="w-4 h-4" /> Profile
+                          </Link>
+                        </li>
+
+                        <li>
+                          <span
+                            onClick={mobileLogout}
+                            className="flex items-center gap-2 text-[#374151] font-semibold  py-3 hover:underline"
+                          >
+                            <LogOut className="w-4 h-4" /> Logout
+                          </span>
+                        </li>
+                      </>
+                    )}
+                    {!isAuthenticated && (
+                      <>
+                        <li>
+                          <Link
+                            href="/signin"
+                            className="flex items-center gap-2 text-[#374151] font-semibold  py-3 hover:underline"
+                            onClick={closeNavbar}
+                          >
+                            <LogIn className="w-4 h-4" /> Signin
+                          </Link>
+                        </li>
+
+                        <li>
+                          <Link
+                            href="/signup"
+                            className="flex items-center gap-2 text-[#374151] font-semibold  py-3 hover:underline"
+                            onClick={closeNavbar}
+                          >
+                            <UserPlus className="w-4 h-4" /> Signup
+                          </Link>
+                        </li>
+                      </>
+                    )}
                   </ul>
+
                   {/* <SearchModal /> */}
                 </nav>
               </SheetContent>
@@ -591,13 +671,17 @@ const Header: React.FC = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem className="cursor-pointer" asChild>
-                    <Link href="/profile">Profile</Link>
+                    <Link href="/profile">
+                      <User /> Profile
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem className="cursor-pointer" asChild>
-                    <Link href="/review-form">Write Review</Link>
+                    <Link href="/review-form">
+                      <Pen /> Write Review
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem className="cursor-pointer" onClick={logout}>
-                    Logout
+                    <LogOut /> Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

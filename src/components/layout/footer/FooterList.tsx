@@ -144,7 +144,7 @@ const FooterList = () => {
             <Instagram size={20} />
           </Link>
           <Link
-            href="https://www.linkedin.com/in/truescholar-pvt-25b1a7376/"
+            href="https://www.linkedin.com/company/truescholarindia/"
             className="rounded-full bg-gray-700 p-2 transition-colors hover:bg-gray-600"
             target="_blank"
           >

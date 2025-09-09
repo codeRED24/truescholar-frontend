@@ -9,7 +9,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ProfilePage from "@/components/profile/ProfilePage";
 import { CurveBottom, CurveTop } from "@/components/profile/Activetabsvgs";
 import Link from "next/link";
@@ -39,14 +39,17 @@ export default function Page() {
   const { user, isAuthenticated, logout } = useUserStore();
   const router = useRouter();
 
+  useEffect(() => {
+    if (!isAuthenticated && !user?.id) {
+      router.push("/signin");
+    }
+  }, [isAuthenticated, user?.id]);
+
   const handleLogout = () => {
     logout();
     router.push("/");
   };
 
-  if (!isAuthenticated && !user?.id) {
-    router.push("/");
-  }
   return (
     <SidebarProvider className="bg-[#dfebfb]">
       <Sidebar className="bg-[#4A4A6A] text-white overflow-visible">
