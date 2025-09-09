@@ -43,7 +43,7 @@ export default function Page() {
     if (!isAuthenticated && !user?.id) {
       router.push("/signin");
     }
-  }, [isAuthenticated, user?.id]);
+  }, [isAuthenticated, user?.id, router]);
 
   const handleLogout = () => {
     logout();

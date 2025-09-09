@@ -672,7 +672,7 @@ const Header: React.FC = () => {
                 <DropdownMenuContent>
                   <DropdownMenuItem className="cursor-pointer" asChild>
                     <Link href="/profile">
-                      <User /> Profile
+                      <UserCircle /> Profile
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem className="cursor-pointer" asChild>
