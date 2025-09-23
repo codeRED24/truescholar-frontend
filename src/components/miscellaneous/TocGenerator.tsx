@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { useIsMobile } from "@/components/utils/useMobile";
 import { memo, useState, useEffect } from "react";
+import { load } from "cheerio";
 
 interface TOCItem {
   id: string;
@@ -26,12 +27,11 @@ interface TOCGeneratorProps {
   content: string;
 }
 
-const extractHeadings = async (content: string): Promise<TOCItem[]> => {
-  const cheerio = await import("cheerio");
-  const $ = cheerio.load(content);
+const extractHeadings = (content: string): TOCItem[] => {
+  const $ = load(content);
   return $("h2[id^='toc-'], h3[id^='toc-']")
     .slice(0, 20)
-    .map((_, heading: any) => ({
+    .map((_, heading) => ({
       id: $(heading).attr("id") || "",
       text: $(heading).text().trim(),
       level: heading.tagName.toLowerCase(),
@@ -46,14 +46,9 @@ const TOCGenerator: React.FC<TOCGeneratorProps> = ({ content }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    const loadTOC = async () => {
-      const items = await extractHeadings(content);
-      setTocItems(items);
-      setLoading(false);
-    };
-
     setTimeout(() => {
-      loadTOC();
+      setTocItems(extractHeadings(content));
+      setLoading(false);
     }, 500);
   }, [content]);
 

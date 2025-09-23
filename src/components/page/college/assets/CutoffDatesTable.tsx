@@ -1,9 +1,13 @@
 import { CollegeDateDTO } from "@/api/@types/college-info";
-import UpdateModal from "@/components/modals/UpdateModal";
 import { formatDate } from "@/components/utils/formatDate";
 import { formatDateYearMonth } from "@/components/utils/utils";
 import { BellRing } from "lucide-react";
+import dynamic from "next/dynamic";
 import React, { memo, useMemo } from "react";
+const UpdateModal = dynamic(
+  () => import("@/components/modals/UpdateModal"),
+  {}
+);
 
 const getDateString = (date: string) => new Date(date).toDateString();
 const getMonthYear = (date: string) => {

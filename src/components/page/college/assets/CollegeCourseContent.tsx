@@ -1,7 +1,11 @@
 import { InfoSection } from "@/api/@types/college-info";
-import TocGenerator from "@/components/miscellaneous/TocGenerator";
 import { sanitizeHtml } from "@/components/utils/sanitizeHtml";
+import dynamic from "next/dynamic";
 import React from "react";
+
+const TocGenerator = dynamic(
+  () => import("@/components/miscellaneous/TocGenerator")
+);
 
 interface CollegeCourseContentProps {
   news: InfoSection[];

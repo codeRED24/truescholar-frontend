@@ -1,11 +1,14 @@
 "use client";
 import React, { useState, useEffect, useCallback, memo } from "react";
 import { MessageSquareOff, ShieldCheck } from "lucide-react";
-import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { Button } from "@/components/ui/button";
 import { getCurrentLocation, getCurrentUrl } from "../utils/utils";
 import { toast } from "sonner";
+import dynamic from "next/dynamic";
+const PhoneInput = dynamic(() => import("react-phone-input-2"), {
+  ssr: false,
+});
 
 const UpdateForm: React.FC = memo(() => {
   const [formData, setFormData] = useState({

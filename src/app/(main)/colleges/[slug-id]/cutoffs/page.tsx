@@ -9,12 +9,22 @@ import CollegeHead from "@/components/page/college/assets/CollegeHead";
 import CollegeNav from "@/components/page/college/assets/CollegeNav";
 import CollegeCourseContent from "@/components/page/college/assets/CollegeCourseContent";
 import { CollegeDateDTO } from "@/api/@types/college-info";
-import CutoffDatesTable from "@/components/page/college/assets/CutoffDatesTable";
 import Image from "next/image";
-import CollegeNews from "@/components/page/college/assets/CollegeNews";
 import RatingComponent from "@/components/miscellaneous/RatingComponent";
-import CutoffTable from "@/components/page/college/assets/CutoffTable";
 import dayjs from "dayjs";
+import dynamic from "next/dynamic";
+
+const CollegeNews = dynamic(
+  () => import("@/components/page/college/assets/CollegeNews")
+);
+
+const CutoffTable = dynamic(
+  () => import("@/components/page/college/assets/CutoffTable")
+);
+
+const CutoffDatesTable = dynamic(
+  () => import("@/components/page/college/assets/CutoffDatesTable")
+);
 
 const BASE_URL = "https://www.truescholar.in";
 
