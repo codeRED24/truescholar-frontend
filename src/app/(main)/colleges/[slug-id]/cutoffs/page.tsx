@@ -5,8 +5,6 @@ import {
 import { notFound, redirect } from "next/navigation";
 import Script from "next/script";
 import "@/app/styles/tables.css";
-import CollegeHead from "@/components/page/college/assets/CollegeHead";
-import CollegeNav from "@/components/page/college/assets/CollegeNav";
 import CollegeCourseContent from "@/components/page/college/assets/CollegeCourseContent";
 import { CollegeDateDTO } from "@/api/@types/college-info";
 import Image from "next/image";
@@ -24,6 +22,14 @@ const CutoffTable = dynamic(
 
 const CutoffDatesTable = dynamic(
   () => import("@/components/page/college/assets/CutoffDatesTable")
+);
+
+const CollegeNav = dynamic(
+  () => import("@/components/page/college/assets/CollegeNav")
+);
+
+const CollegeHead = dynamic(
+  () => import("@/components/page/college/assets/CollegeHead")
 );
 
 const BASE_URL = "https://www.truescholar.in";
