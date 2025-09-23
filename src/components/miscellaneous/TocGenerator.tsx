@@ -1,6 +1,5 @@
 "use client";
 
-import * as cheerio from "cheerio";
 import {
   Accordion,
   AccordionContent,
@@ -27,11 +26,12 @@ interface TOCGeneratorProps {
   content: string;
 }
 
-const extractHeadings = (content: string): TOCItem[] => {
+const extractHeadings = async (content: string): Promise<TOCItem[]> => {
+  const cheerio = await import("cheerio");
   const $ = cheerio.load(content);
   return $("h2[id^='toc-'], h3[id^='toc-']")
     .slice(0, 20)
-    .map((_, heading) => ({
+    .map((_, heading: any) => ({
       id: $(heading).attr("id") || "",
       text: $(heading).text().trim(),
       level: heading.tagName.toLowerCase(),
@@ -46,9 +46,14 @@ const TOCGenerator: React.FC<TOCGeneratorProps> = ({ content }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    setTimeout(() => {
-      setTocItems(extractHeadings(content));
+    const loadTOC = async () => {
+      const items = await extractHeadings(content);
+      setTocItems(items);
       setLoading(false);
+    };
+
+    setTimeout(() => {
+      loadTOC();
     }, 500);
   }, [content]);
 

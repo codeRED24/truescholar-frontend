@@ -1,9 +1,24 @@
 import { InfoSection } from "@/api/@types/college-info";
 import { sanitizeHtml } from "@/components/utils/sanitizeHtml";
 import React from "react";
-import PlacementSummary from "./PlacementSummary";
-import PlacementBarGraph from "./PlacementBarGraph";
-import TocGenerator from "@/components/miscellaneous/TocGenerator";
+import dynamic from "next/dynamic";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Dynamic imports for better performance
+const PlacementSummary = dynamic(() => import("./PlacementSummary"), {
+  loading: () => <Skeleton className="h-32 bg-gray-200 rounded mb-4" />,
+});
+
+const PlacementBarGraphWrapper = dynamic(
+  () => import("./PlacementBarGraphWrapper"),
+  {
+    loading: () => <Skeleton className="h-80 bg-gray-200 rounded" />,
+  }
+);
+
+const TocGenerator = dynamic(
+  () => import("@/components/miscellaneous/TocGenerator")
+);
 
 interface CollegePlacementDataProps {
   clg: string;
@@ -25,10 +40,14 @@ const CollegePlacementData: React.FC<CollegePlacementDataProps> = ({
         <div className="article-content-body">
           <h2 className="line-clamp-1">
             {clg}
-            <span className="text-primary-main"> Placemnet</span>
+            <span className="text-primary-main"> Placement</span>
           </h2>
           <PlacementSummary data={summaryData} />
-          <PlacementBarGraph data={summaryData} />
+          <PlacementBarGraphWrapper
+            data={summaryData}
+            title={`${clg} Placement Statistics`}
+            showTitle={false}
+          />
         </div>
       )}
       {sanitizedHtml && (
