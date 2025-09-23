@@ -9,12 +9,21 @@ import CollegeNav from "@/components/page/college/assets/CollegeNav";
 import { formatFeeRange } from "@/components/utils/utils";
 import "@/app/styles/tables.css";
 import RatingComponent from "@/components/miscellaneous/RatingComponent";
+import dayjs from "dayjs";
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ "slug-id": string; "silos-slug-id": string }>;
-}): Promise<{ title: string; description?: string }> {
+}): Promise<{
+  title: string;
+  description?: string;
+  keywords?: string;
+  robots?: { index: boolean; follow: boolean };
+  alternates?: object;
+  openGraph?: object;
+  twitter?: object;
+}> {
   const resolvedParams = await params;
   let { "silos-slug-id": courseSlugCourseId } = resolvedParams;
 
@@ -22,27 +31,93 @@ export async function generateMetadata({
   courseSlugCourseId = dynamicParam.join("-");
 
   const courseMatch = courseSlugCourseId.match(/(.+)-(\d+)$/);
-  if (!courseMatch) return { title: "Page Not Found" };
+  if (!courseMatch)
+    return {
+      title: "Course Not Found | TrueScholar",
+      description:
+        "The requested course page could not be found. Browse our comprehensive database of courses and colleges in India.",
+      robots: { index: false, follow: true },
+    };
 
   const courseId = Number(courseMatch[2]);
-  if (isNaN(courseId)) return { title: "Invalid Course ID" };
+  if (isNaN(courseId))
+    return {
+      title: "Invalid Course ID | TrueScholar",
+      description:
+        "The course ID provided is invalid. Please check the URL and try again.",
+      robots: { index: false, follow: true },
+    };
 
   const courseDetails = await getCourseByCollegeId(courseId);
 
-  if (!courseDetails || !courseDetails.college_information) {
-    return { title: "Course Not Found" };
-  }
+  if (!courseDetails || !courseDetails.college_information)
+    return {
+      title: "Course Not Found | TrueScholar",
+      description:
+        "The requested course information is not available. Explore other courses and colleges on TrueScholar.",
+      robots: { index: false, follow: true },
+    };
 
   const collegeName =
     courseDetails.college_information?.college_name || "Unknown College";
   const courseName =
     courseDetails.college_wise_course?.name || "Unknown Course";
 
+  const location = courseDetails.college_information?.city
+    ? `${courseDetails.college_information.city},`
+    : courseDetails.college_information?.state ||
+      courseDetails.college_information?.location ||
+      "";
+
+  // Create SEO-optimized title with location and keywords
+  const defaultTitle = location
+    ? `${courseName} at ${collegeName} ${dayjs().year()} - ${location} | TrueScholar`
+    : `${courseName} at ${collegeName} ${dayjs().year()} | TrueScholar`;
+
+  const metaDesc =
+    courseDetails.college_wise_course?.description ||
+    `Get details about ${courseName} course at ${collegeName} including fees structure, eligibility criteria, admission process, placements, and career prospects${
+      location ? ` in ${location}` : ""
+    }. `;
+
+  const ogImage =
+    courseDetails.college_information?.logo_img ||
+    "https://www.truescholar.in/og-image.png";
+
   return {
-    title: `${courseName} - ${collegeName} Details` || "College Courses",
-    description:
-      courseDetails.college_information?.meta_desc ||
-      `Explore details about ${collegeName} and its courses.`,
+    title: defaultTitle,
+    description: metaDesc,
+    keywords: `${courseName} ${collegeName}, ${courseName} fees, ${courseName} eligibility, ${courseName} placements, ${collegeName} ${courseName} course, course details India${
+      location ? `, ${location} ${courseName}` : ""
+    }`,
+    robots: {
+      index: true,
+      follow: true,
+    },
+    alternates: {
+      canonical: `https://www.truescholar.in/colleges/${resolvedParams["slug-id"]}/${resolvedParams["silos-slug-id"]}`,
+    },
+    openGraph: {
+      title: defaultTitle,
+      description: metaDesc,
+      url: `https://www.truescholar.in/colleges/${resolvedParams["slug-id"]}/${resolvedParams["silos-slug-id"]}`,
+      type: "website",
+      siteName: "TrueScholar",
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: `${courseName} at ${collegeName}`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: defaultTitle,
+      description: metaDesc,
+      images: [ogImage],
+    },
   };
 }
 

@@ -11,6 +11,7 @@ import CollegeCourseList from "@/components/page/college/assets/CollegeCourseLis
 import Image from "next/image";
 import CollegeNews from "@/components/page/college/assets/CollegeNews";
 import RatingComponent from "@/components/miscellaneous/RatingComponent";
+import dayjs from "dayjs";
 
 const BASE_URL = "https://www.truescholar.in";
 
@@ -45,35 +46,94 @@ export async function generateMetadata({
   params,
 }: {
   params: Promise<{ "slug-id": string }>;
-}) {
+}): Promise<{
+  title: string;
+  description?: string;
+  keywords?: string;
+  robots?: { index: boolean; follow: boolean };
+  alternates?: object;
+  openGraph?: object;
+  twitter?: object;
+}> {
   const { "slug-id": slugId } = await params;
   const parsed = parseSlugId(slugId);
-  if (!parsed) return { title: "College Not Found" };
+  if (!parsed)
+    return {
+      title: "College Not Found | TrueScholar",
+      description:
+        "The requested college page could not be found. Browse our comprehensive database of colleges in India to find the right institution for your education.",
+      robots: { index: false, follow: true },
+    };
 
   const { collegeId } = parsed;
   const college = await getCollegeData(collegeId);
-  if (!college) return { title: "College Not Found" };
+  if (!college)
+    return {
+      title: "College Courses Information Not Available | TrueScholar",
+      description:
+        "Course information for this college is currently not available. Explore other colleges and their academic programs on TrueScholar.",
+      robots: { index: false, follow: true },
+    };
 
   const { college_information: collegeInfo, courses_section } = college;
   const courseSection = courses_section.content_section[0] || {};
   const collegeName = collegeInfo.college_name || "College Courses";
 
+  const location =
+    collegeInfo.city && collegeInfo.state
+      ? `${collegeInfo.city}, ${collegeInfo.state}`
+      : collegeInfo.city || collegeInfo.state || "";
+
   const baseSlug = collegeInfo.slug?.replace(/(?:-\d+)+$/, "") || "";
   const correctSlugId = `${baseSlug}-${collegeId}`;
-
   const canonicalUrl = `${BASE_URL}/colleges/${correctSlugId}/courses`;
 
+  // Create SEO-optimized title with location and keywords
+  const defaultTitle = location
+    ? `${collegeName} Courses ${dayjs().year()} - ${location} | TrueScholar`
+    : `${collegeName} Courses ${dayjs().year()} | TrueScholar`;
+
+  const metaDesc =
+    courseSection.meta_desc ||
+    `Explore comprehensive ${collegeName} courses and other undergraduate & postgraduate programs. Get detailed course curriculum, eligibility criteria, duration, and career prospects for ${collegeName}${
+      location ? ` in ${location}` : ""
+    }.`;
+
+  const ogImage = collegeInfo.logo_img || `${BASE_URL}/og-image.png`;
+
   return {
-    title: courseSection.title || collegeName,
-    description:
-      courseSection.meta_desc || "Find details about courses in this college.",
+    title: courseSection.title || defaultTitle,
+    description: metaDesc,
+    keywords:
+      courseSection.seo_param ||
+      `${collegeName} courses, ${collegeName} B.Tech, ${collegeName} M.Tech, ${collegeName} MBA, ${collegeName} MCA, college courses India${
+        location ? `, ${location} college courses` : ""
+      }`,
+    robots: {
+      index: true,
+      follow: true,
+    },
     alternates: { canonical: canonicalUrl },
     openGraph: {
-      title: courseSection.title || collegeName,
-      description:
-        courseSection.meta_desc ||
-        "Find details about courses in this college.",
+      title: courseSection.title || defaultTitle,
+      description: metaDesc,
       url: canonicalUrl,
+      type: "website",
+      siteName: "TrueScholar",
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: `${collegeName} Courses`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: courseSection.title || defaultTitle,
+      description: metaDesc,
+      images: [ogImage],
     },
   };
 }

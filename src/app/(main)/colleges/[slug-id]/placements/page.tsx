@@ -8,6 +8,7 @@ import CollegePlacementData from "@/components/page/college/assets/CollegePlacem
 import Image from "next/image";
 import CollegeNews from "@/components/page/college/assets/CollegeNews";
 import RatingComponent from "@/components/miscellaneous/RatingComponent";
+import dayjs from "dayjs";
 
 const BASE_URL = "https://www.truescholar.in";
 
@@ -36,40 +37,101 @@ export async function generateMetadata(props: {
   title: string;
   description?: string;
   keywords?: string;
+  robots?: { index: boolean; follow: boolean };
   alternates?: object;
   openGraph?: object;
+  twitter?: object;
 }> {
   try {
     const params = await props.params;
     const slugId = params["slug-id"];
     const parsed = parseSlugId(slugId);
-    if (!parsed) return { title: "College Not Found" };
+    if (!parsed)
+      return {
+        title: "College Not Found | TrueScholar",
+        description:
+          "The requested college page could not be found. Browse our comprehensive database of colleges in India to find the right institution for your education.",
+        robots: { index: false, follow: true },
+      };
 
     const { collegeId } = parsed;
     const college = await getCollegeData(collegeId);
-    if (!college) return { title: "College Not Found" };
+    if (!college)
+      return {
+        title: "College Placement Information Not Available | TrueScholar",
+        description:
+          "Placement information for this college is currently not available. Explore other colleges and their placement records on TrueScholar.",
+        robots: { index: false, follow: true },
+      };
 
     const { college_information, placement_process } = college;
-    const collegeName = college_information?.college_name;
+
+    const collegeName =
+      college_information?.college_name || "College Placements";
+
+    const location =
+      college_information.city && college_information.state
+        ? `${college_information.city}, ${college_information.state}`
+        : college_information.city || college_information.state || "";
+
     const baseSlug = college_information.slug?.replace(/(?:-\d+)+$/, "") || "";
     const canonicalUrl = `${BASE_URL}/colleges/${baseSlug}-${collegeId}/placements`;
+
+    // Create SEO-optimized title with location and keywords
+    const defaultTitle = location
+      ? `${collegeName} Placements ${dayjs().year()} - ${location} | Salary, Companies | TrueScholar`
+      : `${collegeName} Placements ${dayjs().year()} | Salary, Companies, Records | TrueScholar`;
+
     const metaDesc =
       placement_process.content[0]?.meta_desc ||
-      "Explore placement records and opportunities at this college.";
+      `Check ${collegeName} placement records ${dayjs().year()} including highest salary, average salary, top recruiting companies, and placement statistics. Get detailed placement reports, company visits, and career opportunities for ${collegeName}${
+        location ? ` in ${location}` : ""
+      }`;
+
+    const ogImage = college_information.logo_img || `${BASE_URL}/og-image.png`;
 
     return {
-      title: placement_process.content[0]?.title || `${collegeName} Placements`,
+      title: placement_process.content[0]?.title || defaultTitle,
       description: metaDesc,
+      keywords:
+        placement_process.content[0]?.seo_param ||
+        `${collegeName} placements, ${collegeName} placement records, ${collegeName} salary, ${collegeName} companies, college placements India, placement statistics${
+          location ? `, ${location} placements` : ""
+        }`,
+      robots: {
+        index: true,
+        follow: true,
+      },
       alternates: { canonical: canonicalUrl },
       openGraph: {
-        title:
-          placement_process.content[0]?.title || `${collegeName} Placements`,
+        title: placement_process.content[0]?.title || defaultTitle,
         description: metaDesc,
         url: canonicalUrl,
+        type: "website",
+        siteName: "TrueScholar",
+        images: [
+          {
+            url: ogImage,
+            width: 1200,
+            height: 630,
+            alt: `${collegeName} Placements`,
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: placement_process.content[0]?.title || defaultTitle,
+        description: metaDesc,
+        images: [ogImage],
       },
     };
   } catch (error) {
-    return { title: "Error Loading College Data" };
+    return {
+      title: "Error Loading College Placements | TrueScholar",
+      description:
+        "We encountered an error while loading placement information. Please try again later or browse other college pages on TrueScholar.",
+      robots: { index: false, follow: true },
+    };
   }
 }
 
@@ -79,11 +141,17 @@ const CollegePlacement = async (props: {
   const params = await props.params;
   const { "slug-id": slugId } = params;
   const parsed = parseSlugId(slugId);
-  if (!parsed) return notFound();
+  if (!parsed) {
+    return notFound();
+  }
 
   const { collegeId } = parsed;
+
   const placementData = await getCollegeData(collegeId);
-  if (!placementData) return notFound();
+
+  if (!placementData) {
+    return notFound();
+  }
 
   const { college_information, placement_process, news_section } =
     placementData;

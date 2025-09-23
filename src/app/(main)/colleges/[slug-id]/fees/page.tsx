@@ -10,6 +10,7 @@ import CollegeFeesData from "@/components/page/college/assets/CollegeFeesData";
 import Image from "next/image";
 import CollegeNews from "@/components/page/college/assets/CollegeNews";
 import RatingComponent from "@/components/miscellaneous/RatingComponent";
+import dayjs from "dayjs";
 
 export async function generateMetadata(props: {
   params: Promise<{ "slug-id": string }>;
@@ -17,46 +18,112 @@ export async function generateMetadata(props: {
   title: string;
   description?: string;
   keywords?: string;
+  robots?: { index: boolean; follow: boolean };
   alternates?: object;
   openGraph?: object;
+  twitter?: object;
 }> {
   const params = await props.params;
   const slugId = params["slug-id"];
   const match = slugId.match(/(.+)-(\d+)$/);
-  if (!match) return notFound();
+  if (!match)
+    return {
+      title: "College Not Found | TrueScholar",
+      description:
+        "The requested college page could not be found. Browse our comprehensive database of colleges in India to find the right institution for your education.",
+      robots: { index: false, follow: true },
+    };
 
   const collegeId = Number(match[2]);
-  if (isNaN(collegeId)) return { title: "Invalid College" };
+  if (isNaN(collegeId))
+    return {
+      title: "Invalid College ID | TrueScholar",
+      description:
+        "The college ID provided is invalid. Please check the URL and try again.",
+      robots: { index: false, follow: true },
+    };
 
   try {
     const college = await getCollegeFees(collegeId);
-    if (!college) return { title: "College Not Found" };
+    if (!college)
+      return {
+        title: "College Fees Information Not Available | TrueScholar",
+        description:
+          "Fees information for this college is currently not available. Explore other colleges and their fee structures on TrueScholar.",
+        robots: { index: false, follow: true },
+      };
 
     const { college_information, fees_section } = college;
+    const collegeName = college_information?.college_name || "College Fees";
+
+    const location =
+      college_information.city ||
+      college_information.state ||
+      college_information.location ||
+      "";
+
     const collegeSlug = college_information?.slug.replace(/(?:-\d+)+$/, "");
+    const canonicalUrl = `https://www.truescholar.in/colleges/${collegeSlug}-${collegeId}/fees`;
     const content = fees_section?.content?.[0] || {};
 
+    // Create SEO-optimized title with location and keywords
+    const defaultTitle = location
+      ? `${collegeName} Fees ${dayjs().year()} - ${location} | Tuition, Hostel, Admission | TrueScholar`
+      : `${collegeName} Fees ${dayjs().year()} | Tuition, Hostel, Admission Fees | TrueScholar`;
+
+    const metaDesc =
+      content.meta_desc ||
+      `Check ${collegeName} fee structure ${dayjs().year()} including tuition fees, hostel fees, admission fees, and other charges. Get detailed breakdown of course-wise fees, payment options, and financial assistance for ${collegeName}${
+        location ? ` in ${location}` : ""
+      }.`;
+
+    const ogImage =
+      college_information.logo_img || "https://www.truescholar.in/og-image.png";
+
     return {
-      title:
-        content.title ||
-        college_information?.college_name ||
-        "College Fees Details",
-      description: content.meta_desc || "Find fees details about this college.",
+      title: content.title || defaultTitle,
+      description: metaDesc,
       keywords:
         content.seo_param ||
-        `${college_information?.college_name}, college fees, tuition fees, education`,
+        `${collegeName} fees, ${collegeName} tuition fees, ${collegeName} hostel fees, ${collegeName} admission fees, college fee structure India${
+          location ? `, ${location} college fees` : ""
+        }`,
+      robots: {
+        index: true,
+        follow: true,
+      },
       alternates: {
-        canonical: `https://www.truescholar.in/colleges/${collegeSlug}-${collegeId}/fees`,
+        canonical: canonicalUrl,
       },
       openGraph: {
-        title: content.title || "College Fees Details",
-        description:
-          content.meta_desc || "Find fees details about this college.",
-        url: `https://www.truescholar.in/colleges/${collegeSlug}-${collegeId}/fees`,
+        title: content.title || defaultTitle,
+        description: metaDesc,
+        url: canonicalUrl,
+        type: "website",
+        siteName: "TrueScholar",
+        images: [
+          {
+            url: ogImage,
+            width: 1200,
+            height: 630,
+            alt: `${collegeName} Fees`,
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: content.title || defaultTitle,
+        description: metaDesc,
+        images: [ogImage],
       },
     };
   } catch (error) {
-    return { title: "Error Fetching College Data" };
+    return {
+      title: "Error Loading College Fees | TrueScholar",
+      description:
+        "We encountered an error while loading fee information. Please try again later or browse other college pages on TrueScholar.",
+      robots: { index: false, follow: true },
+    };
   }
 }
 

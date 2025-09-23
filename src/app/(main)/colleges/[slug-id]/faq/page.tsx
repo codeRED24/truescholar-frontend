@@ -8,6 +8,7 @@ import CollegeCourseContent from "@/components/page/college/assets/CollegeCourse
 import Image from "next/image";
 import CollegeNews from "@/components/page/college/assets/CollegeNews";
 import { parseFAQFromHTML } from "@/components/utils/parsefaqschema";
+import dayjs from "dayjs";
 
 const BASE_URL = "https://www.truescholar.in";
 
@@ -36,42 +37,102 @@ export async function generateMetadata(props: {
   title: string;
   description?: string;
   keywords?: string;
+  robots?: { index: boolean; follow: boolean };
   alternates?: object;
   openGraph?: object;
+  twitter?: object;
 }> {
   try {
     const params = await props.params;
     const slugId = params["slug-id"];
     const parsed = parseSlugId(slugId);
-    if (!parsed) return { title: "College Not Found" };
+    if (!parsed)
+      return {
+        title: "College Not Found | TrueScholar",
+        description:
+          "The requested college page could not be found. Browse our comprehensive database of colleges in India to find the right institution for your education.",
+        robots: { index: false, follow: true },
+      };
 
     const { collegeId } = parsed;
     const college = await getCollegeData(collegeId);
-    if (!college) return { title: "FAQs Not Available" };
+    if (!college)
+      return {
+        title: "College FAQ Not Available | TrueScholar",
+        description:
+          "FAQ information for this college is currently not available. Explore other colleges and their frequently asked questions on TrueScholar.",
+        robots: { index: false, follow: true },
+      };
 
     const { college_information, faqData } = college;
+
     const collegeName = college_information.college_name || "College FAQs";
+
+    const location =
+      college_information.city && college_information.state
+        ? `${college_information.city}, ${college_information.state}`
+        : college_information.city || college_information.state || "";
 
     const baseSlug = college_information.slug?.replace(/(?:-\d+)+$/, "") || "";
     const correctSlugId = `${baseSlug}-${collegeId}`;
 
     const canonicalUrl = `${BASE_URL}/colleges/${correctSlugId}/faq`;
+
+    // Create SEO-optimized title with location and keywords
+    const defaultTitle = location
+      ? `${collegeName} FAQ ${dayjs().year()} - ${location} | Admission, Courses, Fees | TrueScholar`
+      : `${collegeName} FAQ ${dayjs().year()} | Admission, Courses, Fees, Placements | TrueScholar`;
+
     const metaDesc =
       faqData[0]?.meta_desc ||
-      "Find answers to frequently asked questions about this college.";
+      `Get answers to frequently asked questions about ${collegeName} including admission process, courses offered, fee structure, placements, facilities, and campus life. Find comprehensive FAQ guide for ${collegeName}${
+        location ? ` in ${location}` : ""
+      }.`;
+
+    const ogImage = college_information.logo_img || `${BASE_URL}/og-image.png`;
 
     return {
-      title: faqData[0]?.title || `${collegeName} FAQs`,
+      title: faqData[0]?.title || defaultTitle,
       description: metaDesc,
+      keywords:
+        faqData[0]?.seo_param ||
+        `${collegeName} FAQ, ${collegeName} admission FAQ, ${collegeName} courses FAQ, ${collegeName} fees FAQ, college FAQ India${
+          location ? `, ${location} college FAQ` : ""
+        }`,
+      robots: {
+        index: true,
+        follow: true,
+      },
       alternates: { canonical: canonicalUrl },
       openGraph: {
-        title: faqData[0]?.title || `${collegeName} FAQs`,
+        title: faqData[0]?.title || defaultTitle,
         description: metaDesc,
         url: canonicalUrl,
+        type: "website",
+        siteName: "TrueScholar",
+        images: [
+          {
+            url: ogImage,
+            width: 1200,
+            height: 630,
+            alt: `${collegeName} FAQ`,
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: faqData[0]?.title || defaultTitle,
+        description: metaDesc,
+        images: [ogImage],
       },
     };
   } catch (error) {
-    return { title: "Error Loading College Data" };
+    return {
+      title: "Error Loading College FAQ | TrueScholar",
+      description:
+        "We encountered an error while loading FAQ information. Please try again later or browse other college pages on TrueScholar.",
+      robots: { index: false, follow: true },
+    };
   }
 }
 

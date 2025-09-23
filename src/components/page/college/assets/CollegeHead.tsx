@@ -145,9 +145,12 @@ const CollegeHead = ({
 
   return (
     <div className="relative bg-college-head text-white pt-16 md:pt-24 pb-6 container-body min-h-60">
-      <h2 className="absolute inset-x-0 top-1/4 flex items-center justify-center text-center text-5xl md:text-8xl leading-10 md:leading-ultraWide font-public font-bold text-[#FFFFFF] opacity-20">
+      <span
+        aria-hidden="true"
+        className="absolute inset-x-0 top-1/4 flex items-center justify-center text-center text-5xl md:text-8xl leading-10 md:leading-ultraWide font-public font-bold text-[#FFFFFF] opacity-20"
+      >
         {trimText(data.college_name, 58)}
-      </h2>
+      </span>
       <div className="relative z-10 flex items-center flex-col md:flex-row gap-6">
         {/* <Image
           src={

@@ -8,6 +8,7 @@ import CollegeCourseContent from "@/components/page/college/assets/CollegeCourse
 import Image from "next/image";
 import CollegeNews from "@/components/page/college/assets/CollegeNews";
 import RatingComponent from "@/components/miscellaneous/RatingComponent";
+import dayjs from "dayjs";
 
 const BASE_URL = "https://www.truescholar.in";
 
@@ -38,45 +39,102 @@ export async function generateMetadata(props: {
   title: string;
   description?: string;
   keywords?: string;
+  robots?: { index: boolean; follow: boolean };
   alternates?: object;
   openGraph?: object;
+  twitter?: object;
 }> {
   try {
     const params = await props.params;
     const slugId = params["slug-id"];
 
     const parsed = parseSlugId(slugId);
-    if (!parsed) return { title: "College Not Found" };
+    if (!parsed)
+      return {
+        title: "College Not Found | TrueScholar",
+        description:
+          "The requested college page could not be found. Browse our comprehensive database of colleges in India to find the right institution for your education.",
+        robots: { index: false, follow: true },
+      };
 
     const { collegeId } = parsed;
     const college = await getCollegeData(collegeId);
-    if (!college) return { title: "College Not Found" };
+    if (!college)
+      return {
+        title: "College Admission Process Not Available | TrueScholar",
+        description:
+          "Admission process information for this college is currently not available. Explore other colleges and their admission procedures on TrueScholar.",
+        robots: { index: false, follow: true },
+      };
 
     const { college_information, admission_process } = college;
     const collegeName =
       college_information.college_name || "College Admission Process";
 
+    const location =
+      college_information.city && college_information.state
+        ? `${college_information.city}, ${college_information.state}`
+        : college_information.city || college_information.state || "";
+
     const baseSlug = college_information.slug?.replace(/(?:-\d+)+$/, "") || "";
     const correctSlugId = `${baseSlug}-${collegeId}`;
-
     const canonicalUrl = `${BASE_URL}/colleges/${correctSlugId}/admission-process`;
+
+    // Create SEO-optimized title with location and keywords
+    const defaultTitle = location
+      ? `${collegeName} Admission Process ${dayjs().year()} - ${location} | Eligibility, Documents | TrueScholar`
+      : `${collegeName} Admission Process ${dayjs().year()} | Eligibility, Documents, Dates | TrueScholar`;
 
     const metaDesc =
       admission_process?.content?.[0]?.meta_desc ||
-      "Find details of admission process of this college.";
+      `Learn about ${collegeName} admission process ${dayjs().year()} including eligibility criteria, required documents, important dates, entrance exams, and application procedures. Get step-by-step guide for admission to ${collegeName}${
+        location ? ` in ${location}` : ""
+      }`;
+
+    const ogImage = college_information.logo_img || `${BASE_URL}/og-image.png`;
 
     return {
-      title: admission_process?.content?.[0]?.title || collegeName,
+      title: admission_process?.content?.[0]?.title || defaultTitle,
       description: metaDesc,
+      keywords:
+        admission_process?.content?.[0]?.seo_param ||
+        `${collegeName} admission process, ${collegeName} admission eligibility, ${collegeName} admission dates, ${collegeName} admission documents, college admission India${
+          location ? `, ${location} college admission` : ""
+        }`,
+      robots: {
+        index: true,
+        follow: true,
+      },
       alternates: { canonical: canonicalUrl },
       openGraph: {
-        title: admission_process?.content?.[0]?.title || collegeName,
+        title: admission_process?.content?.[0]?.title || defaultTitle,
         description: metaDesc,
         url: canonicalUrl,
+        type: "website",
+        siteName: "TrueScholar",
+        images: [
+          {
+            url: ogImage,
+            width: 1200,
+            height: 630,
+            alt: `${collegeName} Admission Process`,
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: admission_process?.content?.[0]?.title || defaultTitle,
+        description: metaDesc,
+        images: [ogImage],
       },
     };
   } catch (error) {
-    return { title: "Error Loading College Data" };
+    return {
+      title: "Error Loading College Admission Process | TrueScholar",
+      description:
+        "We encountered an error while loading admission process information. Please try again later or browse other college pages on TrueScholar.",
+      robots: { index: false, follow: true },
+    };
   }
 }
 

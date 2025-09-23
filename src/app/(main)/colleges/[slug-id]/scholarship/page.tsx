@@ -8,6 +8,7 @@ import CollegeCourseContent from "@/components/page/college/assets/CollegeCourse
 import CollegeNews from "@/components/page/college/assets/CollegeNews";
 import Image from "next/image";
 import RatingComponent from "@/components/miscellaneous/RatingComponent";
+import dayjs from "dayjs";
 
 const BASE_URL = "https://www.truescholar.in";
 
@@ -36,22 +37,43 @@ export async function generateMetadata(props: {
   title: string;
   description?: string;
   keywords?: string;
+  robots?: { index: boolean; follow: boolean };
   alternates?: object;
   openGraph?: object;
+  twitter?: object;
 }> {
   try {
     const params = await props.params;
     const slugId = params["slug-id"];
     const parsed = parseSlugId(slugId);
-    if (!parsed) return { title: "College Not Found" };
+    if (!parsed)
+      return {
+        title: "College Not Found | TrueScholar",
+        description:
+          "The requested college page could not be found. Browse our comprehensive database of colleges in India to find the right institution for your education.",
+        robots: { index: false, follow: true },
+      };
 
     const { collegeId } = parsed;
     const college = await getCollegeData(collegeId);
-    if (!college) return { title: "College Not Found" };
+    if (!college)
+      return {
+        title: "College Scholarships Not Available | TrueScholar",
+        description:
+          "Scholarship information for this college is currently not available. Explore other colleges and their scholarship opportunities on TrueScholar.",
+        robots: { index: false, follow: true },
+      };
 
     const { college_information, scholarship_section } = college;
+
     const collegeName =
       college_information.college_name || "College Scholarships";
+
+    const location =
+      college_information.city ||
+      college_information.state ||
+      college_information.location ||
+      "";
 
     const baseSlug = college_information.slug?.replace(/(?:-\d+)+$/, "") || "";
     const correctSlugId = `${baseSlug}-${collegeId}`;
@@ -59,20 +81,59 @@ export async function generateMetadata(props: {
     const canonicalUrl = `${BASE_URL}/colleges/${correctSlugId}/scholarship`;
     const metaDesc =
       scholarship_section?.[0]?.meta_desc ||
-      "Explore scholarship opportunities at this college.";
+      `Apply for ${collegeName} scholarships ${dayjs().year()}. Check eligibility criteria, application process, and deadlines for financial aid programs. Get complete scholarship details, amounts, and requirements for students at ${collegeName}${
+        location ? ` in ${location}` : ""
+      }.`;
+
+    const ogImage = college_information.logo_img || `${BASE_URL}/og-image.png`;
+
+    // Create SEO-optimized title with location and keywords
+    const defaultTitle = location
+      ? `${collegeName} Scholarships ${dayjs().year()} - ${location} | TrueScholar`
+      : `${collegeName} Scholarships ${dayjs().year()} | Eligibility & Application | TrueScholar`;
 
     return {
-      title: scholarship_section?.[0]?.title || `${collegeName} Scholarships`,
+      title: scholarship_section?.[0]?.title || defaultTitle,
       description: metaDesc,
+      keywords:
+        scholarship_section?.[0]?.seo_param ||
+        `${collegeName} scholarship, ${collegeName} financial aid, scholarship eligibility, college scholarships India${
+          location ? `, ${location} scholarships` : ""
+        }`,
+      robots: {
+        index: true,
+        follow: true,
+      },
       alternates: { canonical: canonicalUrl },
       openGraph: {
-        title: scholarship_section?.[0]?.title || `${collegeName} Scholarships`,
+        title: scholarship_section?.[0]?.title || defaultTitle,
         description: metaDesc,
         url: canonicalUrl,
+        type: "website",
+        siteName: "TrueScholar",
+        images: [
+          {
+            url: ogImage,
+            width: 1200,
+            height: 630,
+            alt: `${collegeName} Scholarships`,
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: scholarship_section?.[0]?.title || defaultTitle,
+        description: metaDesc,
+        images: [ogImage],
       },
     };
   } catch (error) {
-    return { title: "Error Loading College Data" };
+    return {
+      title: "Error Loading College Scholarships | TrueScholar",
+      description:
+        "We encountered an error while loading scholarship information. Please try again later or browse other college pages on TrueScholar.",
+      robots: { index: false, follow: true },
+    };
   }
 }
 

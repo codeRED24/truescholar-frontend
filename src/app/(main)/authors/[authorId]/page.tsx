@@ -15,6 +15,62 @@ async function getAuthor(authorId: string) {
   return res.json();
 }
 
+export async function generateMetadata(props: {
+  params: Promise<{ authorId: string }>;
+}): Promise<{
+  title: string;
+  description?: string;
+  alternates?: { canonical: string };
+  openGraph?: { title: string; description: string; url: string };
+}> {
+  const { authorId } = await props.params;
+
+  // Extract numeric id from a slug-id like "john-doe-123"
+  const id = (() => {
+    const match = String(authorId).match(/-(\d+)$/);
+    return match ? match[1] : String(authorId);
+  })();
+
+  const author = await getAuthor(id);
+
+  if (!author) {
+    return {
+      title: "Author Not Found",
+      description: "The requested author could not be found.",
+    };
+  }
+
+  // Build canonical slug for the author
+  const rawName = (
+    author?.view_name ||
+    author?.author_name ||
+    "author"
+  ).toString();
+  const canonicalSlug = `${rawName.trim().replace(/-\d+$/, "").toLowerCase()}-${
+    author.author_id
+  }`;
+
+  const canonicalUrl = `https://www.truescholar.in/authors/${canonicalSlug}`;
+  const title =
+    (author.view_name || author.author_name || "Author") +
+    " | TrueScholar - Explore Entrance Tests & Schedules";
+  const description =
+    author.about || `Read articles by ${title} on TrueScholar.`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+    },
+  };
+}
+
 export default async function AuthorsPage(props: {
   params: Promise<{ authorId: string }>;
 }) {
