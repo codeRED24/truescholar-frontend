@@ -28,6 +28,8 @@ import Link from "next/link";
 
 interface ChatbotWidgetProps {
   cardConfig: any;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 const dummyQuestions: Record<string, Record<string, string[]>> = {
@@ -121,8 +123,12 @@ const dummyQuestions: Record<string, Record<string, string[]>> = {
   },
 };
 
-export default function ChatbotWidget({ cardConfig }: ChatbotWidgetProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export default function ChatbotWidget({
+  cardConfig,
+  isOpen = false,
+  onClose,
+}: ChatbotWidgetProps) {
+  console.log("ChatbotWidget rendered with isOpen:", isOpen);
   const [view, setView] = useState<"questions" | "chat">("questions");
   const [activeTab, setActiveTab] = useState<string>("Colleges");
   const [activeSubTab, setActiveSubTab] = useState<string>("All");
@@ -284,7 +290,7 @@ export default function ChatbotWidget({ cardConfig }: ChatbotWidgetProps) {
       }
     }
     // Close widget after triggering modal
-    setTimeout(() => setIsOpen(false), 150);
+    setTimeout(() => onClose?.(), 150);
   };
 
   // Extract shared widget content
@@ -319,7 +325,7 @@ export default function ChatbotWidget({ cardConfig }: ChatbotWidgetProps) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setIsOpen(false)}
+            onClick={() => onClose?.()}
             className="h-8 w-8 rounded-full"
           >
             <X className="h-5 w-5 text-gray-500" />
@@ -575,39 +581,23 @@ export default function ChatbotWidget({ cardConfig }: ChatbotWidgetProps) {
 
   return (
     <>
-      {/* Chat Toggle Button */}
-      <Button
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-[119] h-12 w-12 rounded-full bg-primary-main p-0 shadow-lg hover:bg-primary-5"
-        aria-label="Toggle chatbot"
-      >
-        {!isOpen && (
-          <div className="">
-            <span className="pulse-ring"></span>
-
-            {/* Notification indicator */}
-            <span className="absolute -top-0 -right-0 h-3 w-3 rounded-full bg-red-500 border-2 border-white" />
-
-            <div className=" flex pb-1 gap-1 items-center justify-center h-6 w-6">
-              <div className="eye h-3 w-4 rounded-full bg-white"></div>
-              <div className="eye h-3 w-4 rounded-full bg-white"></div>
+      {/* Only render if isOpen is true */}
+      {isOpen && (
+        <>
+          {/* Chat Widget - Desktop */}
+          {!isSmallScreen && (
+            <div className="fixed bottom-4 right-4 z-[120] flex h-[calc(100vh-6rem)] w-[430px] max-w-[calc(100vw-1rem)] flex-col rounded-2xl border border-gray-200/80 bg-white/90 shadow-2xl backdrop-blur-xl sm:h-[40rem]">
+              {widgetContent}
             </div>
-          </div>
-        )}
-      </Button>
+          )}
 
-      {/* Chat Widget - Desktop */}
-      {isOpen && !isSmallScreen && (
-        <div className="fixed bottom-4 right-4 z-[120] flex h-[calc(100vh-6rem)] w-[430px] max-w-[calc(100vw-1rem)] flex-col rounded-2xl border border-gray-200/80 bg-white/90 shadow-2xl backdrop-blur-xl sm:h-[40rem]">
-          {widgetContent}
-        </div>
-      )}
-
-      {/* Chat Widget - Mobile Full Screen Dialog */}
-      {isOpen && isSmallScreen && (
-        <div className="fixed inset-0 z-[120] flex flex-col bg-white">
-          {widgetContent}
-        </div>
+          {/* Chat Widget - Mobile Full Screen Dialog */}
+          {isSmallScreen && (
+            <div className="fixed inset-0 z-[120] flex flex-col bg-white">
+              {widgetContent}
+            </div>
+          )}
+        </>
       )}
     </>
   );

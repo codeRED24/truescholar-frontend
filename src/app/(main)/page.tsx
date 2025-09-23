@@ -1,9 +1,9 @@
 import { getHomeData } from "@/api/list/getHomeData";
+import { Hero } from "@/components/page/home/Hero";
 import dynamic from "next/dynamic";
 
 const TopColleges = dynamic(() => import("@/components/page/home/TopColleges"));
 
-const Hero = dynamic(() => import("@/components/page/home/Hero"));
 const Cities = dynamic(() => import("@/components/page/home/Cities"));
 const News = dynamic(() => import("@/components/page/home/News"));
 // const TrendingCourse = dynamic(

@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import "../globals.css";
 import dynamic from "next/dynamic";
 import { Toaster } from "@/components/ui/sonner";
-import ChatbotWidget from "@/components/ChatbotWidget";
 import { cardConfig } from "@/lib/ai-questions";
 const Footer = dynamic(() => import("@/components/layout/footer/Footer"));
 const Header = dynamic(() => import("@/components/layout/header/Header"));
+const ChatbotWrapper = dynamic(() => import("@/components/ChatbotWrapper"));
 
 export const metadata: Metadata = {
   title: "TrueScholar | Find Your Perfect College & Scholarships in India",
@@ -54,11 +54,10 @@ export default function MainLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex flex-col">
       <Header />
-      <main className="flex-grow min-h-screen">{children}</main>
-      <ChatbotWidget cardConfig={cardConfig} />
-
+      <main className="">{children}</main>
+      <ChatbotWrapper cardConfig={cardConfig} />
       <Toaster />
       <Footer />
     </div>
