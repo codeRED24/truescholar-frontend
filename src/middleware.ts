@@ -11,9 +11,6 @@ export function middleware(req: any) {
     // Example: -7019120-7019120 -> -7019120
     pathname = pathname.replace(/-(\d+)(-\1)+/, "-$1");
 
-    // Case 2: strip trailing /eligibility, /others, /results
-    pathname = pathname.replace(/\/(eligibility|others|results)$/, "");
-
     // Case 3: normalize "scholarships" → "scholarship"
     pathname = pathname.replace(/\/scholarships$/, "/scholarship");
 

@@ -1,3 +1,4 @@
+import { NotFound } from "@/components/NotFoundPage";
 import { redirect } from "next/navigation";
 
 const parseSlugId = (slugId: string) => {
@@ -23,5 +24,11 @@ export default async function Others(props: {
     return redirect(`/colleges/${correctSlugId}`);
   }
 
-  return redirect(`/colleges/${correctSlugId}`);
+  return (
+    <NotFound
+      description="Page not available at the moment. Please check back later."
+      button="Go to College Information Page"
+      buttonUrl={`/colleges/${correctSlugId}`}
+    />
+  );
 }
