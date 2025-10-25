@@ -4,8 +4,12 @@ import CollegeHead from "@/components/page/college/assets/CollegeHead";
 import CollegeNav from "@/components/page/college/assets/CollegeNav";
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import CollegeNews from "@/components/page/college/assets/CollegeNews";
 import ReviewsContent from "@/components/page/college/assets/ReviewsContent";
+import dynamic from "next/dynamic";
+
+const CollegeNews = dynamic(
+  () => import("@/components/page/college/assets/CollegeNews")
+);
 
 const parseSlugId = (slugId: string) => {
   const match = slugId.match(/(.+)-(\d+)$/);

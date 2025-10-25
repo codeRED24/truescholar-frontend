@@ -1,12 +1,30 @@
 "use client";
+import dynamic from "next/dynamic";
 import { getReviewsByCollegeId } from "@/api/individual/getReviewsByCollegeId";
 import { useState, useEffect, useCallback } from "react";
 import { ReviewSkeleton } from "./ReviewSkeleton";
-import { IndividualReview } from "./IndividualReview";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { AggregatedReviewCard } from "@/components/cards/AggregatedReviewCard";
 import { GraduationCap, Briefcase, Building, Users } from "lucide-react";
 import { Review } from "@/types/review";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const AggregatedReviewCard = dynamic(
+  () =>
+    import("@/components/cards/AggregatedReviewCard").then(
+      (mod) => mod.AggregatedReviewCard
+    ),
+  {
+    loading: () => <Skeleton className="h-[370px]" />,
+  }
+);
+
+const IndividualReview = dynamic(
+  () =>
+    import("@/components/page/college/assets/IndividualReview").then(
+      (mod) => mod.IndividualReview
+    ),
+  { loading: () => <Skeleton className="h-[370px]" /> }
+);
 
 interface ReviewsContentProps {
   collegeId: number;

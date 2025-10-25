@@ -4,7 +4,7 @@ import { Star } from "lucide-react";
 
 interface StarRatingProps {
   rating: number;
-  onRatingChange: (rating: number) => void;
+  onRatingChange?: (rating: number) => void;
   maxRating?: number;
 }
 
@@ -13,6 +13,8 @@ export function StarRating({
   onRatingChange,
   maxRating = 5,
 }: StarRatingProps) {
+  const isInteractive = onRatingChange !== undefined;
+
   return (
     <div className="flex gap-1">
       {Array.from({ length: maxRating }, (_, index) => {
@@ -22,14 +24,19 @@ export function StarRating({
             aria-label={`Rate ${starValue} stars`}
             key={index}
             type="button"
-            onClick={() => onRatingChange(starValue)}
-            className="transition-colors hover:scale-110"
+            onClick={() => onRatingChange?.(starValue)}
+            disabled={!isInteractive}
+            className={`transition-colors ${
+              isInteractive ? "hover:scale-110" : "cursor-default"
+            }`}
           >
             <Star
               className={`w-6 h-6 ${
                 starValue <= rating
                   ? "fill-yellow-400 text-yellow-400"
-                  : "text-gray-300 hover:text-yellow-400"
+                  : `text-gray-300 ${
+                      isInteractive ? "hover:text-yellow-400" : ""
+                    }`
               }`}
             />
           </button>
