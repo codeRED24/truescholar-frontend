@@ -81,6 +81,7 @@ const CollegeNav: React.FC<CollegeData> = ({ data, activeTab }) => {
         path: "/facilities",
         show: dynamic_fields.facility,
       },
+      { label: "Reviews", path: "/reviews", show: true },
       { label: "FAQ", path: "/faq", show: dynamic_fields.faq },
       { label: "News", path: "/news", show: dynamic_fields.news },
       { label: "Results", path: "/results", show: dynamic_fields.result },

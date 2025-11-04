@@ -1,0 +1,45 @@
+export interface Review {
+  id: number;
+  created_at: string;
+  updated_at: string;
+  college_id: number;
+  course_id: number;
+  college_location: string;
+  pass_year: number;
+  linkedin_profile: string;
+  student_id_url: string;
+  mark_sheet_url: string;
+  degree_certificate_url: string;
+  review_title: string;
+  college_images_urls: string[];
+  annual_tuition_fees: number;
+  hostel_fees: number;
+  other_charges: number;
+  scholarship_availed: boolean;
+  scholarship_name: string;
+  scholarship_amount: number;
+  overall_satisfaction_rating: number;
+  overall_experience_feedback: string;
+  teaching_quality_rating: number;
+  teaching_quality_feedback: string;
+  infrastructure_rating: number;
+  infrastructure_feedback: string;
+  library_rating: number;
+  library_feedback: string;
+  placement_support_rating: number;
+  placement_support_feedback: string;
+  administrative_support_rating: number;
+  administrative_support_feedback: string;
+  hostel_rating: number;
+  hostel_feedback: string;
+  extracurricular_rating: number;
+  extracurricular_feedback: string;
+  improvement_suggestions: string;
+  status: "pending" | "approved" | "rejected";
+  reward_status: "pending" | "processed" | "paid";
+  user_id: number;
+  stream?: string;
+  user: {
+    name: string;
+  };
+}

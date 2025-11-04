@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo, Suspense } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { PersonalDetailsStep } from "@/components/form-steps/personal-details-step";
 import { StudentReviewStep } from "@/components/form-steps/student-review-step";
 import { FeedbackStep } from "@/components/form-steps/feedback-step";
@@ -24,6 +23,7 @@ import { toast } from "sonner";
 import { useSearchParams } from "next/navigation";
 import { getCurrentLocation } from "@/components/utils/utils";
 import { useUserStore } from "@/stores/userStore";
+import { getCollegeById } from "@/api/individual/getIndividualCollege";
 
 const OTP_COOLDOWN_SECONDS = 30;
 
@@ -500,13 +500,18 @@ function ReviewFormContent() {
     try {
       const payload = {
         // User ID - CRITICAL: This links the review to the user
-        userId: createdUserId,
+        userId: createdUserId || (user?.id ? parseInt(user.id) : null),
 
         // College Information (from step 2)
         collegeId: step2Data.collegeId,
         courseId: step2Data.courseId,
         collegeLocation: step2Data.collegeLocation,
         passYear: parseInt(step2Data.graduationYear),
+        stream: step2Data.stream,
+        yearOfStudy: step2Data.yearOfStudy,
+        modeOfStudy: step2Data.modeOfStudy,
+        currentSemester: step2Data.currentSemester,
+        isAnonymous: step2Data.isAnonymous,
 
         // Financial Information (from step 2)
         annualTuitionFees: step2Data.annualTuitionFees,
