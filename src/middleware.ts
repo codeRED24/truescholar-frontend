@@ -1,27 +1,38 @@
 // middleware.js
-import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
+import { hasValidTokens } from "./lib/validateAuth";
 
-export function middleware(req: any) {
+export async function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
   let pathname = url.pathname;
+  const cookieStore = await cookies();
+
+  if (pathname.startsWith("/profile")) {
+    // Check if we have the basic token cookies
+    if (!cookieStore.get("refreshToken") || !cookieStore.get("accessToken")) {
+      url.pathname = "/signin";
+      // Add returnUrl query parameter to redirect back after authentication
+      url.searchParams.set("returnUrl", pathname);
+      return NextResponse.redirect(url);
+    }
+
+    // Check if tokens are valid (this will try refresh if needed)
+    const hasTokens = await hasValidTokens();
+    if (!hasTokens) {
+      url.pathname = "/signin";
+      // Add returnUrl query parameter to redirect back after authentication
+      url.searchParams.set("returnUrl", pathname);
+      return NextResponse.redirect(url);
+    }
+  }
 
   // Only touch /colleges/... routes
   if (pathname.startsWith("/colleges/")) {
-    // Case 1: remove duplicate -id at the end of slugs
-    // Example: -7019120-7019120 -> -7019120
     pathname = pathname.replace(/-(\d+)(-\1)+/, "-$1");
-
-    // Case 3: normalize "scholarships" → "scholarship"
     pathname = pathname.replace(/\/scholarships$/, "/scholarship");
-
-    // Case 4: if /colleges/... has NO numeric ID at the end → redirect to /
-    // const hasId = /-\d+$/.test(pathname);
-    // if (!hasId) {
-    //   pathname = "/colleges";
-    // }
   }
 
-  // If we changed the path → redirect
   if (pathname !== url.pathname) {
     url.pathname = pathname;
     return NextResponse.redirect(url, 308);

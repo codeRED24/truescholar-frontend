@@ -13,7 +13,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Phone, CheckCircle, Clock, X } from "lucide-react";
 import { useFormContext } from "@/components/form-provider";
-import useOtpApi from "@/hooks/use-otp";
 import { toast } from "sonner";
 
 interface OtpVerificationDialogProps {
@@ -54,15 +53,15 @@ export function OtpVerificationDialog({
     phone: "",
   });
 
-  const {
-    loading: otpLoading,
-    error: otpError,
-    sendEmailOtp: apiSendEmailOtp,
-    sendPhoneOtp: apiSendPhoneOtp,
-    verifyEmailOtp: apiVerifyEmailOtp,
-    verifyPhoneOtp: apiVerifyPhoneOtp,
-    isOtpVerified: apiIsOtpVerified,
-  } = useOtpApi();
+  // const {
+  //   loading: otpLoading,
+  //   error: otpError,
+  //   sendEmailOtp: apiSendEmailOtp,
+  //   sendPhoneOtp: apiSendPhoneOtp,
+  //   verifyEmailOtp: apiVerifyEmailOtp,
+  //   verifyPhoneOtp: apiVerifyPhoneOtp,
+  //   isOtpVerified: apiIsOtpVerified,
+  // } = useOtpApi();
 
   // Countdown timers
   useEffect(() => {
@@ -142,7 +141,7 @@ export function OtpVerificationDialog({
     setIsLoading(true);
     setErrors((prev) => ({ ...prev, email: "" }));
     try {
-      await apiVerifyEmailOtp(email, emailOtp);
+      // await apiVerifyEmailOtp(email, emailOtp);
       setIsEmailVerified(true);
       personalDetailsForm.setValue("isEmailVerified", true);
       updateFormData({ isEmailVerified: true });
@@ -162,7 +161,7 @@ export function OtpVerificationDialog({
     setIsLoading(true);
     setErrors((prev) => ({ ...prev, phone: "" }));
     try {
-      await apiVerifyPhoneOtp(phone, phoneOtp);
+      // await apiVerifyPhoneOtp(phone, phoneOtp);
       setIsPhoneVerified(true);
       personalDetailsForm.setValue("isPhoneVerified", true);
       updateFormData({ isPhoneVerified: true });

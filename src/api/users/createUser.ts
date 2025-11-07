@@ -67,6 +67,7 @@ export const createUser = async (
 
     const response = await fetch(requestUrl, {
       method: "POST",
+      credentials: "include",
       headers: {
         Authorization: `Bearer ${BEARER_TOKEN}`,
         "Content-Type": "application/json",

@@ -4,7 +4,6 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Download, Share2, Copy } from "lucide-react";
 import { toast } from "sonner";
-import { useUserStore } from "@/stores/userStore";
 
 interface SuccessScreenProps {
   onReset?: () => void;
@@ -12,28 +11,27 @@ interface SuccessScreenProps {
 }
 
 export function SuccessScreen({ onReset, referralCode }: SuccessScreenProps) {
-  const { user } = useUserStore();
   // console.log("SuccessScreen received referralCode:", referralCode);
 
-  const generateReferralUrl = () => {
-    const code = referralCode || user?.custom_code;
-    if (!code) return null;
-    const baseUrl = window.location.origin;
-    return `${baseUrl}/review-form?ref=${encodeURIComponent(code)}`;
-  };
+  // const generateReferralUrl = () => {
+  // const code = referralCode || user?.custom_code;
+  //   if (!code) return null;
+  //   const baseUrl = window.location.origin;
+  //   return `${baseUrl}/review-form?ref=${encodeURIComponent(code)}`;
+  // };
 
-  const handleCopyReferralUrl = async () => {
-    const referralUrl = generateReferralUrl();
-    if (referralUrl) {
-      try {
-        await navigator.clipboard.writeText(referralUrl);
-        toast.success("Referral URL copied to clipboard!");
-      } catch (err) {
-        console.error("Failed to copy referral URL:", err);
-        toast.error("Failed to copy referral URL");
-      }
-    }
-  };
+  // const handleCopyReferralUrl = async () => {
+  //   const referralUrl = generateReferralUrl();
+  //   if (referralUrl) {
+  //     try {
+  //       // await navigator.clipboard.writeText(referralUrl);
+  //       toast.success("Referral URL copied to clipboard!");
+  //     } catch (err) {
+  //       console.error("Failed to copy referral URL:", err);
+  //       toast.error("Failed to copy referral URL");
+  //     }
+  //   }
+  // };
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-2xl mx-auto">
@@ -67,13 +65,12 @@ export function SuccessScreen({ onReset, referralCode }: SuccessScreenProps) {
           </div>
 
           {/* Referral Code Section */}
-          {(referralCode || user?.custom_code) && (
+          {/* {(referralCode || user?.custom_code) && (
             <div className="bg-teal-50 border border-teal-200 rounded-lg p-6 mb-6">
               <h3 className="font-semibold text-teal-800 mb-2">
                 Your Referral Link
               </h3>
 
-              {/* Referral URL Section */}
               <div className="mt-4 pt-4 border-t border-teal-200">
                 <div className="bg-white border border-teal-300 rounded-md p-3 flex items-center justify-between">
                   <span className="text-sm text-gray-600 truncate flex-1 mr-2">
@@ -96,7 +93,7 @@ export function SuccessScreen({ onReset, referralCode }: SuccessScreenProps) {
                 automatically get your referral code applied.
               </p>
             </div>
-          )}
+          )} */}
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button

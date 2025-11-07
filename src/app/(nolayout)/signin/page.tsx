@@ -1,87 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { useUserStore } from "@/stores/userStore";
-import useAuth from "@/hooks/use-auth";
-import { Eye, EyeOff, Mail, Lock } from "lucide-react";
-import Link from "next/link";
+import SigninForm from "@/components/forms/SigninForm";
 import Image from "next/image";
-
-const loginSchema = z.object({
-  identifier: z.string().min(1, "Enter phone number or email"),
-  password: z.string().min(1, "Enter your password"),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
+import { Suspense } from "react";
 
 export default function SigninPage() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const router = useRouter();
-  const { user } = useUserStore();
-
-  if (user?.id) {
-    // if already logged in redirect to home
-    router.push("/");
-  }
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) });
-
-  const { login: doLogin, loading: authLoading, error: authError } = useAuth();
-
-  // Helper function to validate redirect URL
-  const isValidRedirect = (url: string): boolean => {
-    try {
-      const redirectUrl = new URL(url, window.location.origin);
-      // Only allow redirects to the same origin for security
-      return redirectUrl.origin === window.location.origin;
-    } catch {
-      return false;
-    }
-  };
-
-  const onSubmit = async (data: LoginFormData) => {
-    setIsSubmitting(true);
-    const result = await doLogin(data.identifier, data.password);
-    setIsSubmitting(false);
-
-    if (!result.success) {
-      toast.error(result.message || "Invalid credentials");
-      return;
-    }
-
-    toast.success("Logged in successfully");
-
-    // Check for stored redirect path
-    const redirectTo = sessionStorage.getItem("redirectAfterLogin");
-    if (redirectTo && isValidRedirect(redirectTo)) {
-      // Clear the stored redirect and navigate to it
-      sessionStorage.removeItem("redirectAfterLogin");
-      router.push(redirectTo);
-    } else {
-      // No valid redirect, go to home
-      router.push("/");
-    }
-  };
-
-  useEffect(() => {
-    if (authError) {
-      setIsSubmitting(false);
-    }
-  }, [authError]);
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Split Layout */}
@@ -131,7 +54,7 @@ export default function SigninPage() {
             />
           </div>
         </div>
-        <div className="w-full lg:w-5/12 bg-gradient-to-br from-white to-gray-100 p-6 md:p-8 flex flex-col justify-center items-center">
+        <div className="w-full lg:w-5/12 bg-gradient-to-br min-h-screen from-white to-gray-100 p-6 md:p-8 flex flex-col justify-center items-center">
           <div className="max-w-md w-full  flex flex-col">
             <h2 className="text-2xl font-bold text-center  text-gray-800">
               Log In
@@ -139,92 +62,15 @@ export default function SigninPage() {
             <p className="text-center mb-10 text-sm">
               Back for more? Log in now to explore your options!
             </p>
-
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="space-y-2">
-                <Label
-                  htmlFor="identifier"
-                  className="flex items-center gap-2 text-sm font-medium"
-                >
-                  <Mail className="w-4 h-4 text-teal-500" />
-                  Phone No/Email
-                </Label>
-                <Input
-                  id="identifier"
-                  placeholder="Enter your phone no or email"
-                  {...register("identifier")}
-                  className={`border-gray-300 ${
-                    errors.identifier ? "border-red-500" : ""
-                  }`}
-                />
-                {errors.identifier && (
-                  <p className="text-sm text-red-600">
-                    {errors.identifier.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label
-                  htmlFor="password"
-                  className="flex items-center gap-2 text-sm font-medium"
-                >
-                  <Lock className="w-4 h-4 text-teal-500" />
-                  Password
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    {...register("password")}
-                    className={`border-gray-300 pr-10 ${
-                      errors.password ? "border-red-500" : ""
-                    }`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-gray-400" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-gray-400" />
-                    )}
-                  </button>
+            <Suspense
+              fallback={
+                <div className="flex items-center justify-center p-8">
+                  Loading...
                 </div>
-                {errors.password && (
-                  <p className="text-sm text-red-600">
-                    {errors.password.message}
-                  </p>
-                )}
-
-                <div className="mt-2 text-sm">
-                  Forget Password?{" "}
-                  <a
-                    href="/forgot-password"
-                    className="text-blue-800 font-medium"
-                  >
-                    Regain Access Now!
-                  </a>
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-blue-900 hover:bg-blue-800 text-white font-medium py-2.5 rounded-lg"
-              >
-                {isSubmitting ? "Signing in..." : "Sign in"}
-              </Button>
-              <p className="text-sm text-center mt-4">
-                First Time? Let’s dive right in and get you{" "}
-                <Link href={"/signup"} className="text-blue-800">
-                  Registered!
-                </Link>
-              </p>
-            </form>
+              }
+            >
+              <SigninForm />
+            </Suspense>
           </div>
         </div>
       </div>

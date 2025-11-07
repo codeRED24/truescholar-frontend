@@ -20,7 +20,6 @@ import {
   ArrowDown,
   ArrowRight,
   Ellipsis,
-  User,
   Menu,
   ChevronRight,
   Search,
@@ -30,7 +29,6 @@ import {
 import { formatName } from "@/components/utils/utils";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
-import { useUserStore } from "@/stores/userStore";
 import {
   Carousel,
   CarouselContent,
@@ -39,6 +37,7 @@ import {
 import Autoplay from "embla-carousel-autoplay";
 import Image from "next/image";
 import { useIsTablet } from "@/components/utils/useTablet";
+import { getMe, getMeResponse } from "@/api/auth/auth";
 
 const DialogTitle = dynamic(
   () => import("@/components/ui/dialog").then((mod) => mod.DialogTitle),
@@ -53,10 +52,6 @@ const SearchModal = dynamic(
     ssr: false,
   }
 );
-
-const LeadModal = dynamic(() => import("@/components/modals/LeadModal"), {
-  ssr: false,
-});
 
 const streamNames: Record<number, { name: string; icon: JSX.Element }> = {
   10: { name: "Engineering", icon: <University size={16} /> },
@@ -87,12 +82,21 @@ const Header: React.FC = () => {
   const [showMoreStreams, setShowMoreStreams] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false); // State for mobile Sheet
   const isTablet = useIsTablet();
-  const { user } = useUserStore();
   const searchModalRef = useRef<HTMLDivElement>(null);
 
   const additionalStreams = overStreamData.filter(
     (stream) => !Object.keys(streamNames).includes(stream.stream_id.toString())
   );
+
+  const [User, setUser] = useState<getMeResponse | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const response = await getMe();
+      setUser(response);
+    };
+    fetchUser();
+  }, []);
 
   const fetchNavData = useCallback(async () => {
     setLoading(true);
@@ -574,10 +578,10 @@ const Header: React.FC = () => {
               </NavigationMenuList>
               <SearchModal />
             </NavigationMenu>
-            {user && user.name ? (
+            {User && User.email && !loading ? (
               <div className="bg-[#141A21] text-white rounded-full h-9 w-12 flex items-center justify-center">
                 <span className="text-lg">
-                  {user.name.charAt(0).toUpperCase()}
+                  {User.email.charAt(0).toUpperCase()}
                 </span>
               </div>
             ) : (

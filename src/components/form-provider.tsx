@@ -8,7 +8,7 @@ import {
   personalDetailsWithOtpSchema,
   studentReviewSchema,
   feedbackSchema,
-} from "@/lib/validation-schemas";
+} from "@/app/schemas/validation-schemas";
 
 interface FormData {
   // Personal Details
