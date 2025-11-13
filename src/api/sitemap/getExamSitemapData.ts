@@ -6,9 +6,11 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const getExamSitemapData = async (
   page: number = 1,
-  limit: number = 1000
+  limit: number = 1000,
+  onlyInfo: boolean = false
 ): Promise<ExamSitemapResponse> => {
-  const url = `${API_URL}/exams/sitemap?page=${page}&limit=${limit}`;
+  let url = `${API_URL}/exams/sitemap?page=${page}&limit=${limit}`;
+  if (onlyInfo) url = url + "&onlyInfo=true";
   console.log(`API_URL: ${API_URL}`);
   console.log(`Calling: ${url}`);
 
@@ -18,7 +20,7 @@ export const getExamSitemapData = async (
       headers: {
         "Content-Type": "application/json",
       },
-      //   next: { revalidate: 3600 }, // Cache for 1 hour
+      next: { revalidate: 60 * 30 }, // Cache for 1/2 hour
     });
 
     if (!response.ok) {

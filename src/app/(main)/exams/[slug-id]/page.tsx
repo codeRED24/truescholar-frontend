@@ -1,6 +1,5 @@
 import React from "react";
 import { notFound, redirect } from "next/navigation";
-import Script from "next/script";
 import { getExamsById } from "@/api/individual/getExamsById";
 import { GreExamDTO } from "@/api/@types/exam-type";
 import ExamContent from "@/components/page/exam/ExamContent";
@@ -36,7 +35,7 @@ export async function generateMetadata({
     return notFound();
   }
 
-  if (!exam || !exam.examContent) {
+  if (!exam || !exam.examContent || !exam.examInformation) {
     return notFound();
   }
 
@@ -73,7 +72,7 @@ export async function generateMetadata({
 const IndividualExam = async ({ params }: IndividualExamProps) => {
   const { "slug-id": slugId } = await params;
 
-  const match = slugId.match(/.*-(\d+)$/);
+  const match = slugId.match(/(?:.*-)?(\d+)$/);
   if (!match) {
     return notFound();
   }
@@ -89,7 +88,7 @@ const IndividualExam = async ({ params }: IndividualExamProps) => {
   } catch (error) {
     return notFound();
   }
-  if (!exam || !exam.examContent) {
+  if (!exam || !exam.examContent || !exam.examInformation) {
     return notFound();
   }
 

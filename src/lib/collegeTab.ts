@@ -10,6 +10,7 @@ export function mapCollegeTabSlugToPath(slug: string): string {
   switch (normalized) {
     case "admission":
     case "admissions":
+    case "admission-process":
       return "/admission-process";
 
     case "courses":

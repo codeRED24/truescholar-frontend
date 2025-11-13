@@ -18,6 +18,49 @@ const parseSlugId = (slugId: string) => {
   return isNaN(collegeId) ? null : { collegeId, slug: match[1] };
 };
 
+export async function generateMetadata(props: {
+  params: Promise<{ "slug-id": string }>;
+}) {
+  const { "slug-id": slugId } = await props.params;
+
+  const parsed = parseSlugId(slugId);
+  if (!parsed) return notFound();
+
+  const { collegeId } = parsed;
+  const college = await getCollegeById(collegeId);
+  if (!college || !college.college_information) return notFound();
+
+  const { college_information } = college;
+
+  const baseSlug =
+    college_information.slug?.replace(/(?:-\d+)+$/, "") ||
+    `${college_information.college_name}`
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "-");
+
+  const correctSlugId = `${baseSlug}-${collegeId}`;
+  const canonical = `https://www.truescholar.in/colleges/${correctSlugId}/reviews`;
+
+  const title = `${college_information.college_name} Reviews, Ratings & Student Feedback`;
+  const description =
+    college_information.meta_desc ||
+    `Read verified student reviews and ratings for ${college_information.college_name}.`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical,
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+    },
+  };
+}
+
 const CollegeReviewsPage = async (props: {
   params: Promise<{ "slug-id": string }>;
 }) => {

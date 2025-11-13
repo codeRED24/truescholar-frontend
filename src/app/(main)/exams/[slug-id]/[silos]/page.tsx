@@ -4,6 +4,7 @@ import { splitSilos } from "@/components/utils/utils";
 import { notFound, redirect } from "next/navigation";
 import Script from "next/script";
 import { parseFAQFromHTML } from "@/components/utils/parsefaqschema";
+import slugify from "slug";
 
 export async function generateMetadata(props: {
   params: Promise<{ "slug-id": string; silos: string }>;
@@ -31,7 +32,20 @@ export async function generateMetadata(props: {
   const title = exam.examContent.topic_title || "Exam Details";
   const description =
     exam.examContent.meta_desc || "Find details about this exam.";
-  const canonicalUrl = `https://www.truescholar.in/exams/${exam.examInformation.slug}-${examId}/${accurateSilos}`;
+
+  // Build canonical URL using shared exam tab mapping util
+  const baseSlug = (
+    exam.examInformation.slug ||
+    exam.examInformation.exam_name ||
+    "default-exam"
+  )
+    .replace(/\s+/g, "-")
+    .toLowerCase();
+
+  const basePath = `https://www.truescholar.in/exams/${baseSlug}-${examId}`;
+
+  const { mapExamSiloToPath } = await import("@/lib/examTab");
+  const canonicalUrl = `${basePath}${mapExamSiloToPath(accurateSilos)}`;
 
   return {
     title,
@@ -88,9 +102,9 @@ const ExamSiloCard: React.FC<{
 
   const { examInformation: examInfo, examContent, distinctSilos } = exam;
 
-  const correctSlugId = `${examInfo.exam_name
-    .replace(/\s+/g, "-")
-    .toLowerCase()}-${examId}`;
+  const correctSlugId = `${slugify(
+    examInfo.slug || examInfo.exam_name
+  )}-${examId}`;
 
   if (slugId !== correctSlugId) {
     return redirect(`/exams/${correctSlugId}/${silos}`);

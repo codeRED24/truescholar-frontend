@@ -60,6 +60,7 @@ export const generateMetadata = async ({
       },
     };
   } else if (filterSlug.includes("colleges-")) {
+    const canonicalUrl = `https://www.truescholar.in/${filterSlug}`;
     return {
       title: "Top Colleges in India | TrueScholar - Explore & Compare Colleges",
       description:
@@ -68,14 +69,14 @@ export const generateMetadata = async ({
         "colleges in India, top colleges, college list, best colleges, compare colleges, TrueScholar colleges",
       metadataBase: new URL("https://www.truescholar.in"),
       alternates: {
-        canonical: "https://www.truescholar.in/colleges",
+        canonical: canonicalUrl,
       },
       openGraph: {
         title:
           "Top Colleges in India | TrueScholar - Explore & Compare Colleges",
         description:
           "Find and compare top colleges in India based on rankings, courses, and fees with TrueScholar.",
-        url: "https://www.truescholar.in/colleges",
+        url: canonicalUrl,
         siteName: "TrueScholar",
         images: [
           {

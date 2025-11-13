@@ -186,7 +186,7 @@ const CollegeFees = async (props: {
     state: college_information?.state || "",
     location: college_information?.location || "",
     title: fees_section?.content?.[0]?.title || "",
-    college_brochure: college_information.college_brochure || "/",
+    college_brochure: college_information?.college_brochure || "/",
   };
 
   return (

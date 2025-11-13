@@ -63,7 +63,11 @@ const ExamNav: React.FC<ExamData> = ({ data }) => {
 
   if (!examInformation || !examInformation.exam_id) return null;
 
-  const baseSlug = (examInformation.exam_name || "default-exam")
+  const baseSlug = (
+    examInformation.slug ||
+    examInformation.exam_name ||
+    "default-exam"
+  )
     .replace(/\s+/g, "-")
     .toLowerCase();
   const basePath = `/exams/${baseSlug}-${examInformation.exam_id}`;

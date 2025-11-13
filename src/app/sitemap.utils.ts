@@ -4,6 +4,7 @@ import { getCollegeSitemapData } from "@/api/sitemap/getCollegeSitemapData";
 import { getExamSitemapData } from "@/api/sitemap/getExamSitemapData";
 import { getAuthors } from "@/api/list/getAuthors";
 import { mapCollegeTabSlugToPath } from "@/lib/collegeTab";
+import { mapExamSiloToPath } from "@/lib/examTab";
 
 const INVALID_CHARACTERS_REGEX = /[&<>"']/;
 function isValidSlug(slug: string): boolean {
@@ -135,7 +136,11 @@ export async function generateExamsUrls() {
           if (!isValidSlug(baseSlug)) return [];
           const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/exams/${baseSlug}`;
 
-          const examUrls = [];
+          const examUrls: {
+            url: string;
+            changeFrequency: string;
+            priority: number;
+          }[] = [];
 
           // Always include the base exam URL (info/default page)
           examUrls.push({
@@ -144,30 +149,46 @@ export async function generateExamsUrls() {
             priority: 0.8,
           });
 
-          // Add URLs only for available silos
+          // Add URLs only for available silos using centralized mapping
           exam.available_silos.forEach((silo) => {
-            if (silo === "info" || silo === "exam_info") return; // Already added base URL
+            if (!silo) return;
+
+            // Map backend silo to frontend path
+            const pathSegment = mapExamSiloToPath(silo);
+
+            // Empty mapping => base/info page already covered
+            if (pathSegment === "") return;
 
             let priority = 0.6;
             let changeFrequency = "weekly";
 
-            // Set different priorities and frequencies for different silos
-            if (silo === "syllabus" || silo === "exam_pattern") {
-              priority = 0.7;
-              changeFrequency = "weekly";
-            } else if (silo === "cutoff" || silo === "result") {
-              priority = 0.8;
-              changeFrequency = "weekly";
-            } else if (silo === "news") {
-              priority = 0.9;
-              changeFrequency = "daily";
-            } else if (silo === "admit_card") {
-              priority = 0.7;
-              changeFrequency = "weekly";
+            // Set different priorities and frequencies based on mapped path
+            switch (pathSegment) {
+              case "/exam-syllabus":
+              case "/exam-pattern":
+                priority = 0.7;
+                changeFrequency = "weekly";
+                break;
+              case "/exam-cutoff":
+              case "/exam-result":
+                priority = 0.8;
+                changeFrequency = "weekly";
+                break;
+              case "/news":
+                priority = 0.9;
+                changeFrequency = "daily";
+                break;
+              case "/admit-card":
+                priority = 0.7;
+                changeFrequency = "weekly";
+                break;
+              default:
+                // keep defaults for other mapped silos
+                break;
             }
 
             examUrls.push({
-              url: `${baseUrl}/${silo.replace(/_/g, "-")}`,
+              url: `${baseUrl}${pathSegment}`,
               changeFrequency,
               priority,
             });
@@ -195,7 +216,6 @@ export async function generateExamsUrls() {
         break;
       }
     }
-
     console.log(`Total exam URLs generated: ${allUrls.length}`);
     return allUrls;
   } catch (error) {
