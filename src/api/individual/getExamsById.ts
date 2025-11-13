@@ -22,6 +22,7 @@ export const getExamsById = async (examId: number, silos: string) => {
 
   try {
     const response = await fetch(`${API_URL}/exams/silos/${examId}/${silos}`, {
+      next: { revalidate: 3600 },
       method: "GET",
       headers: {
         // Authorization: `Bearer ${BEARER_TOKEN}`,

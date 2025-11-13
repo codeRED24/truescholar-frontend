@@ -27,4 +27,12 @@ export interface CourseDTO {
     course_group_id: number;
     specialization_id: number;
   }
+
+  export type Course = {
+    result: {
+      course_id: number;
+      course_name: string;
+      slug: string;
+    }[];
+  };
   

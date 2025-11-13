@@ -84,9 +84,15 @@ export async function generateMetadata({
   const article = await getArticlesById(parsed.id);
   if (!article) return { title: "Article Not Found" };
 
+  const correctSlugId = generateCorrectSlugId(article);
+  const articleUrl = `${BASE_URL}/articles/${correctSlugId}`;
+
   return {
     title: article.title,
     description: article.meta_desc || "Read this article on TrueScholar",
+    alternates: {
+      canonical: articleUrl,
+    },
   };
 }
 

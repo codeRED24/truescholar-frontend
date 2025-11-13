@@ -4,20 +4,6 @@ import Script from "next/script";
 import BreadcrumbProvider from "@/components/providers/BreadcrumbProvider";
 import { Toaster } from "@/components/ui/sonner";
 
-// Define website schema data
-const websiteLD = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  name: "TrueScholar",
-  url: "https://truescholar.in",
-  description: "Find and compare the best colleges in India",
-  potentialAction: {
-    "@type": "SearchAction",
-    target: `${process.env.NEXT_PUBLIC_BASE_URL}/search?q={search_term_string}`,
-    "query-input": "required name=search_term_string",
-  },
-};
-
 const publicSans = Public_Sans({
   weight: ["300", "400", "500", "600", "700"],
   variable: "--font-public-sans",
@@ -90,8 +76,8 @@ function OrganizationSchema({
 }
 
 function WebsiteSchema({
-  name = "PickMyUni",
-  url = "https://pickmyuni.com",
+  name = "TrueScholar",
+  url = "https://www.truescholar.in",
   description = "Discover and compare top Indian colleges",
 }: any) {
   const websiteData = {
@@ -115,12 +101,6 @@ export default function RootLayout({
       <head>
         <OrganizationSchema />
         <WebsiteSchema />
-        <Script
-          id="website-schema"
-          type="application/ld+json"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteLD) }}
-        />
       </head>
       <body className={`${publicSans.variable} ${barlow.variable} antialiased`}>
         <GTMScript gtmId="G-5CMGT07LVZ" />

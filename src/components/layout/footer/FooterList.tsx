@@ -122,6 +122,7 @@ const FooterList = () => {
           <Link href="/about-us">About Us</Link>
           <Link href="/privacy-policy">Privacy Policy</Link>
           <Link href="/terms-and-conditions">Terms & Condiitions</Link>
+          <Link href="/sitemap">Sitemap</Link>
         </div>
       </section>
       <section>

@@ -176,7 +176,7 @@ const CollegeAdmissionProcess = async (props: {
     college_logo: college_information.logo_img,
     city: college_information.city,
     state: college_information.state,
-    title: admission_process?.content?.[0].title,
+    title: admission_process?.content?.[0]?.title,
     location: college_information.location,
     college_brochure: college_information.college_brochure || "/",
   };
