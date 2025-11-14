@@ -1,10 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import NewsletterSignup from "./NewsletterSignup";
 import Words from "./Words";
 import Link from "next/link";
 const FooterList = dynamic(() => import("./FooterList"));
+const NewsletterSignup = dynamic(() => import("./NewsletterSignup"));
 
 const Footer = () => {
   return (
