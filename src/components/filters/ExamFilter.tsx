@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Sheet,
   SheetContent,
@@ -33,10 +33,11 @@ interface ExamFiltersProps {
     streams: string[];
     level: string[];
   };
+  isMobileDrawer?: boolean;
 }
 
 const ExamFilters: React.FC<ExamFiltersProps> = React.memo(
-  ({ onFilterChange, initialFilters }) => {
+  ({ onFilterChange, initialFilters, isMobileDrawer = false }) => {
     const isMobile = useIsMobile();
     const [filterOptions, setFilterOptions] = useState<FilterOptions>({
       mode_of_exam: [],
@@ -44,6 +45,17 @@ const ExamFilters: React.FC<ExamFiltersProps> = React.memo(
       level_of_exam: [],
     });
     const [selectedFilters, setSelectedFilters] = useState(initialFilters);
+    const [expandedSections, setExpandedSections] = useState<
+      Record<string, boolean>
+    >({
+      category: true,
+      mode: false,
+      level: false,
+      sortBy: false,
+    });
+
+    // Debounce timer ref
+    const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     // Update selected filters when initialFilters change (e.g., from URL parsing)
     useEffect(() => {
@@ -71,7 +83,6 @@ const ExamFilters: React.FC<ExamFiltersProps> = React.memo(
 
           const { status, data } = await response.json();
           if (status === "success") setFilterOptions(data);
-          // console.log({ data });
         } catch (error) {
           console.error("Failed to fetch filters:", error);
         }
@@ -80,9 +91,30 @@ const ExamFilters: React.FC<ExamFiltersProps> = React.memo(
       fetchFilters();
     }, []);
 
+    // Debounced effect to call onFilterChange
     useEffect(() => {
-      onFilterChange(selectedFilters);
-    }, [selectedFilters, onFilterChange]);
+      // Clear existing timer
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      // Only debounce for mobile drawer to prevent rapid URL updates
+      if (isMobileDrawer) {
+        debounceTimerRef.current = setTimeout(() => {
+          onFilterChange(selectedFilters);
+        }, 300); // 300ms debounce delay
+      } else {
+        // For desktop, apply filters immediately
+        onFilterChange(selectedFilters);
+      }
+
+      // Cleanup
+      return () => {
+        if (debounceTimerRef.current) {
+          clearTimeout(debounceTimerRef.current);
+        }
+      };
+    }, [selectedFilters, onFilterChange, isMobileDrawer]);
 
     const handleFilterChange = useCallback(
       (type: keyof typeof selectedFilters, value: string) => {
@@ -119,65 +151,117 @@ const ExamFilters: React.FC<ExamFiltersProps> = React.memo(
     const renderFilterSection = (
       title: string,
       options: FilterOption[],
-      type: keyof typeof selectedFilters
+      type: keyof typeof selectedFilters,
+      sectionKey: string
     ) => {
       // Helper function to normalize values for comparison
       const normalizeValue = (value: string) =>
         value.toLowerCase().replace(/[^a-z0-9]/g, "");
 
-      return (
-        <div className="mb-4">
-          <h3 className="text-sm font-semibold text-gray-700 mb-2">{title}</h3>
-          <div className="space-y-2 max-h-60 overflow-y-auto">
-            {options?.map((option) => {
-              // Check if this option is selected by comparing normalized values
-              const isSelected = selectedFilters[type].some(
-                (selectedValue) =>
-                  normalizeValue(selectedValue) === normalizeValue(option.value)
-              );
+      const isExpanded = expandedSections[sectionKey];
 
-              return (
-                <div key={option.value} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`${type}-${option.value}`}
-                    checked={isSelected}
-                    onChange={() => handleFilterChange(type, option.value)}
-                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
+      return (
+        <div className="border-b border-gray-200 last:border-b-0">
+          <button
+            className="w-full flex items-center justify-between py-4 text-left"
+            onClick={() => {
+              setExpandedSections((prev) => ({
+                ...prev,
+                [sectionKey]: !prev[sectionKey],
+              }));
+            }}
+          >
+            <h3 className="text-base font-semibold text-gray-900">{title}</h3>
+            <svg
+              className={`w-5 h-5 text-gray-500 transition-transform ${
+                isExpanded ? "rotate-180" : ""
+              }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
+          {isExpanded && (
+            <div className="pb-4 space-y-3 max-h-60 overflow-y-auto">
+              {options?.map((option) => {
+                // Check if this option is selected by comparing normalized values
+                const isSelected = selectedFilters[type].some(
+                  (selectedValue) =>
+                    normalizeValue(selectedValue) ===
+                    normalizeValue(option.value)
+                );
+
+                return (
                   <label
-                    htmlFor={`${type}-${option.value}`}
-                    className="ml-2 text-sm text-gray-600"
+                    key={option.value}
+                    className="flex items-center cursor-pointer group"
                   >
-                    {option.value} ({option.count})
+                    <input
+                      type="checkbox"
+                      id={`${type}-${option.value}`}
+                      checked={isSelected}
+                      onChange={() => handleFilterChange(type, option.value)}
+                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                    />
+                    <span className="ml-3 text-sm text-gray-700 group-hover:text-gray-900 flex-1">
+                      {option.value}
+                    </span>
+                    <span className="text-sm text-gray-500">
+                      ({option.count})
+                    </span>
                   </label>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       );
     };
 
     const DesktopFilters = () => (
-      <div className="w-72 p-4 h-fit bg-white rounded-2xl shadow-sm">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">Filters</h2>
-          <button
-            onClick={clearAllFilters}
-            className="text-sm hover:text-primary-main"
-          >
-            <RotateCcw />
-          </button>
+      <div className="w-80 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden max-h-[calc(100vh-2rem)]">
+        <div className="bg-white border-b border-gray-200 p-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold text-gray-900">Filter By</h2>
+            <button
+              onClick={clearAllFilters}
+              className="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Reset
+            </button>
+          </div>
         </div>
-        {/* {renderFilterSection(
-          "Category",
-          filterOptions.exam_category,
-          "category"
-        )} */}
-        {renderFilterSection("Streams", filterOptions.exam_streams, "streams")}
-        {renderFilterSection("Level", filterOptions.level_of_exam, "level")}
-        {renderFilterSection("Mode", filterOptions.mode_of_exam, "mode")}
+        <div
+          className="p-4 space-y-0 overflow-y-auto"
+          style={{ maxHeight: "calc(100vh - 8rem)" }}
+        >
+          {renderFilterSection(
+            "Category of Exams",
+            filterOptions.exam_streams,
+            "streams",
+            "category"
+          )}
+          {renderFilterSection(
+            "Mode of Exams",
+            filterOptions.mode_of_exam,
+            "mode",
+            "mode"
+          )}
+          {renderFilterSection(
+            "Level of Exams",
+            filterOptions.level_of_exam,
+            "level",
+            "level"
+          )}
+        </div>
       </div>
     );
 
@@ -200,21 +284,54 @@ const ExamFilters: React.FC<ExamFiltersProps> = React.memo(
             >
               Clear All
             </button>
-            {/* {renderFilterSection(
-              "Category",
-              filterOptions.exam_category,
-              "category"
-            )} */}
             {renderFilterSection(
-              "Streams",
+              "Category",
               filterOptions.exam_streams,
-              "streams"
+              "streams",
+              "category"
             )}
-            {renderFilterSection("Level", filterOptions.level_of_exam, "level")}
+            {renderFilterSection(
+              "Mode",
+              filterOptions.mode_of_exam,
+              "mode",
+              "mode"
+            )}
+            {renderFilterSection(
+              "Level",
+              filterOptions.level_of_exam,
+              "level",
+              "level"
+            )}
           </div>
         </SheetContent>
       </Sheet>
     );
+
+    // For mobile drawer, render just the filter sections without wrapper
+    if (isMobileDrawer) {
+      return (
+        <div className="space-y-0">
+          {renderFilterSection(
+            "Category",
+            filterOptions.exam_streams,
+            "streams",
+            "category"
+          )}
+          {renderFilterSection(
+            "Mode",
+            filterOptions.mode_of_exam,
+            "mode",
+            "mode"
+          )}
+          {renderFilterSection(
+            "Level",
+            filterOptions.level_of_exam,
+            "level",
+            "level"
+          )}
+        </div>
+      );
+    }
 
     return isMobile ? <MobileFilters /> : <DesktopFilters />;
   }

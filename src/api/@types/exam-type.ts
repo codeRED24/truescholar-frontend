@@ -14,7 +14,7 @@ export interface ExamInformationDTO {
   conducting_authority: string;
   mode_of_exam: string;
   exam_duration: number;
-  exam_level: string;
+  exam_level?: string;
   kapp_score: string;
   is_active: string;
   exam_fee_min: string | null;
@@ -26,6 +26,7 @@ export interface ExamInformationDTO {
   result_date: string | null;
   exam_category: string;
   stream_name: string;
+  level_of_exam?: string;
 }
 
 export interface ExamContentDTO {
