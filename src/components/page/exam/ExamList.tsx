@@ -3,7 +3,6 @@ import { ExamInformationDTO } from "@/api/@types/exam-type";
 import { getExams } from "@/api/list/getExams";
 import ExamFilters from "@/components/filters/ExamFilter";
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import ExamListCard from "@/components/cards/ExamListCard";
 import { useParams, useRouter } from "next/navigation";
 import {
   parseExamSlugToFilters,
@@ -11,34 +10,28 @@ import {
 } from "@/components/utils/slugFormat";
 import { FilterIcon, X } from "lucide-react";
 import dynamic from "next/dynamic";
-const Drawer = dynamic(
-  () => import("@/components/ui/drawer").then((mod) => mod.Drawer),
-  { ssr: false }
+const Drawer = dynamic(() =>
+  import("@/components/ui/drawer").then((mod) => mod.Drawer)
 );
-const DrawerClose = dynamic(
-  () => import("@/components/ui/drawer").then((mod) => mod.DrawerClose),
-  { ssr: false }
+const DrawerClose = dynamic(() =>
+  import("@/components/ui/drawer").then((mod) => mod.DrawerClose)
 );
-const DrawerContent = dynamic(
-  () => import("@/components/ui/drawer").then((mod) => mod.DrawerContent),
-  { ssr: false }
+const DrawerContent = dynamic(() =>
+  import("@/components/ui/drawer").then((mod) => mod.DrawerContent)
 );
-const DrawerHeader = dynamic(
-  () => import("@/components/ui/drawer").then((mod) => mod.DrawerHeader),
-  { ssr: false }
+const DrawerHeader = dynamic(() =>
+  import("@/components/ui/drawer").then((mod) => mod.DrawerHeader)
 );
-const DrawerTitle = dynamic(
-  () => import("@/components/ui/drawer").then((mod) => mod.DrawerTitle),
-  { ssr: false }
+const DrawerTitle = dynamic(() =>
+  import("@/components/ui/drawer").then((mod) => mod.DrawerTitle)
 );
-const DrawerTrigger = dynamic(
-  () => import("@/components/ui/drawer").then((mod) => mod.DrawerTrigger),
-  { ssr: false }
+const DrawerTrigger = dynamic(() =>
+  import("@/components/ui/drawer").then((mod) => mod.DrawerTrigger)
 );
-const DrawerFooter = dynamic(
-  () => import("@/components/ui/drawer").then((mod) => mod.DrawerFooter),
-  { ssr: false }
+const DrawerFooter = dynamic(() =>
+  import("@/components/ui/drawer").then((mod) => mod.DrawerFooter)
 );
+const ExamListCard = dynamic(() => import("@/components/cards/ExamListCard"));
 
 interface ExamsResponse {
   exams: ExamInformationDTO[];

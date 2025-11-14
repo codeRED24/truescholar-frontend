@@ -1,15 +1,5 @@
 "use client";
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { FilterIcon, RotateCcw } from "lucide-react";
-import { useIsMobile } from "../utils/useMobile";
 
 interface FilterOption {
   value: string;
@@ -38,7 +28,6 @@ interface ExamFiltersProps {
 
 const ExamFilters: React.FC<ExamFiltersProps> = React.memo(
   ({ onFilterChange, initialFilters, isMobileDrawer = false }) => {
-    const isMobile = useIsMobile();
     const [filterOptions, setFilterOptions] = useState<FilterOptions>({
       mode_of_exam: [],
       exam_streams: [],
@@ -76,6 +65,9 @@ const ExamFilters: React.FC<ExamFiltersProps> = React.memo(
             headers: {
               Authorization: `Bearer ${BEARER_TOKEN}`,
               "Content-Type": "application/json",
+            },
+            next: {
+              revalidate: 60 * 30,
             },
           });
 
@@ -232,9 +224,8 @@ const ExamFilters: React.FC<ExamFiltersProps> = React.memo(
             <h2 className="text-lg font-semibold text-gray-900">Filter By</h2>
             <button
               onClick={clearAllFilters}
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
+              className="text-sm text-neutral-500 font-medium flex items-center gap-1"
             >
-              <RotateCcw className="w-4 h-4" />
               Reset
             </button>
           </div>
@@ -265,48 +256,6 @@ const ExamFilters: React.FC<ExamFiltersProps> = React.memo(
       </div>
     );
 
-    const MobileFilters = () => (
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button variant="outline" className="flex items-center space-x-2">
-            <FilterIcon className="w-4 h-4" />
-            <span>Filters</span>
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="w-80 p-4">
-          <SheetHeader>
-            <SheetTitle>Filters</SheetTitle>
-          </SheetHeader>
-          <div className="mt-4">
-            <button
-              onClick={clearAllFilters}
-              className="text-sm text-red-500 hover:underline mb-4"
-            >
-              Clear All
-            </button>
-            {renderFilterSection(
-              "Category",
-              filterOptions.exam_streams,
-              "streams",
-              "category"
-            )}
-            {renderFilterSection(
-              "Mode",
-              filterOptions.mode_of_exam,
-              "mode",
-              "mode"
-            )}
-            {renderFilterSection(
-              "Level",
-              filterOptions.level_of_exam,
-              "level",
-              "level"
-            )}
-          </div>
-        </SheetContent>
-      </Sheet>
-    );
-
     // For mobile drawer, render just the filter sections without wrapper
     if (isMobileDrawer) {
       return (
@@ -333,7 +282,8 @@ const ExamFilters: React.FC<ExamFiltersProps> = React.memo(
       );
     }
 
-    return isMobile ? <MobileFilters /> : <DesktopFilters />;
+    // Desktop view
+    return <DesktopFilters />;
   }
 );
 

@@ -54,9 +54,9 @@ const SearchModal = dynamic(
   }
 );
 
-const LeadModal = dynamic(() => import("@/components/modals/LeadModal"), {
-  ssr: false,
-});
+// const LeadModal = dynamic(() => import("@/components/modals/LeadModal"), {
+//   ssr: false,
+// });
 
 const streamNames: Record<number, { name: string; icon: JSX.Element }> = {
   10: { name: "Engineering", icon: <University size={16} /> },
