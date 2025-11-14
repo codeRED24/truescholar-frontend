@@ -272,7 +272,7 @@ const ExamsList: React.FC = () => {
                 <FilterIcon className="w-5 h-5" />
               </button>
             </DrawerTrigger>
-            <DrawerContent>
+            <DrawerContent className="z-[120]">
               <DrawerHeader>
                 <div className="flex items-center justify-between">
                   <DrawerTitle>All Filters</DrawerTitle>
