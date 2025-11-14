@@ -9,16 +9,36 @@ import {
   parseExamSlugToFilters,
   buildExamSlug,
 } from "@/components/utils/slugFormat";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-  DrawerFooter,
-} from "@/components/ui/drawer";
 import { FilterIcon, X } from "lucide-react";
+import dynamic from "next/dynamic";
+const Drawer = dynamic(
+  () => import("@/components/ui/drawer").then((mod) => mod.Drawer),
+  { ssr: false }
+);
+const DrawerClose = dynamic(
+  () => import("@/components/ui/drawer").then((mod) => mod.DrawerClose),
+  { ssr: false }
+);
+const DrawerContent = dynamic(
+  () => import("@/components/ui/drawer").then((mod) => mod.DrawerContent),
+  { ssr: false }
+);
+const DrawerHeader = dynamic(
+  () => import("@/components/ui/drawer").then((mod) => mod.DrawerHeader),
+  { ssr: false }
+);
+const DrawerTitle = dynamic(
+  () => import("@/components/ui/drawer").then((mod) => mod.DrawerTitle),
+  { ssr: false }
+);
+const DrawerTrigger = dynamic(
+  () => import("@/components/ui/drawer").then((mod) => mod.DrawerTrigger),
+  { ssr: false }
+);
+const DrawerFooter = dynamic(
+  () => import("@/components/ui/drawer").then((mod) => mod.DrawerFooter),
+  { ssr: false }
+);
 
 interface ExamsResponse {
   exams: ExamInformationDTO[];
@@ -97,8 +117,6 @@ const ExamsList: React.FC = () => {
           pageSize: 16,
           selectedFilters,
         });
-
-        console.log({ response });
 
         setExams((prev) => {
           const newExams =
@@ -330,7 +348,7 @@ const ExamsList: React.FC = () => {
           <SelectedFiltersDisplay />
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6 px-4 lg:px-0">
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* Desktop Filters */}
           <div className="hidden lg:block lg:sticky lg:top-4 lg:self-start">
             <ExamFilters

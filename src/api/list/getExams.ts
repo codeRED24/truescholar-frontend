@@ -52,7 +52,9 @@ export const getExams = async ({
       method: "GET",
       headers: HEADERS,
       signal: controller.signal,
-      // cache: "no-store",
+      next: {
+        revalidate: 60 * 30,
+      },
     });
 
     clearTimeout(timeoutId);

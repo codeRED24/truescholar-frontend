@@ -27,7 +27,7 @@ const ExamListCard: React.FC<{ exam: ExamInformationDTO }> = ({ exam }) => {
           <div className="flex flex-col gap-2 w-full overflow-hidden">
             {/* Title */}
             <Link href={`/exams/${exam.slug}-${exam.exam_id}`}>
-              <h2 className="text-[18px] hover:underline cursor-pointer font-medium text-gray-900 line-clamp-2 lg:line-clamp-1">
+              <h2 className="text-base lg:text-lg hover:underline cursor-pointer font-medium text-gray-900 line-clamp-2 lg:line-clamp-1">
                 {exam.exam_name}
               </h2>
             </Link>
