@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   SearchResultDTO,
   SearchCollegeDTO,
@@ -54,6 +55,7 @@ const isArticleItem = (item: SearchItem): item is SearchArticleDTO => {
 };
 
 const SearchModal: React.FC = () => {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [searchData, setSearchData] = useState<SearchResultDTO | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -191,7 +193,11 @@ const SearchModal: React.FC = () => {
   }, []);
 
   const handleResultClick = useCallback(
-    (item: SearchItem) => {
+    (item: SearchItem, e?: React.MouseEvent) => {
+      if (e) {
+        e.preventDefault();
+      }
+
       const type = isCollegeItem(item)
         ? "college_search"
         : isExamItem(item)
@@ -199,6 +205,18 @@ const SearchModal: React.FC = () => {
         : isCourseGroupItem(item)
         ? "course_group_search"
         : "articles_search";
+
+      // Build the href
+      let href = "#";
+      if (isCollegeItem(item)) {
+        href = `/colleges/${item.slug.replace(/-\d+$/, "")}-${item.college_id}`;
+      } else if (isExamItem(item)) {
+        href = `/exams/${item.slug.replace(/-\d+$/, "")}-${item.exam_id}`;
+      } else if (isCourseGroupItem(item)) {
+        href = `/colleges-for-${item.slug}`;
+      } else if (isArticleItem(item)) {
+        href = `/articles/${item.slug.replace(/-\d+$/, "")}-${item.article_id}`;
+      }
 
       setRecentSearches((prev) => {
         const newSearches = prev
@@ -244,8 +262,9 @@ const SearchModal: React.FC = () => {
       });
 
       closeModal();
+      router.push(href);
     },
-    [closeModal]
+    [closeModal, router]
   );
 
   const RenderSection = useMemo(
@@ -319,10 +338,7 @@ const SearchModal: React.FC = () => {
                           <Clock className="w-3 h-3 text-gray-500 shrink-0" />
                         </span>
                         <Link
-                          href={`/${type}/${item.slug.replace(
-                            /-\d+$/,
-                            ""
-                          )}-${itemId}`}
+                          href={`/colleges-for-${item.slug}`}
                           className="flex-1 leading-snug text-gray-900 line-clamp-2"
                           onClick={() => handleResultClick(item)}
                         >
@@ -426,9 +442,7 @@ const SearchModal: React.FC = () => {
                     } else if (isCourseGroupItem(item)) {
                       title = item.full_name;
                       subtitle = "SPECIALISATION";
-                      href = `/courses/${item.slug.replace(/-\d+$/, "")}-${
-                        item.course_group_id
-                      }`;
+                      href = `/colleges-for-${item.slug}`;
                     } else if (isArticleItem(item)) {
                       title = item.title;
                       subtitle = "ARTICLE";
@@ -441,16 +455,13 @@ const SearchModal: React.FC = () => {
                       <li
                         key={item.slug}
                         className="flex items-center px-5 py-3 hover:bg-gray-50 transition-colors cursor-pointer"
+                        onClick={() => handleResultClick(item)}
                       >
                         <Search className="w-4 h-4 text-gray-400 mr-3" />
                         <div className="flex flex-col flex-1 min-w-0">
-                          <Link
-                            href={href}
-                            className="font-medium text-[16px] text-gray-900 truncate"
-                            onClick={() => handleResultClick(item)}
-                          >
+                          <span className="font-medium text-[16px] text-gray-900 truncate">
                             {title}
-                          </Link>
+                          </span>
                           <span className="text-xs text-gray-400 font-semibold tracking-wide mt-0.5 uppercase">
                             {subtitle}
                           </span>

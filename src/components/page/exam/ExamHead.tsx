@@ -15,9 +15,9 @@ interface ExamHeadProps {
 const ExamHead: React.FC<ExamHeadProps> = ({ data, title }) => {
   return (
     <div className="relative bg-exam-head  text-white pt-16 md:pt-28 pb-8 container-body min-h-64">
-      <h2 className="absolute inset-x-0 top-1/4 flex items-center justify-center text-center text-5xl md:text-8xl leading-10 md:leading-ultraWide font-public font-bold text-[#FFFFFF] opacity-20">
+      <span className="absolute inset-x-0 top-1/4 flex items-center justify-center text-center text-5xl md:text-8xl leading-10 md:leading-ultraWide font-public font-bold text-[#FFFFFF] opacity-20">
         {trimText(data.exam_name, 58)}
-      </h2>
+      </span>
       <div className="relative z-10 flex items-center flex-col md:flex-row gap-6">
         <Image
           src={
@@ -59,7 +59,7 @@ const ExamHead: React.FC<ExamHeadProps> = ({ data, title }) => {
             <LeadModal
               triggerText={
                 <span className="flex items-center gap-2  text-white  py-3 rounded-full shadow-lg">
-                  <RiCustomerService2Fill  size={24} /> Enquire Now
+                  <RiCustomerService2Fill size={24} /> Enquire Now
                 </span>
               }
             />

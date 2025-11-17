@@ -14,7 +14,7 @@ export const getExamNewsById = async (examId: number) => {
       headers: {
         "Content-Type": "application/json",
       },
-      next: { revalidate: 100 },
+      next: { revalidate: 60 * 30 },
     });
 
     if (!response.ok) {

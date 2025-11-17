@@ -1,5 +1,6 @@
 import React from "react";
 import { getExamNewsById } from "@/api/individual/getExamNewsById";
+import { getExamsById } from "@/api/individual/getExamsById";
 import { notFound, redirect } from "next/navigation";
 import Script from "next/script";
 import Link from "next/link";
@@ -8,6 +9,7 @@ import ExamNav from "@/components/page/exam/ExamNav";
 import Image from "next/image";
 import { createSlugFromTitle } from "@/components/utils/utils";
 import "@/app/styles/tables.css";
+import { humanize } from "inflection";
 
 const formatDateWord = (dateStr: string): string => {
   return new Date(dateStr).toLocaleDateString("en-US", {
@@ -39,16 +41,20 @@ export async function generateMetadata(props: {
   const examId = Number(match[2]);
   if (isNaN(examId)) return { title: "Invalid Exam" };
 
-  const exam = await getExamNewsById(examId);
-  if (!exam) return { title: "Exam Not Found" };
+  // fetch nav data using exam_info silo, and fetch news content separately
+  const navExam = await getExamsById(examId, "exam_info");
+  const newsData = await getExamNewsById(examId);
+  if (!navExam || !newsData) return { title: "Exam Not Found" };
 
-  const { examInformation, news_section } = exam;
+  const { examInformation } = navExam;
   const { exam_name, slug } = examInformation;
-  const newsItem = news_section?.[0];
-  const examSlug = slug.replace(/-\d+$/, "");
+  const newsItem = newsData.news_section?.[0];
+  const examSlug = slug?.replace(/-\d+$/, "");
 
   return {
-    title: newsItem?.title || `${exam_name} News`,
+    title: newsItem?.title
+      ? humanize(newsItem.title).replace(/-/g, " ")
+      : `${exam_name} News`,
     description:
       newsItem?.meta_desc || `Latest news and updates from ${exam_name}.`,
     keywords:
@@ -77,15 +83,16 @@ const ExamNews = async ({
   const examId = Number(match[2]);
   if (isNaN(examId)) return notFound();
 
-  const exam = await getExamNewsById(examId);
-  if (!exam?.examInformation || !exam?.news_section) return notFound();
+  const navExam = await getExamsById(examId, "exam_info");
+  const newsData = await getExamNewsById(examId);
+  if (!navExam?.examInformation || !newsData?.news_section) return notFound();
 
-  const { examInformation, news_section } = exam;
+  const { examInformation } = navExam;
 
-  const newsList = exam.news_section;
-  const examName = exam.examInformation?.exam_name || "Unknown Exam";
+  const newsList = newsData.news_section;
+  const examName = examInformation?.exam_name || "Unknown Exam";
   const trimmedExamName =
-    exam.examInformation?.slug?.replace(/-\d+$/, "") ||
+    examInformation?.slug?.replace(/-\d+$/, "") ||
     examName.toLowerCase().replace(/\s+/g, "-");
   const correctSlugId = `${trimmedExamName}-${examId}`;
 
@@ -104,7 +111,7 @@ const ExamNews = async ({
       "@context": "https://schema.org",
       "@type": "Organization",
       name: examName,
-      logo: exam.examInformation?.exam_logo,
+      logo: examInformation?.exam_logo,
       url: `https://www.truescholar.in/exams/${correctSlugId}`,
     },
     {
@@ -119,7 +126,7 @@ const ExamNews = async ({
       datePublished: newsList[0]?.updated_at,
       dateModified: newsList[0]?.updated_at,
       image:
-        exam.examInformation?.exam_logo ||
+        examInformation?.exam_logo ||
         "https://www.truescholar.in/logo-dark.webp",
       publisher: {
         "@type": "Organization",
@@ -140,13 +147,13 @@ const ExamNews = async ({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLD) }}
       />
       <ExamHead data={examInformation} title={`${examName} News`} />
-      <ExamNav data={exam} />
+      <ExamNav data={navExam} />
       <div className="container-body lg:grid grid-cols-12 gap-4 pt-4">
-        <div className="col-span-3 mt-4">
+        <div className="col-span-3 mt-4 flex justify-center items-start">
           <Image src="/ads/static.svg" height={250} width={500} alt="ads" />
         </div>
         <div className="col-span-9 mt-4">
-          <div className="flex gap-4 flex-col">
+          <div className="flex gap-4 flex-col ">
             {newsList.map(
               (newsItem: {
                 id: number;
@@ -164,7 +171,7 @@ const ExamNews = async ({
                     )}-${newsItem.id}`}
                   >
                     <h2 className="text-lg font-medium hover:underline">
-                      {newsItem.title}
+                      {humanize(newsItem.title).replace(/-/g, " ")}
                     </h2>
                   </Link>
                   <p className="text-sm text-gray-600">

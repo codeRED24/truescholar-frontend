@@ -1,8 +1,10 @@
 import { getNewsByExamId } from "@/api/individual/getNewsByExamId";
+import { getExamsById } from "@/api/individual/getExamsById";
 import ExamHead from "@/components/page/exam/ExamHead";
 import ExamNav from "@/components/page/exam/ExamNav";
 import { notFound, redirect } from "next/navigation";
 import Script from "next/script";
+import Image from "next/image";
 import { sanitizeHtml } from "@/components/utils/sanitizeHtml";
 import TocGenerator from "@/components/miscellaneous/TocGenerator";
 import "@/app/styles/tables.css";
@@ -24,10 +26,14 @@ export async function generateMetadata({
   const newsId = Number(newsMatch[2]);
   if (isNaN(newsId)) return { title: "Invalid News" };
 
+  // Nav data should come from the `getExamsById` endpoint (silo: exam_info)
+  const navExam = await getExamsById(examId, "exam_info");
+  // Fetch the actual news content using the existing endpoint
   const exam = await getNewsByExamId(newsId);
   if (!exam?.news_section?.[0]) return { title: "News Not Found" };
 
-  const { title, description, updated_at } = exam.news_section[0];
+  const { title, description, updated_at, meta_desc } = exam.news_section[0];
+
   const examName = exam.examInformation?.exam_name || "Unknown Exam";
   const examSlug =
     exam.examInformation?.slug?.replace(/-\d+$/, "") ||
@@ -37,7 +43,7 @@ export async function generateMetadata({
 
   return {
     title: `${title} | ${examName} News`,
-    description: description || `Latest news from ${examName}.`,
+    description: meta_desc || `Latest news from ${examName}.`,
     keywords: `${examName}, news, ${newsSlug}, education`,
     alternates: {
       canonical: `https://www.truescholar.in/exams/${correctSlugId}/news/${newsSlug}-${newsId}`,
@@ -70,12 +76,22 @@ const NewsIndividual = async ({
   if (isNaN(newsId)) return notFound();
 
   const exam = await getNewsByExamId(newsId);
-  if (!exam?.examInformation || !exam?.news_section?.[0]) return notFound();
+  const navExam = await getExamsById(examId, "exam_info");
+  // Ensure we have nav data and news article
+  if (
+    !navExam?.examInformation ||
+    !exam?.examInformation ||
+    !exam?.news_section?.[0]
+  )
+    return notFound();
 
+  // Article content
   const news = exam.news_section[0];
-  const examName = exam.examInformation.exam_name || "Unknown Exam";
+  // Prefer exam info from navExam for slugs/nav; fallback to the exam object
+  const examInfo = navExam.examInformation || exam.examInformation;
+  const examName = examInfo.exam_name || "Unknown Exam";
   const examSlug =
-    exam.examInformation.slug?.replace(/-\d+$/, "") ||
+    examInfo.slug?.replace(/-\d+$/, "") ||
     examName.toLowerCase().replace(/\s+/g, "-");
   const correctSlugId = `${examSlug}-${examId}`;
   const correctNewsSlugId = `${newsSlugId.replace(/-\d+$/, "")}-${newsId}`;
@@ -96,7 +112,7 @@ const NewsIndividual = async ({
       "@context": "https://schema.org",
       "@type": "Organization",
       name: examName,
-      logo: exam.examInformation.exam_logo,
+      logo: examInfo.exam_logo,
       url: `https://www.truescholar.in/exams/${correctSlugId}`,
     },
     {
@@ -107,9 +123,7 @@ const NewsIndividual = async ({
       author: { "@type": "Person", name: author_name || "Unknown Author" },
       datePublished: updated_at,
       dateModified: updated_at,
-      image:
-        exam.examInformation.exam_logo ||
-        "https://www.truescholar.in/logo-dark.webp",
+      image: examInfo.exam_logo || "https://www.truescholar.in/logo-dark.webp",
       publisher: {
         "@type": "Organization",
         name: "TrueScholar",
@@ -132,10 +146,14 @@ const NewsIndividual = async ({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLD) }}
       />
-      <ExamHead data={exam.examInformation} title={title} />
-      <ExamNav data={exam} />
+      <ExamHead data={examInfo} title={title} />
+      {/* Pass nav data from getExamsById to ensure distinctSilos are available for navigation */}
+      <ExamNav data={navExam} />
 
       <div className="container-body lg:grid grid-cols-12 gap-4 pt-4">
+        <div className="col-span-3 mt-4 flex justify-center items-start">
+          <Image src="/ads/static.svg" height={250} width={500} alt="ads" />
+        </div>
         <div className="col-span-9">
           {sanitizedDescription && (
             <TocGenerator content={sanitizedDescription} />
@@ -149,7 +167,6 @@ const NewsIndividual = async ({
             }}
           />
         </div>
-        <div className="col-span-3 mt-4"></div>
       </div>
     </div>
   );

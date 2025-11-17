@@ -37,6 +37,7 @@ import { useMemo, useCallback } from "react";
 import { personalDetailsSchema } from "@/lib/validation-schemas";
 import { SuggestionInput } from "@/components/ui/suggestion-input";
 import Image from "next/image";
+import Link from "next/link";
 
 // Form validation schema using personalDetailsSchema from validation-schemas.ts
 const signupSchema = personalDetailsSchema
@@ -335,9 +336,9 @@ export default function SignupPage() {
                 height={40}
                 className="w-20 h-20 md:w-20 md:h-20 object-contain absolute -left-5 z-[1000]"
               />
-              <h3 className="text-white font-bold text-base md:text-lg pl-14">
+              <span className="text-white font-bold text-base md:text-lg pl-14">
                 Introducing Our Daily Dash Feature!
-              </h3>
+              </span>
             </div>
             <div className="bg-white/10 w-[96%]  rounded-lg p-4 md:p-6  max-w-md border-l border-r border-b rounded-t-none border-white/20 ">
               <div className="space-y-3 text-white/90 text-xs md:text-sm">
@@ -376,11 +377,16 @@ export default function SignupPage() {
 
         {/* Right Side - Form */}
         <div className="w-full lg:w-5/12 bg-gradient-to-br from-white to-gray-100 p-6 md:p-8 flex flex-col justify-center">
+          <Link href={"/"} className="text-3xl text-center mb-4 font-extrabold">
+            True
+            <span className="text-primary-main">Scholar</span>
+          </Link>
           <div className="text-center mb-6 md:mb-8">
-            <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">
-              <span className="text-blue-600">GET</span>{" "}
-              <span className="text-orange-500">STARTED</span>
-            </h2>
+            <h1 className="text-xl  font-bold text-gray-800 mb-2">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-pink-400 to-orange-500 [text-shadow:1px_1px_1px_rgba(0,0,0,0.08)]">
+                GET STARTED
+              </span>
+            </h1>
             <p className="text-gray-600 text-xs md:text-sm">
               Begin your college journey now! Sign up to explore options
             </p>
