@@ -1,37 +1,46 @@
 import { Card, CardContent } from "@/components/ui/card";
-import Image from "next/image";
+import { BenefitIcon } from "@/components/icons/BenefitIcon";
 
 const benefits = [
   {
-    title: "Find the Best Fit for Your Goals",
+    title: "Make Informed Decisions",
     description:
-      "Choose a university that aligns with your goals and future prospects.",
+      "Compare colleges side-by-side on fees, courses, facilities, placements, NIRF/rankings and more — choose using facts, not assumptions.",
   },
   {
-    title: "Understand Tuition Fees & Costs",
+    title: "Save Time & Effort",
     description:
-      "Compare university fees, tuition, scholarships & living costs to budget smartly.",
+      "Get all essential college details — eligibility, cut-offs, course lists, fees and scholarships — in one place instead of visiting multiple sites.",
   },
   {
-    title: "Check Course Quality & Recognition",
-    description: "Pick accredited programs with strong industry recognition.",
-  },
-  {
-    title: "Explore Post-Graduation Opportunities",
-    description: "Find universities with top placements & industry links.",
-  },
-  {
-    title: "Assess Campus Life & Student Support",
-    description: "Ensure a welcoming campus with great support services.",
-  },
-  {
-    title: "Location & Lifestyle Considerations",
+    title: "Find Best Value for Money",
     description:
-      "City, coast, or countryside—choose what suits your lifestyle.",
+      "Compare fee structures vs. placement outcomes, faculty strength, labs and ROI to pick the most cost-effective option.",
   },
   {
-    title: "Visa & PR Pathways",
-    description: "Explore visa options and permanent residency pathways.",
+    title: "Personalized Choices",
+    description:
+      "Filter by location, budget, entrance scores (JEE/NEET/CET etc.), course type, or state quota to find colleges that match your profile.",
+  },
+  {
+    title: "Transparent Admission Insights",
+    description:
+      "See eligibility, previous year cut-offs, important application dates, counselling rounds and management quota info for each college.",
+  },
+  {
+    title: "Compare Course Structure & Curriculum",
+    description:
+      "Understand which college offers industry-aligned curriculum, specialisations, internships and practical training for better job readiness.",
+  },
+  {
+    title: "Check Authentic Reviews & Ratings",
+    description:
+      "Read student reviews, faculty feedback and alumni stories to get a real view of campus life and academics beyond brochures.",
+  },
+  {
+    title: "Analyze Placement Records",
+    description:
+      "Compare placement rates, top recruiters, median/higher packages and internship opportunities to forecast career outcomes.",
   },
 ];
 
@@ -45,20 +54,16 @@ export default function UniversityBenefits() {
       </div>
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
         {benefits.map((benefit, index) => (
-          <Card key={index} className="border-0 p-6 shadow-sm">
+          <Card key={index} className="border p-2">
             <CardContent className="pt-6">
               <div className="mb-4 h-16 w-16 rounded-full">
-                <Image
-                  src={`/benefit${index + 1}.svg`}
-                  width={70}
-                  height={70}
-                  alt="Icon"
-                  loading="lazy"
-                  quality={25}
+                <BenefitIcon
+                  index={index}
+                  className="h-full w-full text-primary-main"
                 />
               </div>
-              <h4 className="mb-3 font-bold text-black">{benefit.title}</h4>
-              <p className="text-sm text-gray-600">{benefit.description}</p>
+              <h4 className="font-bold text-neutral-800">{benefit.title}</h4>
+              <p className="text-sm text-neutral-600">{benefit.description}</p>
             </CardContent>
           </Card>
         ))}

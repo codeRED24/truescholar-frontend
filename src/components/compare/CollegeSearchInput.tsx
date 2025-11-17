@@ -75,7 +75,7 @@ export default function CollegeSearchInput({
         }}
         autoComplete="off"
       />
-      <Search className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
+      <Search className="absolute right-3 top-4 h-4 w-4 text-gray-400" />
       {dropdownOpen &&
         typeof window !== "undefined" &&
         createPortal(

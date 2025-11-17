@@ -119,7 +119,7 @@ export default function UniversityBox({
           <Button
             variant="outline"
             style={{ backgroundColor: "white" }}
-            className="h-12 w-full justify-between text-left font-normal"
+            className="h-12 w-full justify-between text-left font-normal rounded-md"
             disabled={loading || (!courses.length && !!selectedCollegeId)}
           >
             <span className="truncate">
