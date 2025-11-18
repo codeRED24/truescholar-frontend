@@ -35,12 +35,19 @@ const SheetTrigger = dynamic(() =>
   import("@/components/ui/sheet").then((mod) => mod.SheetTrigger)
 );
 
+type CachedCollegesData = {
+  colleges: CollegesResponseDTO["colleges"];
+  total_colleges_count: number;
+  filter_section: CollegesResponseDTO["filter_section"];
+  selected_description?: string;
+};
+
 const sessionCache = {
-  get: (key: string) => {
+  get: (key: string): CachedCollegesData | null => {
     const cached = sessionStorage.getItem(key);
     return cached ? JSON.parse(cached) : null;
   },
-  set: (key: string, data: any) => {
+  set: (key: string, data: CachedCollegesData) => {
     try {
       sessionStorage.setItem(key, JSON.stringify(data));
     } catch {
@@ -99,6 +106,9 @@ const CollegeList = () => {
       city_name: parsedFilters.city ? parsedFilters.city[0] : "",
       state_name: parsedFilters.state ? parsedFilters.state[0] : "",
       stream_name: parsedFilters.stream ? parsedFilters.stream[0] : "",
+      course_group_name: parsedFilters.course_group
+        ? parsedFilters.course_group[0]
+        : "",
       type_of_institute: parsedFilters.type || [],
       fee_range: parsedFilters.fee_range || [],
     };
@@ -116,6 +126,7 @@ const CollegeList = () => {
     city_filter: [],
     state_filter: [],
     stream_filter: [],
+    course_group_filter: [],
     type_of_institute_filter: [],
     specialization_filter: [],
   });
@@ -155,11 +166,10 @@ const CollegeList = () => {
       city_name: filters.city_name as string,
       state_name: filters.state_name as string,
       stream_name: filters.stream_name as string,
+      course_group_name: filters.course_group_name as string,
       type_of_institute: filters.type_of_institute as string[],
       fee_range: filters.fee_range as string[],
     };
-
-    // console.log(filters);
 
     const cacheKey = generateCacheKey(page, apiFilters);
     const cachedData = sessionCache.get(cacheKey);
@@ -183,6 +193,7 @@ const CollegeList = () => {
     setLoading(true);
     try {
       const data = await getColleges({ page, limit: 10, filters: apiFilters });
+
       // Store selected_description if present
       setSelectedDescription(data.selected_description || null);
 
@@ -216,6 +227,7 @@ const CollegeList = () => {
     filters.city_name,
     filters.state_name,
     filters.stream_name,
+    filters.course_group_name,
     filters.type_of_institute,
     filters.fee_range,
     hasMore,
@@ -231,6 +243,7 @@ const CollegeList = () => {
       filters.city_name ||
       filters.state_name ||
       filters.stream_name ||
+      filters.course_group_name ||
       (filters.type_of_institute as string[]).length > 0 ||
       (filters.fee_range as string[]).length > 0;
 
@@ -244,6 +257,9 @@ const CollegeList = () => {
       city: filters.city_name ? [filters.city_name as string] : undefined,
       state: filters.state_name ? [filters.state_name as string] : undefined,
       stream: filters.stream_name ? [filters.stream_name as string] : undefined,
+      course_group: filters.course_group_name
+        ? [filters.course_group_name as string]
+        : undefined,
       type:
         (filters.type_of_institute as string[]).length > 0
           ? (filters.type_of_institute as string[])
@@ -305,6 +321,7 @@ const CollegeList = () => {
           updatedFilters.city_name ||
           updatedFilters.state_name ||
           updatedFilters.stream_name ||
+          updatedFilters.course_group_name ||
           (updatedFilters.type_of_institute as string[]).length > 0 ||
           (updatedFilters.fee_range as string[]).length > 0;
 
@@ -358,6 +375,27 @@ const CollegeList = () => {
               {filters.stream_name}
               <button
                 onClick={() => handleRemoveFilter("stream_name")}
+                className="ml-2 text-xxs bg-[#1C252E] text-white rounded-full p-0.5"
+              >
+                <X />
+              </button>
+            </div>
+          )}
+          {filters.course_group_name && (
+            <div className="flex items-center bg-[#919EAB1F] text-[#1C252E] text-sm font-medium capitalize px-3 py-1 rounded-2xl">
+              {(() => {
+                const val =
+                  filterSection.course_group_filter.find(
+                    (cg) => cg.course_group_name === filters.course_group_name
+                  )?.course_group_name || filters.course_group_name;
+
+                return Array.isArray(val)
+                  ? val.join(" ").replace(/-/g, " ")
+                  : val.replace(/-/g, " ");
+              })()}
+
+              <button
+                onClick={() => handleRemoveFilter("course_group_name")}
                 className="ml-2 text-xxs bg-[#1C252E] text-white rounded-full p-0.5"
               >
                 <X />
@@ -470,6 +508,28 @@ const CollegeList = () => {
                     </button>
                   </div>
                 )}
+                {filters.course_group_name && (
+                  <div className="flex items-center bg-[#919EAB1F] text-[#1C252E] text-sm font-medium capitalize px-3 py-1 rounded-2xl">
+                    {(() => {
+                      const val =
+                        filterSection.course_group_filter.find(
+                          (cg) =>
+                            cg.course_group_name === filters.course_group_name
+                        )?.course_group_name || filters.course_group_name;
+
+                      return Array.isArray(val)
+                        ? val.join(" ").replace(/-/g, " ")
+                        : val.replace(/-/g, " ");
+                    })()}
+
+                    <button
+                      onClick={() => handleRemoveFilter("course_group_name")}
+                      className="ml-2 text-xxs bg-[#1C252E] text-white rounded-full p-0.5"
+                    >
+                      <X />
+                    </button>
+                  </div>
+                )}
                 {(filters.type_of_institute as string[]).map((type) => (
                   <div
                     key={type}
@@ -541,5 +601,7 @@ const CollegeList = () => {
     </div>
   );
 };
+
+CollegeList.displayName = "CollegeList";
 
 export default CollegeList;

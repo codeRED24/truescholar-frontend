@@ -1,9 +1,16 @@
 "use client";
 
-import { FilterSectionDTO } from "@/api/@types/college-list";
 import React, { useState, useCallback, useMemo, memo } from "react";
 import debounce from "lodash/debounce";
 import { RotateCcw, X } from "lucide-react";
+import {
+  CityFilterItem,
+  CourseGroupFilterItem,
+  FilterSectionDTO,
+  StateFilterItem,
+  StreamFilterItem,
+  TypeOfInstituteFilterItem,
+} from "@/api/@types/college-list";
 
 interface CollegeFilterProps {
   filterSection: FilterSectionDTO;
@@ -33,22 +40,25 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
       city: "",
       state: "",
       stream: "",
+      course_group: "",
     });
 
     // Helper function to normalize values for comparison
     const normalizeValue = useCallback(
-      (val: string): string => val.toLowerCase().replace(/[^a-z0-9]/g, ""),
+      (val: string | null | undefined): string =>
+        (val || "").toLowerCase().replace(/[^a-z0-9]/g, ""),
       []
     );
 
     const handleApiFilterChange = useCallback(
-      (filterType: string, value: string, name?: string) => {
+      (filterType: string, value: string) => {
         const updatedFilters = { ...selectedFilters };
 
         if (
           filterType === "city_name" ||
           filterType === "state_name" ||
-          filterType === "stream_name"
+          filterType === "stream_name" ||
+          filterType === "course_group_name"
         ) {
           // For single-select filters (radio buttons), replace the value
           updatedFilters[filterType] = value;
@@ -78,14 +88,15 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
 
     const handleClearFilters = useCallback(() => {
       const clearedFilters = {
-        city_name: [],
-        state_name: [],
-        stream_name: [],
+        city_name: "",
+        state_name: "",
+        stream_name: "",
+        course_group_name: "",
         type_of_institute: [],
         fee_range: [],
       };
       onFilterChange(clearedFilters);
-      setSearchTerms({ city: "", state: "", stream: "" });
+      setSearchTerms({ city: "", state: "", stream: "", course_group: "" });
     }, [onFilterChange]);
 
     const debouncedSearchChange = useMemo(
@@ -111,6 +122,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
         selectedFilters.city_name !== "" ||
         selectedFilters.state_name !== "" ||
         selectedFilters.stream_name !== "" ||
+        selectedFilters.course_group_name !== "" ||
         (selectedFilters.type_of_institute as string[]).length > 0 ||
         (selectedFilters.fee_range as string[]).length > 0,
       [selectedFilters]
@@ -118,7 +130,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
 
     const filteredCities = useMemo(
       () =>
-        filterSection.city_filter.filter((city: any) =>
+        filterSection.city_filter.filter((city: CityFilterItem) =>
           city.city_name?.toLowerCase().includes(searchTerms.city)
         ),
       [filterSection.city_filter, searchTerms.city]
@@ -126,7 +138,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
 
     const filteredStates = useMemo(
       () =>
-        filterSection.state_filter.filter((state: any) =>
+        filterSection.state_filter.filter((state: StateFilterItem) =>
           state.state_name?.toLowerCase().includes(searchTerms.state)
         ),
       [filterSection.state_filter, searchTerms.state]
@@ -134,10 +146,21 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
 
     const filteredStreams = useMemo(
       () =>
-        filterSection.stream_filter.filter((stream: any) =>
+        filterSection.stream_filter.filter((stream: StreamFilterItem) =>
           stream.stream_name?.toLowerCase().includes(searchTerms.stream)
         ),
       [filterSection.stream_filter, searchTerms.stream]
+    );
+
+    const filteredCourseGroups = useMemo(
+      () =>
+        filterSection.course_group_filter?.filter(
+          (courseGroup: CourseGroupFilterItem) =>
+            courseGroup.course_group_name
+              ?.toLowerCase()
+              .includes(searchTerms.course_group)
+        ),
+      [filterSection.course_group_filter, searchTerms.course_group]
     );
 
     return (
@@ -182,7 +205,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
                 ? Array.from({ length: 8 }, (_, index) => (
                     <SkeletonFilterItem key={index} />
                   ))
-                : filteredCities.map((city: any) => (
+                : filteredCities.map((city: CityFilterItem) => (
                     <label
                       key={city.city_id}
                       className="flex items-center space-x-2 text-sm font-public"
@@ -235,7 +258,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
                 ? Array.from({ length: 8 }, (_, index) => (
                     <SkeletonFilterItem key={index} />
                   ))
-                : filteredStates.map((state: any) => (
+                : filteredStates.map((state: StateFilterItem) => (
                     <label
                       key={state.state_id}
                       className="flex items-center space-x-2 text-sm font-public"
@@ -290,7 +313,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
                 ? Array.from({ length: 8 }, (_, index) => (
                     <SkeletonFilterItem key={index} />
                   ))
-                : filteredStreams.map((stream: any) => (
+                : filteredStreams.map((stream: StreamFilterItem) => (
                     <label
                       key={stream.stream_id}
                       className="flex items-center space-x-2 text-sm font-public"
@@ -318,34 +341,95 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
             </div>
           </>
           <>
+            <h3 className="font-medium">Courses</h3>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search course groups..."
+                value={searchTerms.course_group}
+                onChange={(e) =>
+                  debouncedSearchChange("course_group", e.target.value)
+                }
+                className="w-full p-2 mb-2 border rounded-xl h-9 pr-8"
+                disabled={isLoading}
+              />
+              {searchTerms.course_group && (
+                <button
+                  onClick={() => handleClearSearch("course_group")}
+                  className="absolute right-3 top-[18px] transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  disabled={isLoading}
+                >
+                  <X className="text-white bg-primary-main rounded-full p-0.5" />
+                </button>
+              )}
+            </div>
+            <div className="space-y-1 max-h-40 overflow-y-auto">
+              {isLoading || filterSection?.course_group_filter?.length === 0
+                ? Array.from({ length: 8 }, (_, index) => (
+                    <SkeletonFilterItem key={index} />
+                  ))
+                : filteredCourseGroups?.map(
+                    (courseGroup: CourseGroupFilterItem) => (
+                      <label
+                        key={courseGroup.course_group_id}
+                        className="flex items-center space-x-2 text-sm font-public"
+                      >
+                        <input
+                          type="radio"
+                          name="course_group_name"
+                          checked={
+                            normalizeValue(
+                              selectedFilters.course_group_name as string
+                            ) ===
+                            normalizeValue(courseGroup.course_group_name || "")
+                          }
+                          onChange={() =>
+                            handleApiFilterChange(
+                              "course_group_name",
+                              courseGroup.course_group_name ?? ""
+                            )
+                          }
+                        />
+                        <span>{courseGroup.course_group_name}</span>
+                      </label>
+                    )
+                  )}
+            </div>
+          </>
+          <>
             <h3 className="font-medium">Type of Institute</h3>
             {isLoading || filterSection.type_of_institute_filter.length === 0
               ? Array.from({ length: 8 }, (_, index) => (
                   <SkeletonFilterItem key={index} />
                 ))
-              : filterSection.type_of_institute_filter.map((type: any) => (
-                  <label
-                    key={type.value}
-                    className="flex items-center space-x-2 text-sm font-public"
-                  >
-                    <input
-                      type="radio"
-                      checked={(
-                        selectedFilters.type_of_institute as string[]
-                      ).some(
-                        (selectedValue) =>
-                          normalizeValue(selectedValue) ===
-                          normalizeValue(type.value ?? "")
-                      )}
-                      onChange={() =>
-                        handleApiFilterChange("type_of_institute", type.value)
-                      }
-                    />
-                    <span>
-                      {type.value} ({type.count})
-                    </span>
-                  </label>
-                ))}
+              : filterSection.type_of_institute_filter.map(
+                  (type: TypeOfInstituteFilterItem) => (
+                    <label
+                      key={type.value}
+                      className="flex items-center space-x-2 text-sm font-public"
+                    >
+                      <input
+                        type="radio"
+                        checked={(
+                          selectedFilters.type_of_institute as string[]
+                        ).some(
+                          (selectedValue) =>
+                            normalizeValue(selectedValue) ===
+                            normalizeValue(type.value ?? "")
+                        )}
+                        onChange={() =>
+                          handleApiFilterChange(
+                            "type_of_institute",
+                            type.value ?? ""
+                          )
+                        }
+                      />
+                      <span>
+                        {type.value} ({type.count})
+                      </span>
+                    </label>
+                  )
+                )}
           </>
           <>
             <h3 className="font-medium">Fee Range</h3>
@@ -376,5 +460,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
     );
   }
 );
+
+CollegeFilter.displayName = "CollegeFilter";
 
 export default CollegeFilter;

@@ -21,6 +21,7 @@ export function buildCollegeSlug(filters: {
   city?: string[];
   state?: string[];
   stream?: string[];
+  course_group?: string[];
   type?: string[];
   fee_range?: string[];
 }) {
@@ -29,7 +30,12 @@ export function buildCollegeSlug(filters: {
   if (filters.city && filters.city.length > 0) {
     const cityValues = Array.from(
       new Set(
-        filters.city.map((v) => v.toLowerCase().replace(/[^a-z0-9]/g, ""))
+        filters.city.map((v) =>
+          v
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "")
+        )
       )
     );
     parts.push("city", cityValues.join("%2C"));
@@ -38,7 +44,12 @@ export function buildCollegeSlug(filters: {
   if (filters.state && filters.state.length > 0) {
     const stateValues = Array.from(
       new Set(
-        filters.state.map((v) => v.toLowerCase().replace(/[^a-z0-9]/g, ""))
+        filters.state.map((v) =>
+          v
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "")
+        )
       )
     );
     parts.push("state", stateValues.join("%2C"));
@@ -47,16 +58,40 @@ export function buildCollegeSlug(filters: {
   if (filters.stream && filters.stream.length > 0) {
     const streamValues = Array.from(
       new Set(
-        filters.stream.map((v) => v.toLowerCase().replace(/[^a-z0-9]/g, ""))
+        filters.stream.map((v) =>
+          v
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "")
+        )
       )
     );
     parts.push("stream", streamValues.join("%2C"));
   }
 
+  if (filters.course_group && filters.course_group.length > 0) {
+    const courseGroupValues = Array.from(
+      new Set(
+        filters.course_group.map((v) =>
+          v
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "")
+        )
+      )
+    );
+    parts.push("for", courseGroupValues.join("%2C"));
+  }
+
   if (filters.type && filters.type.length > 0) {
     const typeValues = Array.from(
       new Set(
-        filters.type.map((v) => v.toLowerCase().replace(/[^a-z0-9]/g, ""))
+        filters.type.map((v) =>
+          v
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "")
+        )
       )
     );
     parts.push("type", typeValues.join("%2C"));
@@ -65,7 +100,12 @@ export function buildCollegeSlug(filters: {
   if (filters.fee_range && filters.fee_range.length > 0) {
     const feeRangeValues = Array.from(
       new Set(
-        filters.fee_range.map((v) => v.toLowerCase().replace(/[^a-z0-9]/g, ""))
+        filters.fee_range.map((v) =>
+          v
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "")
+        )
       )
     );
     parts.push("fee_range", feeRangeValues.join("%2C"));
@@ -81,6 +121,7 @@ export function parseCollegeSlugToFilters(slug: string) {
     city?: string[];
     state?: string[];
     stream?: string[];
+    course_group?: string[];
     type?: string[];
     fee_range?: string[];
   } = {};
@@ -93,15 +134,32 @@ export function parseCollegeSlugToFilters(slug: string) {
   const collegesIndex = parts.indexOf("colleges");
   if (collegesIndex === -1) return filters;
 
+  // Define valid keywords
+  const keywords = ["city", "state", "stream", "for", "type", "fee_range"];
+
   // Parse the parts after "colleges"
-  for (let i = collegesIndex + 1; i < parts.length; i += 2) {
+  let i = collegesIndex + 1;
+  while (i < parts.length) {
     const keyword = parts[i];
-    const values = parts[i + 1];
 
-    if (!values) continue;
+    if (!keywords.includes(keyword)) {
+      i++;
+      continue;
+    }
 
-    // Split by URL-encoded comma (%2C) or regular comma
-    const valueArray = values
+    // Collect all parts until the next keyword
+    const valueParts: string[] = [];
+    let j = i + 1;
+    while (j < parts.length && !keywords.includes(parts[j])) {
+      valueParts.push(parts[j]);
+      j++;
+    }
+
+    // Join the value parts back together with hyphens
+    const valueString = valueParts.join("-");
+
+    // Split by URL-encoded comma (%2C) or regular comma for multiple values
+    const valueArray = valueString
       .split(/[,%2C]/)
       .map((v) => v.trim())
       .filter((v) => v.length > 0);
@@ -116,6 +174,9 @@ export function parseCollegeSlugToFilters(slug: string) {
       case "stream":
         filters.stream = valueArray;
         break;
+      case "for":
+        filters.course_group = valueArray;
+        break;
       case "type":
         filters.type = valueArray;
         break;
@@ -123,6 +184,8 @@ export function parseCollegeSlugToFilters(slug: string) {
         filters.fee_range = valueArray;
         break;
     }
+
+    i = j;
   }
 
   // console.log({ filters });
@@ -186,7 +249,12 @@ export function buildExamSlug(filters: {
   if (filters.level && filters.level.length > 0) {
     const levelValues = Array.from(
       new Set(
-        filters.level.map((v) => v.toLowerCase().replace(/[^a-z0-9]/g, ""))
+        filters.level.map((v) =>
+          v
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "")
+        )
       )
     );
     parts.push("level", levelValues.join("%2C"));
@@ -195,7 +263,12 @@ export function buildExamSlug(filters: {
   if (filters.streams && filters.streams.length > 0) {
     const streamValues = Array.from(
       new Set(
-        filters.streams.map((v) => v.toLowerCase().replace(/[^a-z0-9]/g, ""))
+        filters.streams.map((v) =>
+          v
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "")
+        )
       )
     );
     parts.push("stream", streamValues.join("%2C"));
@@ -204,7 +277,12 @@ export function buildExamSlug(filters: {
   if (filters.mode && filters.mode.length > 0) {
     const modeValues = Array.from(
       new Set(
-        filters.mode.map((v) => v.toLowerCase().replace(/[^a-z0-9]/g, ""))
+        filters.mode.map((v) =>
+          v
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "")
+        )
       )
     );
     parts.push("mode", modeValues.join("%2C"));
