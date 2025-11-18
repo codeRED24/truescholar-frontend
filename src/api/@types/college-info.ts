@@ -178,6 +178,11 @@ export interface CollegeDateDTO {
   refrence_url: string;
 }
 
+export interface CourseFilterItem {
+  label: string;
+  value: string;
+}
+
 export interface FilterSection {
   filter_section: Record<string, Array<{ label: string }>>;
 }
@@ -192,7 +197,7 @@ export interface CollegeDTO {
   courses_section: {
     content_section: InfoSection[];
     groups: PopularCourse[];
-    filter_section: any[];
+    filter_section: CourseFilterItem[];
   };
   fees_section: {
     content: InfoSection[];

@@ -20,6 +20,11 @@ interface StreamFilterItem extends BaseFilterItem {
   stream_slug?: string;
 }
 
+interface CourseGroupFilterItem extends BaseFilterItem {
+  course_group_id?: number;
+  course_group_name?: string;
+}
+
 interface TypeOfInstituteFilterItem extends BaseFilterItem {
   value?: string;
 }
@@ -28,10 +33,11 @@ interface SpecializationFilterItem extends BaseFilterItem {
   name?: string;
 }
 
-export interface FilterSectionDTO {
+interface FilterSectionDTO {
   city_filter: CityFilterItem[];
   state_filter: StateFilterItem[];
   stream_filter: StreamFilterItem[];
+  course_group_filter: CourseGroupFilterItem[];
   type_of_institute_filter: TypeOfInstituteFilterItem[];
   specialization_filter: SpecializationFilterItem[];
 }
@@ -42,7 +48,7 @@ interface CollegeRanking {
   india_today_ranking?: string;
 }
 
-export interface CollegeDTO {
+interface CollegeDTO {
   college_id: number;
   slug: string;
   college_name: string;
@@ -77,9 +83,23 @@ export interface CollegeDTO {
   rankings?: CollegeRanking;
 }
 
-export interface CollegesResponseDTO {
+interface CollegesResponseDTO {
   filter_section: FilterSectionDTO;
   colleges: CollegeDTO[];
   total_colleges_count: number;
   selected_description?: string;
 }
+
+export type {
+  BaseFilterItem,
+  CityFilterItem,
+  StateFilterItem,
+  StreamFilterItem,
+  CourseGroupFilterItem,
+  TypeOfInstituteFilterItem,
+  SpecializationFilterItem,
+  FilterSectionDTO,
+  CollegeRanking,
+  CollegeDTO,
+  CollegesResponseDTO,
+};

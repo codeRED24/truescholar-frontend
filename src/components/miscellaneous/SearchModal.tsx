@@ -22,6 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "../utils/useMobile";
+import slugify from "slug";
 
 const debounce = (func: (...args: any[]) => void, wait: number) => {
   let timeout: NodeJS.Timeout;
@@ -126,7 +127,6 @@ const SearchModal: React.FC = () => {
       course_group_search: filterItems(searchData.course_group_search, [
         "name",
         "full_name",
-        "slug",
       ]),
       articles_search: filterItems(searchData.articles_search, [
         "title",
@@ -213,7 +213,7 @@ const SearchModal: React.FC = () => {
       } else if (isExamItem(item)) {
         href = `/exams/${item.slug.replace(/-\d+$/, "")}-${item.exam_id}`;
       } else if (isCourseGroupItem(item)) {
-        href = `/colleges-for-${item.slug}`;
+        href = `/colleges-for-${slugify(item.full_name)}`;
       } else if (isArticleItem(item)) {
         href = `/articles/${item.slug.replace(/-\d+$/, "")}-${item.article_id}`;
       }

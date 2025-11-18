@@ -35,6 +35,11 @@ export const getColleges = async ({
   if (filters.stream_name && typeof filters.stream_name === "string")
     queryParams.stream_name = filters.stream_name;
   if (
+    filters.course_group_name &&
+    typeof filters.course_group_name === "string"
+  )
+    queryParams.course_group_name = filters.course_group_name;
+  if (
     filters.type_of_institute &&
     Array.isArray(filters.type_of_institute) &&
     filters.type_of_institute.length > 0
@@ -80,6 +85,7 @@ export const getColleges = async ({
         city_filter: data.filter_section?.city_filter ?? [],
         state_filter: data.filter_section?.state_filter ?? [],
         stream_filter: data.filter_section?.stream_filter ?? [],
+        course_group_filter: data.filter_section?.course_group_filter ?? [],
         type_of_institute_filter:
           data.filter_section?.type_of_institute_filter ?? [],
         specialization_filter: data.filter_section?.specialization_filter ?? [],
