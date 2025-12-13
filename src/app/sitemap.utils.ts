@@ -70,7 +70,7 @@ export async function generateCollegesUrls() {
               priority = 0.7;
             } else if (tabPath === "/news") {
               priority = 1;
-              changeFrequency = "daily";
+              changeFrequency = "weekly";
             }
 
             collegeUrls.push({
@@ -176,7 +176,7 @@ export async function generateExamsUrls() {
                 break;
               case "/news":
                 priority = 0.9;
-                changeFrequency = "daily";
+                changeFrequency = "weekly";
                 break;
               case "/admit-card":
                 priority = 0.7;
@@ -262,7 +262,7 @@ export async function generateArticlesUrls() {
         const slug = `${article.slug}-${article.article_id}`;
         if (!isValidSlug(slug)) return [];
         const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/articles/${slug}`;
-        return [{ url: baseUrl, changeFrequency: "daily", priority: 1 }];
+        return [{ url: baseUrl, changeFrequency: "monthly", priority: 1 }];
       })
       .flat();
   } catch (error) {
@@ -300,7 +300,7 @@ export async function generateExamNewsUrls() {
 
           return exam.news_articles.map((newsArticle) => ({
             url: `${process.env.NEXT_PUBLIC_BASE_URL}/exams/${baseSlug}/news/${newsArticle.slug}`,
-            changeFrequency: "daily" as const,
+            changeFrequency: "weekly" as const,
             priority: 1,
           }));
         })

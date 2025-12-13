@@ -78,7 +78,7 @@ export function mapExamSiloToPath(raw: string): string {
     // Exam Centers
     case "exam-centers":
     case "centers":
-      return "/centers";
+      return "/exam-centers";
 
     // FAQ
     case "exam-faq":

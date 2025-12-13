@@ -38,7 +38,7 @@ const navItems = [
   { silo: "exam_syllabus", label: "Syllabus", path: "/exam-syllabus" },
   { silo: "exam_result", label: "Results", path: "/exam-result" },
   { silo: "news", label: "News", path: "/news" },
-  { silo: "centers", label: "Exam Centers", path: "/centers" },
+  { silo: "exam_centers", label: "Exam Centers", path: "/exam-centers" },
   { silo: "exam_faq", label: "FAQ", path: "/exam-faq" },
   { silo: "answer_key", label: "Answer Key", path: "/answer-key" },
   { silo: "analysis", label: "Analysis", path: "/analysis" },
