@@ -143,7 +143,7 @@ const CollegeRankings = async (props: {
   if (!rankingsData) return notFound();
 
   const { college_information, rankings, news_section } = rankingsData;
-  const baseSlug = college_information.slug?.replace(/(?:-\d+)+$/, "") || "";
+  const baseSlug = college_information?.slug?.replace(/(?:-\d+)+$/, "") || "";
   const correctSlugId = `${baseSlug}-${collegeId}`;
 
   if (slugId !== correctSlugId) {
