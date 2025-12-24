@@ -4,11 +4,13 @@ import { persist } from "zustand/middleware";
 interface SignupData {
   name: string;
   email: string;
-  gender: string;
-  contactNumber: string;
-  iAm: string;
+  phoneNumber: string;
+  // Legacy fields for backward compatibility
+  gender?: string;
+  contactNumber?: string;
+  iAm?: string;
   collegeRollNumber?: string;
-  dateOfBirth: string;
+  dateOfBirth?: string;
 }
 
 interface OtpState {

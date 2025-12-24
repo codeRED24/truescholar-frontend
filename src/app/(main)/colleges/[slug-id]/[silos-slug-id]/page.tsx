@@ -230,6 +230,7 @@ export default async function CoursesByClg({
     location: college_information.location,
     title: `${college_wise_course?.name} - ${college_information.college_name}`,
     college_brochure: college_information.college_brochure || "/",
+    college_id: college_information.college_id,
   };
 
   return (

@@ -1,5 +1,5 @@
 import { getNewsByCollegeId } from "@/api/individual/getNewsByCollegeId";
-import CollegeHead from "@/components/page/college/assets/CollegeHead";
+import NewsHead from "@/components/page/college/assets/NewsHead";
 import CollegeNav from "@/components/page/college/assets/CollegeNav";
 import { notFound, redirect } from "next/navigation";
 import Script from "next/script";
@@ -139,7 +139,7 @@ const NewsIndividual = async ({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLD) }}
       />
-      <CollegeHead data={college} fromNews={true} />
+      <NewsHead data={college} />
       <CollegeNav data={college} />
 
       <div className="container-body lg:grid grid-cols-12 gap-4 pt-4">

@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -20,15 +21,14 @@ import {
 } from "@/components/ui/select";
 import { Info, Upload, Video } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSession } from "@/lib/auth-client";
 
 interface ReelUploadData {
   reel: File | null;
-  college_id: number;
   type: string;
 }
 
 interface ReelUploadDialogProps {
-  collegeId: number;
   onUpload?: (
     data: ReelUploadData,
     onProgress?: (progress: number) => void
@@ -37,10 +37,11 @@ interface ReelUploadDialogProps {
 }
 
 export function ReelUploadDialog({
-  collegeId,
   onUpload,
   children,
 }: ReelUploadDialogProps) {
+  const router = useRouter();
+  const { data: session, isPending } = useSession();
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState<Omit<ReelUploadData, "college_id">>({
     reel: null,
@@ -87,7 +88,7 @@ export function ReelUploadDialog({
     setIsUploading(true);
     setUploadProgress(0);
     try {
-      await onUpload?.({ ...formData, college_id: collegeId }, (progress) =>
+      await onUpload?.({ ...formData }, (progress) =>
         setUploadProgress(progress)
       );
       setOpen(false);
@@ -108,14 +109,24 @@ export function ReelUploadDialog({
     setUploadProgress(0);
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
+      // Check if user is authenticated before opening dialog
+      if (isPending) return; // Wait for session to load
+      if (!session?.user) {
+        // Store current path for redirect after login
+        const currentPath = window.location.pathname;
+        sessionStorage.setItem("redirectAfterLogin", currentPath);
+        router.push("/signin");
+        return;
+      }
+    }
+    setOpen(newOpen);
+    if (!newOpen) resetForm();
+  };
+
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(newOpen) => {
-        setOpen(newOpen);
-        if (!newOpen) resetForm();
-      }}
-    >
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {children || (
           <Button

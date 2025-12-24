@@ -58,23 +58,37 @@ input:focus {
 
 /********* Tel **********/
 .react-tel-input .form-control {
-  border-radius: 16px !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 6px !important;
+  height: 40px !important;
+  width: 100% !important;
+  padding-left: 48px !important;
+  font-size: 14px !important;
+}
+.react-tel-input .form-control:focus {
+  box-shadow: none !important;
 }
 .react-tel-input .flag-dropdown ul li {
   list-style: none !important;
   color: #000;
 }
-
 .react-tel-input .flag-dropdown {
   background-color: #fff !important;
-  border: 1px solid #d0d5dd !important;
+  border: 1px solid #d1d5db !important;
   border-right: none !important;
-  padding: 7px 0 !important;
-  border-radius: 16px 0 0 16px !important;
+  border-radius: 6px 0 0 6px !important;
 }
 .react-tel-input .flag-dropdown.open .selected-flag,
 .react-tel-input .flag-dropdown.open {
-  border-radius: 16px 0 0 16px !important;
+  border-radius: 6px 0 0 6px !important;
+  background-color: #f9fafb !important;
+}
+.react-tel-input .selected-flag {
+  border-radius: 6px 0 0 6px !important;
+}
+.react-tel-input .selected-flag:hover,
+.react-tel-input .selected-flag:focus {
+  background-color: #f9fafb !important;
 }
 /********* something else **********/
 .mobile-menu-item {

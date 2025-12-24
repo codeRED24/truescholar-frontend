@@ -146,6 +146,7 @@ const IndividualCollege = async (props: {
     ],
   };
   const extractedData = {
+    college_id: college_information.college_id,
     college_name: college_information.college_name,
     college_logo: college_information.logo_img,
     city: college_information.city,

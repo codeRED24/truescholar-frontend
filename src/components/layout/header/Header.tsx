@@ -12,6 +12,11 @@ import { getNavData } from "@/api/list/getNavData";
 import { OverStreamSectionProps, HomeCity } from "@/api/@types/header-footer";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   BriefcaseBusiness,
   BriefcaseMedical,
   Palette,
@@ -26,11 +31,12 @@ import {
   Search,
   ArrowUpDown,
   UserIcon,
+  LogOut,
 } from "lucide-react";
 import { formatName } from "@/components/utils/utils";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
-import { useUserStore } from "@/stores/userStore";
+import { useSession, signOut } from "@/lib/auth-client";
 import {
   Carousel,
   CarouselContent,
@@ -87,7 +93,8 @@ const Header: React.FC = () => {
   const [showMoreStreams, setShowMoreStreams] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false); // State for mobile Sheet
   const isTablet = useIsTablet();
-  const { user } = useUserStore();
+  const { data: session } = useSession();
+  const user = session?.user;
   const searchModalRef = useRef<HTMLDivElement>(null);
 
   const additionalStreams = overStreamData.filter(
@@ -299,26 +306,8 @@ const Header: React.FC = () => {
     <>
       {isTablet ? (
         <div className="flex justify-between items-center p-2">
-          <Link
-            href="/"
-            prefetch
-            className="text-black py-1 rounded-full font-bold font-public focus:outline-none"
-            aria-label="Go to homepage"
-            onClick={closeNavbar}
-          >
-            True<span className="text-primary-main">Scholar</span>
-          </Link>
-
+          {/* Left side: Menu toggle + Logo */}
           <div className="flex items-center gap-2">
-            {/* Simple search icon button for header */}
-            <button
-              className="focus:outline-none p-2 hover:bg-gray-100 rounded-full"
-              aria-label="Open search"
-              onClick={triggerSearch}
-            >
-              <Search className="w-6 h-6 text-gray-700" />
-            </button>
-
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
                 <button
@@ -328,7 +317,7 @@ const Header: React.FC = () => {
                   <Menu className="w-6 h-6 text-gray-700" />
                 </button>
               </SheetTrigger>
-              <SheetContent className="p-2 z-[101] w-[85%]">
+              <SheetContent side="left" className="p-2 z-[101] w-[85%]">
                 <DialogTitle
                   asChild
                   className="flex justify-between items-center bg-[#141A21] rounded-full w-fit text-white px-4 py-2.5 shadow-md"
@@ -469,6 +458,60 @@ const Header: React.FC = () => {
                 </nav>
               </SheetContent>
             </Sheet>
+
+            <Link
+              href="/"
+              prefetch
+              className="text-black py-1 rounded-full font-bold font-public focus:outline-none"
+              aria-label="Go to homepage"
+              onClick={closeNavbar}
+            >
+              True<span className="text-primary-main">Scholar</span>
+            </Link>
+          </div>
+
+          {/* Right side: Search + User avatar */}
+          <div className="flex items-center gap-2">
+            {/* Simple search icon button for header */}
+            <button
+              className="focus:outline-none p-2 hover:bg-gray-100 rounded-full"
+              aria-label="Open search"
+              onClick={triggerSearch}
+            >
+              <Search className="w-6 h-6 text-gray-700" />
+            </button>
+
+            {/* User avatar for mobile */}
+            {user && user.name ? (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="bg-[#141A21] text-white rounded-full h-8 w-8 flex items-center justify-center">
+                    <span className="text-sm font-medium">
+                      {user.name.charAt(0).toUpperCase()}
+                    </span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-48 p-2" align="end">
+                  <div className="text-sm font-medium text-gray-800 px-2 py-1 border-b mb-1">
+                    {user.name}
+                  </div>
+                  <button
+                    onClick={() => signOut()}
+                    className="flex items-center gap-2 w-full px-2 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </PopoverContent>
+              </Popover>
+            ) : (
+              <Link
+                href="/signin"
+                className="bg-[#141A21] text-white rounded-full h-8 w-8 flex items-center justify-center"
+              >
+                <UserIcon className="h-4 w-4 text-gray-3" />
+              </Link>
+            )}
           </div>
         </div>
       ) : (
@@ -575,14 +618,33 @@ const Header: React.FC = () => {
               <SearchModal />
             </NavigationMenu>
             {user && user.name ? (
-              <div className="bg-[#141A21] text-white rounded-full h-9 w-12 flex items-center justify-center">
-                <span className="text-lg">
-                  {user.name.charAt(0).toUpperCase()}
-                </span>
-              </div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="bg-[#141A21] text-white rounded-full h-9 w-12 flex items-center justify-center cursor-pointer hover:opacity-90">
+                    <span className="text-lg">
+                      {user.name.charAt(0).toUpperCase()}
+                    </span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-48 p-2" align="end">
+                  <div className="text-sm font-medium text-gray-800 px-2 py-1 border-b mb-1">
+                    {user.name}
+                  </div>
+                  <div className="text-xs text-gray-500 px-2 pb-2 border-b mb-1">
+                    {user.email}
+                  </div>
+                  <button
+                    onClick={() => signOut()}
+                    className="flex items-center gap-2 w-full px-2 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </PopoverContent>
+              </Popover>
             ) : (
               <Link
-                href="/signup"
+                href="/signin"
                 className="bg-[#141A21] text-white rounded-full h-9 w-12 flex items-center justify-center"
               >
                 <UserIcon className="h-4 w-4 text-gray-3" />
