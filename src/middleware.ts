@@ -4,11 +4,7 @@ import { NextResponse, NextRequest } from "next/server";
 const authPages = ["/signin", "/signup", "/forgot-password", "/reset-password"];
 
 // Protected pages - redirect to signin if not logged in (add routes as needed)
-const protectedPages: string[] = [
-  // "/dashboard",
-  // "/profile",
-  // "/settings",
-];
+const protectedPages: string[] = ["/profile"];
 
 export function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();

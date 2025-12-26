@@ -401,6 +401,13 @@ export default function ForgotPasswordPage() {
           {/* Request Step */}
           {step === "request" && (
             <>
+              <Link
+                href={"/"}
+                className="text-3xl text-center mb-4 font-extrabold"
+              >
+                True
+                <span className="text-primary-main">Scholar</span>
+              </Link>
               <h2 className="text-2xl font-bold text-center text-gray-800">
                 Forgot Password
               </h2>

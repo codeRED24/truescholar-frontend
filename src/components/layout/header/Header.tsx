@@ -485,16 +485,33 @@ const Header: React.FC = () => {
             {user && user.name ? (
               <Popover>
                 <PopoverTrigger asChild>
-                  <button className="bg-[#141A21] text-white rounded-full h-8 w-8 flex items-center justify-center">
-                    <span className="text-sm font-medium">
-                      {user.name.charAt(0).toUpperCase()}
-                    </span>
+                  <button className="rounded-full h-8 w-8 flex items-center justify-center overflow-hidden">
+                    {user.image ? (
+                      <Image
+                        src={user.image}
+                        alt={user.name}
+                        width={32}
+                        height={32}
+                        className="object-cover w-full h-full"
+                      />
+                    ) : (
+                      <span className="bg-[#141A21] text-white w-full h-full flex items-center justify-center text-sm font-medium">
+                        {user.name.charAt(0).toUpperCase()}
+                      </span>
+                    )}
                   </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-48 p-2" align="end">
                   <div className="text-sm font-medium text-gray-800 px-2 py-1 border-b mb-1">
                     {user.name}
                   </div>
+                  <Link
+                    href="/profile"
+                    className="flex items-center gap-2 w-full px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
+                  >
+                    <User className="w-4 h-4" />
+                    Profile
+                  </Link>
                   <button
                     onClick={() => signOut()}
                     className="flex items-center gap-2 w-full px-2 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md"
@@ -620,19 +637,35 @@ const Header: React.FC = () => {
             {user && user.name ? (
               <Popover>
                 <PopoverTrigger asChild>
-                  <button className="bg-[#141A21] text-white rounded-full h-9 w-12 flex items-center justify-center cursor-pointer hover:opacity-90">
-                    <span className="text-lg">
-                      {user.name.charAt(0).toUpperCase()}
-                    </span>
+                  <button className="bg-[#141A21] rounded-full h-8 px-3 flex items-center justify-center cursor-pointer hover:opacity-90">
+                    <div className="rounded-full h-7 w-7 overflow-hidden flex items-center justify-center">
+                      {user.image ? (
+                        <Image
+                          src={user.image}
+                          alt={user.name}
+                          width={28}
+                          height={28}
+                          className="object-cover w-full h-full"
+                        />
+                      ) : (
+                        <span className="bg-gradient-to-br text-white w-full h-full flex items-center justify-center text-sm font-medium">
+                          {user.name.charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                    </div>
                   </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-48 p-2" align="end">
-                  <div className="text-sm font-medium text-gray-800 px-2 py-1 border-b mb-1">
+                  <div className="text-sm font-medium text-gray-800 px-2 py-1 mb-1 border-b">
                     {user.name}
                   </div>
-                  <div className="text-xs text-gray-500 px-2 pb-2 border-b mb-1">
-                    {user.email}
-                  </div>
+                  <Link
+                    href="/profile"
+                    className="flex items-center gap-2 w-full px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
+                  >
+                    <User className="w-4 h-4" />
+                    Profile
+                  </Link>
                   <button
                     onClick={() => signOut()}
                     className="flex items-center gap-2 w-full px-2 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md"

@@ -57,7 +57,8 @@ export const authClient = createAuthClient({
 });
 
 // Export convenience hooks and functions
-export const { signIn, signUp, signOut, useSession, getSession } = authClient;
+export const { signIn, signUp, signOut, useSession, getSession, updateUser } =
+  authClient;
 
 // Organization functions
 export const { organization, useActiveOrganization, useListOrganizations } =

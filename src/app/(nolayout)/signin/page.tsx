@@ -178,6 +178,13 @@ export default function SigninPage() {
 
         <div className="w-full lg:w-5/12 bg-gradient-to-br from-white to-gray-100 p-6 md:p-8 flex flex-col justify-center items-center">
           <div className="max-w-md w-full flex flex-col">
+            <Link
+              href={"/"}
+              className="text-3xl text-center mb-4 font-extrabold"
+            >
+              True
+              <span className="text-primary-main">Scholar</span>
+            </Link>
             <h2 className="text-2xl font-bold text-center text-gray-800">
               Log In
             </h2>

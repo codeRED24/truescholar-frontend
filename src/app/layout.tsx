@@ -3,6 +3,7 @@ import { Barlow, Public_Sans } from "next/font/google";
 import Script from "next/script";
 import BreadcrumbProvider from "@/components/providers/BreadcrumbProvider";
 import { Toaster } from "@/components/ui/sonner";
+import { QueryProvider } from "@/providers/QueryProvider";
 
 const publicSans = Public_Sans({
   weight: ["300", "400", "500", "600", "700"],
@@ -105,7 +106,7 @@ export default function RootLayout({
       <body className={`${publicSans.variable} ${barlow.variable} antialiased`}>
         <GTMScript gtmId="G-5CMGT07LVZ" />
         <BreadcrumbProvider />
-        {children}
+        <QueryProvider>{children}</QueryProvider>
         <Toaster />
       </body>
     </html>

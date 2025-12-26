@@ -22,6 +22,7 @@ import { useRouter } from "next/navigation";
 import { useSignupStore } from "@/stores/signupStore";
 import { emailOTP, phoneNumber, getSession } from "@/lib/auth-client";
 import Image from "next/image";
+import Link from "next/link";
 
 type VerificationStep = "email" | "phone" | "complete";
 
@@ -311,6 +312,10 @@ export default function VerifyPage() {
 
       {/* Right Side - Form */}
       <div className="w-full lg:w-5/12 bg-white p-6 md:p-8 flex flex-col justify-center">
+        <Link href={"/"} className="text-3xl text-center mb-4 font-extrabold">
+          True
+          <span className="text-primary-main">Scholar</span>
+        </Link>
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
             <span className="text-blue-600">VERIFY</span>
