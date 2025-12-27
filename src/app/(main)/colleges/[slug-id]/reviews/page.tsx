@@ -88,6 +88,7 @@ const CollegeReviewsPage = async (props: {
     college_brochure: college_information.college_brochure || "/",
     title: college_information.college_name,
     location: college_information.location,
+    college_id: college_information.college_id,
   };
 
   const correctSlugId = `${college_information.slug.replace(
