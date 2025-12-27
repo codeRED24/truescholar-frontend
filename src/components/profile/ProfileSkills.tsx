@@ -82,7 +82,7 @@ export function ProfileSkills({ skills, onSave }: ProfileSkillsProps) {
     <div>
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h3 className="font-semibold">Your expertise</h3>
+          <h3 className="font-semibold">Add skills</h3>
         </div>
         {skills.length > 0 && !isEditing && (
           <Button
