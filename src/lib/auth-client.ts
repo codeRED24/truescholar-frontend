@@ -4,6 +4,7 @@ import {
   adminClient,
   phoneNumberClient,
   emailOTPClient,
+  oneTapClient,
 } from "better-auth/client/plugins";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
@@ -16,6 +17,12 @@ export const authClient = createAuthClient({
     adminClient(),
     phoneNumberClient(),
     emailOTPClient(),
+    oneTapClient({
+      clientId: process.env.OAUTH_PUBLIC_GOOGLE_CLIENT_ID || "",
+      autoSelect: false,
+      cancelOnTapOutside: true,
+      context: "signin",
+    }),
   ],
   // Define additional user fields to match backend schema (enables type-safety for signup)
   user: {
