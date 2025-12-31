@@ -153,8 +153,34 @@ export function useReviewWizard(): UseReviewWizardReturn {
       } as Parameters<typeof signUp.email>[0]);
 
       if (result.error) {
-        if (result.error.message?.includes("already exists")) {
-          toast.error("Account exists. Please log in.");
+        // Check for duplicate constraint errors (PostgreSQL error code 23505)
+        const errorDetails = result.error as {
+          message?: string;
+          code?: string;
+          details?: { code?: string; constraint?: string; detail?: string };
+        };
+
+        const isDuplicate =
+          errorDetails.details?.code === "23505" ||
+          errorDetails.code === "23505" ||
+          errorDetails.message?.includes("already exists");
+
+        if (isDuplicate) {
+          const constraint = errorDetails.details?.constraint || "";
+          const detail = errorDetails.details?.detail || "";
+
+          let errorMessage =
+            "An account with these credentials already exists.";
+          if (
+            constraint.includes("phoneNumber") ||
+            detail.includes("phoneNumber")
+          ) {
+            errorMessage = "An account with this phone number already exists.";
+          } else if (constraint.includes("email") || detail.includes("email")) {
+            errorMessage = "An account with this email already exists.";
+          }
+
+          toast.error(`${errorMessage} Please sign in.`);
           router.push(
             `/login?redirect=/review-form${
               referredByCode ? `?ref=${referredByCode}` : ""
@@ -162,7 +188,7 @@ export function useReviewWizard(): UseReviewWizardReturn {
           );
           return false;
         }
-        toast.error(result.error.message || "Failed to create account");
+        toast.error(errorDetails.message || "Failed to create account");
         return false;
       }
 
