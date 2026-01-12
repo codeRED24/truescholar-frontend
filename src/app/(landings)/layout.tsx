@@ -5,7 +5,6 @@ import dynamic from "next/dynamic";
 const Footer = dynamic(() => import("@/components/layout/footer/Footer"));
 const Header = dynamic(() => import("@/components/layout/header/Header"));
 
-
 export default function LandingLayout({
   children,
 }: Readonly<{
@@ -13,10 +12,10 @@ export default function LandingLayout({
 }>) {
   return (
     <main>
-    <Header />
-    {children}
-    <Toaster />
-    <Footer />
-  </main>
+      <Header />
+      {children}
+      <Toaster />
+      <Footer />
+    </main>
   );
 }
