@@ -161,11 +161,11 @@ const CutoffFilter = ({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-40 transition-opacity"
+      className="fixed inset-0 z-100 flex items-center justify-center bg-black bg-opacity-40 transition-opacity"
       onClick={() => setIsOpen(false)}
     >
       <div
-        className={`bg-white rounded-t-2xl md:rounded-2xl shadow-xl w-full md:w-[44rem] max-w-full flex flex-col md:relative 
+        className={`bg-white rounded-t-2xl md:rounded-2xl shadow-xl w-full md:w-176 max-w-full flex flex-col md:relative 
         transition-all transform md:scale-100 h-[70vh] md:h-auto overflow-x-auto md:p-6 p-3 absolute bottom-0
         md:max-h-[80vh] ${isOpen ? "animate-slide-up md:animate-slideIn" : "animate-slideOut md:animate-slideOut"}`}
         onClick={(e) => e.stopPropagation()}

@@ -280,7 +280,7 @@ export default function ChatbotPage() {
   return (
     <div className="fixed inset-0  flex flex-col bg-white">
       {/* Header */}
-      <div className="flex flex-shrink-0 items-center justify-between p-3 text-black border-b">
+      <div className="flex shrink-0 items-center justify-between p-3 text-black border-b">
         <div className="flex items-center">
           <Button
             variant="ghost"
@@ -302,7 +302,7 @@ export default function ChatbotPage() {
       </div>
 
       {view === "questions" && (
-        <div className="container mx-auto flex flex-col flex-grow overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="container mx-auto flex flex-col grow overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {/* Get Free Counselling Button */}
           {view === "questions" && (
             // <div className="flex justify-center pt-4">
@@ -326,7 +326,7 @@ export default function ChatbotPage() {
             </div>
           )}
 
-          <div className="flex-grow" />
+          <div className="grow" />
           <div>
             <div className="flex flex-col items-center px-4 pt-4">
               <div className="mb-16">
@@ -359,7 +359,7 @@ export default function ChatbotPage() {
                       setActiveTab(tabName);
                       scrollToCard(index);
                     }}
-                    className={`w-96 flex-shrink-0 snap-center rounded-xl p-4 backdrop-blur-sm ${
+                    className={`w-96 shrink-0 snap-center rounded-xl p-4 backdrop-blur-xs ${
                       activeTab === tabName
                         ? "bg-gray-100/80"
                         : "bg-gray-100/50"
@@ -392,7 +392,7 @@ export default function ChatbotPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="absolute -left-2 top-1/2 z-10 h-7 w-7 -translate-y-1/2 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white"
+                          className="absolute -left-2 top-1/2 z-10 h-7 w-7 -translate-y-1/2 rounded-full bg-white/80 backdrop-blur-xs hover:bg-white"
                           onClick={(e) => {
                             e.stopPropagation();
                             scroll("left");
@@ -431,7 +431,7 @@ export default function ChatbotPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="absolute -right-2 top-1/2 z-10 h-7 w-7 -translate-y-1/2 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white"
+                          className="absolute -right-2 top-1/2 z-10 h-7 w-7 -translate-y-1/2 rounded-full bg-white/80 backdrop-blur-xs hover:bg-white"
                           onClick={(e) => {
                             e.stopPropagation();
                             scroll("right");
@@ -454,14 +454,14 @@ export default function ChatbotPage() {
                           .map((q: string, i: number) => (
                             <div
                               key={i}
-                              className="flex cursor-pointer items-center justify-between rounded-lg bg-white/80 p-2 text-xs shadow-sm hover:bg-white"
+                              className="flex cursor-pointer items-center justify-between rounded-lg bg-white/80 p-2 text-xs shadow-xs hover:bg-white"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleQuestionClick(q);
                               }}
                             >
                               <span className="pr-2">{q}</span>
-                              <ArrowRight className="h-4 w-4 flex-shrink-0 text-gray-400" />
+                              <ArrowRight className="h-4 w-4 shrink-0 text-gray-400" />
                             </div>
                           ))
                       )}
@@ -521,14 +521,14 @@ export default function ChatbotPage() {
 
       {/* Input Area */}
       <div className="container mx-auto border-t border-gray-200/80">
-        <div className="flex-shrink-0  bg-white/60 p-3 backdrop-blur-xl">
+        <div className="shrink-0  bg-white/60 p-3 backdrop-blur-xl">
           <form onSubmit={handleFormSubmit} className="relative">
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Write your query on colleges, exam here..."
               disabled={status !== "ready"}
-              className="w-full rounded-full border-2 border-gray-300 bg-white py-3 pl-5 pr-14 text-sm shadow-sm transition-colors focus:border-teal-500 focus:outline-none focus:ring-0"
+              className="w-full rounded-full border-2 border-gray-300 bg-white py-3 pl-5 pr-14 text-sm shadow-xs transition-colors focus:border-teal-500 focus:outline-hidden focus:ring-0"
             />
             <Button
               type="submit"

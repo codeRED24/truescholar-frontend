@@ -298,7 +298,7 @@ export default function ChatbotWidget({
     <>
       {/* Header */}
       <div
-        className={`flex flex-shrink-0 items-center justify-between p-3 text-black ${
+        className={`flex shrink-0 items-center justify-between p-3 text-black ${
           !isSmallScreen ? "rounded-t-2xl" : ""
         }`}
       >
@@ -334,8 +334,8 @@ export default function ChatbotWidget({
       </div>
 
       {view === "questions" && (
-        <div className="flex-grow overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          <div className="flex-grow" />
+        <div className="grow overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="grow" />
           <div>
             <div className="flex flex-col items-center px-4 pt-4">
               <div className="mb-16 mt-10">
@@ -368,7 +368,7 @@ export default function ChatbotWidget({
                       setActiveTab(tabName);
                       scrollToCard(index);
                     }}
-                    className={`w-[370px] flex-shrink-0 snap-center rounded-xl p-4 backdrop-blur-sm ${
+                    className={`w-[370px] shrink-0 snap-center rounded-xl p-4 backdrop-blur-xs ${
                       activeTab === tabName
                         ? "bg-gray-100/80"
                         : "bg-gray-100/50"
@@ -401,7 +401,7 @@ export default function ChatbotWidget({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="absolute -left-2 top-1/2 z-10 h-7 w-7 -translate-y-1/2 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white"
+                          className="absolute -left-2 top-1/2 z-10 h-7 w-7 -translate-y-1/2 rounded-full bg-white/80 backdrop-blur-xs hover:bg-white"
                           onClick={(e) => {
                             e.stopPropagation();
                             scroll("left");
@@ -440,7 +440,7 @@ export default function ChatbotWidget({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="absolute -right-2 top-1/2 z-10 h-7 w-7 -translate-y-1/2 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white"
+                          className="absolute -right-2 top-1/2 z-10 h-7 w-7 -translate-y-1/2 rounded-full bg-white/80 backdrop-blur-xs hover:bg-white"
                           onClick={(e) => {
                             e.stopPropagation();
                             scroll("right");
@@ -463,14 +463,14 @@ export default function ChatbotWidget({
                           .map((q: string, i: number) => (
                             <div
                               key={i}
-                              className="flex cursor-pointer items-center justify-between rounded-lg bg-white/80 p-2 text-xs shadow-sm hover:bg-white"
+                              className="flex cursor-pointer items-center justify-between rounded-lg bg-white/80 p-2 text-xs shadow-xs hover:bg-white"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleQuestionClick(q);
                               }}
                             >
                               <span className="pr-2">{q}</span>
-                              <ArrowRight className="h-4 w-4 flex-shrink-0 text-gray-400" />
+                              <ArrowRight className="h-4 w-4 shrink-0 text-gray-400" />
                             </div>
                           ))
                       )}
@@ -551,7 +551,7 @@ export default function ChatbotWidget({
 
       {/* Input Area */}
       <div
-        className={`flex-shrink-0 border-t border-gray-200/80 bg-white/60 p-3 backdrop-blur-xl ${
+        className={`shrink-0 border-t border-gray-200/80 bg-white/60 p-3 backdrop-blur-xl ${
           !isSmallScreen ? "rounded-b-2xl" : ""
         }`}
       >
@@ -561,7 +561,7 @@ export default function ChatbotWidget({
             onChange={(e) => setInput(e.target.value)}
             placeholder="Write your query on colleges, exam here..."
             disabled={status !== "ready"}
-            className="w-full rounded-full border-2 border-gray-300 bg-white py-3 pl-5 pr-14 text-sm shadow-sm transition-colors focus:border-teal-500 focus:outline-none focus:ring-0"
+            className="w-full rounded-full border-2 border-gray-300 bg-white py-3 pl-5 pr-14 text-sm shadow-xs transition-colors focus:border-teal-500 focus:outline-hidden focus:ring-0"
           />
           <Button
             type="submit"
@@ -586,14 +586,14 @@ export default function ChatbotWidget({
         <>
           {/* Chat Widget - Desktop */}
           {!isSmallScreen && (
-            <div className="fixed bottom-4 right-4 z-[120] flex h-[calc(100vh-6rem)] w-[430px] max-w-[calc(100vw-1rem)] flex-col rounded-2xl border border-gray-200/80 bg-white/90 shadow-2xl backdrop-blur-xl sm:h-[40rem]">
+            <div className="fixed bottom-4 right-4 z-120 flex h-[calc(100vh-6rem)] w-[430px] max-w-[calc(100vw-1rem)] flex-col rounded-2xl border border-gray-200/80 bg-white/90 shadow-2xl backdrop-blur-xl sm:h-160">
               {widgetContent}
             </div>
           )}
 
           {/* Chat Widget - Mobile Full Screen Dialog */}
           {isSmallScreen && (
-            <div className="fixed inset-0 z-[120] flex flex-col bg-white">
+            <div className="fixed inset-0 z-120 flex flex-col bg-white">
               {widgetContent}
             </div>
           )}

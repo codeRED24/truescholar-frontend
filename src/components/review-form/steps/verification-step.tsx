@@ -289,7 +289,7 @@ export function VerificationStep({
         )}
 
         {needsEmailVerification && needsPhoneVerification && (
-          <div className="w-4 h-[1px] bg-gray-200" />
+          <div className="w-4 h-px bg-gray-200" />
         )}
 
         {needsPhoneVerification && (

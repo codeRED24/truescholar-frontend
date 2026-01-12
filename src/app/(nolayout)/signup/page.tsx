@@ -166,7 +166,7 @@ export default function SignupPage() {
       <div className="flex flex-col lg:flex-row overflow-hidden shadow-xl min-h-screen">
         {/* Left Side - Image and Content */}
         <div className="w-full hidden lg:w-7/12 p-6 md:p-8 lg:p-12 lg:flex flex-col items-center justify-center relative">
-          <div className="inset-0 absolute bg-gradient-to-b from-[#142D55] to-[#4777C4]"></div>
+          <div className="inset-0 absolute bg-linear-to-b from-[#142D55] to-[#4777C4]"></div>
           {/* Logo */}
           <div className="absolute top-10 left-10">
             <div className="flex flex-row items-center gap-2">
@@ -202,13 +202,13 @@ export default function SignupPage() {
           </div>
           {/* Daily Dash Feature */}
           <div className="absolute bottom-8 left-8 z-20 flex flex-col items-center">
-            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg w-full max-w-md border border-white/20">
+            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-xs rounded-lg w-full max-w-md border border-white/20">
               <Image
                 src="/gift.gif"
                 alt="Gift"
                 width={40}
                 height={40}
-                className="w-20 h-20 md:w-20 md:h-20 object-contain absolute -left-5 z-[1000]"
+                className="w-20 h-20 md:w-20 md:h-20 object-contain absolute -left-5 z-1000"
               />
               <span className="text-white font-bold text-base md:text-lg pl-14">
                 Introducing Our Daily Dash Feature!
@@ -218,7 +218,7 @@ export default function SignupPage() {
               <div className="space-y-3 text-white/90 text-xs md:text-sm">
                 <div className="flex items-start gap-2">
                   <svg
-                    className="w-4 h-4 md:w-5 md:h-5 text-yellow-400 mt-1 flex-shrink-0"
+                    className="w-4 h-4 md:w-5 md:h-5 text-yellow-400 mt-1 shrink-0"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -232,7 +232,7 @@ export default function SignupPage() {
                 </div>
                 <div className="flex items-start gap-2">
                   <svg
-                    className="w-4 h-4 md:w-5 md:h-5 text-yellow-400 mt-1 flex-shrink-0"
+                    className="w-4 h-4 md:w-5 md:h-5 text-yellow-400 mt-1 shrink-0"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -250,14 +250,14 @@ export default function SignupPage() {
         </div>
 
         {/* Right Side - Form */}
-        <div className="w-full lg:w-5/12 bg-gradient-to-br from-white to-gray-100 p-6 md:p-8 flex flex-col justify-center">
+        <div className="w-full lg:w-5/12 bg-linear-to-br from-white to-gray-100 p-6 md:p-8 flex flex-col justify-center">
           <Link href={"/"} className="text-3xl text-center mb-4 font-extrabold">
             True
             <span className="text-primary-main">Scholar</span>
           </Link>
           <div className="text-center mb-6 md:mb-8">
             <h1 className="text-xl font-bold text-gray-800 mb-2">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-pink-400 to-orange-500 [text-shadow:1px_1px_1px_rgba(0,0,0,0.08)]">
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-600 via-pink-400 to-orange-500 [text-shadow:1px_1px_1px_rgba(0,0,0,0.08)]">
                 GET STARTED
               </span>
             </h1>
@@ -337,12 +337,12 @@ export default function SignupPage() {
                         id: "phoneNumber",
                         required: true,
                       }}
-                      containerClass="!w-full"
-                      inputClass={`!w-full !h-10 !text-sm !border !border-gray-300 !rounded-md !pl-12 bg-transparent ${
-                        errors.phoneNumber ? "!border-red-500" : ""
+                      containerClass="w-full!"
+                      inputClass={`w-full! h-10! text-sm! !border border-gray-300! rounded-md! pl-12! bg-transparent ${
+                        errors.phoneNumber ? "border-red-500!" : ""
                       }`}
-                      buttonClass="!border !border-gray-300 !border-r-0 !rounded-l-md !bg-transparent"
-                      dropdownClass="!border !border-gray-300 !rounded-md !shadow-lg"
+                      buttonClass="border! border-gray-300! border-r-0! rounded-l-md! bg-transparent!"
+                      dropdownClass="border! border-gray-300! rounded-md! shadow-lg!"
                       enableSearch
                       searchPlaceholder="Search country..."
                     />
@@ -510,7 +510,7 @@ export default function SignupPage() {
                 <div className="w-full border-t border-gray-300"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-gradient-to-br from-white to-gray-100 text-gray-500">
+                <span className="px-2 bg-linear-to-br from-white to-gray-100 text-gray-500">
                   or continue with
                 </span>
               </div>

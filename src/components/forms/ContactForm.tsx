@@ -131,11 +131,11 @@ const ContactForm: React.FC<ContactFormProps> = ({ courseData }) => {
 
   return (
     <div className="relative w-full py-16 md:py-12 lg:py-10 bg-gray-50 overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_rgba(229,231,235,0.2)_0%,_transparent_50%)] pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(229,231,235,0.2)_0%,transparent_50%)] pointer-events-none" />
 
       <div className="text-center mb-10">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
-          <span className="bg-gradient-to-r from-[#141A21] to-primary-main bg-clip-text text-transparent">
+          <span className="bg-linear-to-r from-[#141A21] to-primary-main bg-clip-text text-transparent">
             Get in Touch
           </span>
         </h1>
@@ -146,7 +146,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ courseData }) => {
       </div>
 
       <div className="max-w-6xl mx-auto lg:grid grid-cols-12 gap-8 px-4 md:px-8 lg:px-0">
-        <div className="col-span-7 bg-gradient-to-tr from-primary-1 to-indigo-50 rounded-2xl shadow-lg p-6 md:p-8">
+        <div className="col-span-7 bg-linear-to-tr from-primary-1 to-indigo-50 rounded-2xl shadow-lg p-6 md:p-8">
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex flex-col gap-2">
@@ -158,7 +158,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ courseData }) => {
                 </label>
                 <input
                   type="text"
-                  className="border border-gray-300 rounded-2xl px-4 py-2 text-gray-800 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-main transition"
+                  className="border border-gray-300 rounded-2xl px-4 py-2 text-gray-800 bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-primary-main transition"
                   id="name"
                   placeholder="Your Name"
                   value={formData.name}
@@ -177,7 +177,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ courseData }) => {
                 <div className="relative">
                   <input
                     type="email"
-                    className="border border-gray-300 rounded-2xl px-4 py-2 text-gray-800 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-main transition w-full"
+                    className="border border-gray-300 rounded-2xl px-4 py-2 text-gray-800 bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-primary-main transition w-full"
                     id="email"
                     placeholder="Your Email"
                     value={formData.email}
@@ -241,7 +241,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ courseData }) => {
                 Your Query
               </label>
               <textarea
-                className="w-full border border-gray-300 rounded-2xl px-4 py-3 text-gray-800 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-main transition resize-none"
+                className="w-full border border-gray-300 rounded-2xl px-4 py-3 text-gray-800 bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-primary-main transition resize-none"
                 id="query"
                 rows={4}
                 placeholder="Tell us how we can assist you..."
@@ -264,7 +264,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ courseData }) => {
           </form>
         </div>
 
-        <div className="col-span-5 bg-gradient-to-br from-indigo-50 to-primary-1 rounded-2xl shadow-lg p-6 md:p-8 flex flex-col justify-between">
+        <div className="col-span-5 bg-linear-to-br from-indigo-50 to-primary-1 rounded-2xl shadow-lg p-6 md:p-8 flex flex-col justify-between">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
               Contact Us

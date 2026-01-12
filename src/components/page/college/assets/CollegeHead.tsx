@@ -96,22 +96,11 @@ const CollegeHead = ({ data }: { data: CollegeData }) => {
     <div className="relative bg-college-head text-white pt-16 md:pt-24 pb-6 container-body min-h-60">
       <span
         aria-hidden="true"
-        className="absolute inset-x-0 top-1/4 flex items-center justify-center text-center text-5xl md:text-8xl leading-10 md:leading-ultraWide font-public font-bold text-[#FFFFFF] opacity-20"
+        className="absolute inset-x-0 top-1/4 flex items-center justify-center text-center text-5xl md:text-6xl leading-10 md:leading-ultraWide font-public font-bold text-[#FFFFFF] opacity-20"
       >
         {trimText(data.college_name, 58)}
       </span>
       <div className="relative z-10 flex items-center flex-col md:flex-row gap-6">
-        {/* <Image
-          src={
-            data.college_logo ||
-            "https://d28xcrw70jd98d.cloudfront.net/allCollegeLogo/defaultLogo1.webp"
-          }
-          alt={data.college_name}
-          className="w-20 h-20 object-contain rounded-full"
-          height={80}
-          width={80}
-          aria-label="college logo"
-        /> */}
         <div>
           <StoryWrapper
             videoUrls={videoUrls}
@@ -186,7 +175,7 @@ const CollegeHead = ({ data }: { data: CollegeData }) => {
             </div>
           </div>
           <div className="flex items-center justify-between gap-4 flex-wrap md:flex-nowrap">
-            <h1 className="text-xl md:text-2xxl leading-6 md:leading-9 font-public font-bold line-clamp-2">
+            <h1 className="text-xl md:text-3xl leading-6 md:leading-9 font-public font-bold line-clamp-2">
               {data.title || data.college_name}
             </h1>
             <div className="flex-1 lg:flex-none  flex flex-col lg:flex-row gap-2">

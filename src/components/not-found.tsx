@@ -29,7 +29,7 @@ export function NotFoundComp({
   console.log({ title, description, button, buttonUrl });
 
   return (
-    <div className="relative text-center z-[1] pt-52">
+    <div className="relative text-center z-1 pt-52">
       <h1 className="mt-4 text-balance text-5xl font-semibold tracking-tight text-gray-8 sm:text-7xl">
         {title}
       </h1>

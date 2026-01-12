@@ -155,9 +155,9 @@ export default function SigninPage() {
             alt="lock"
             priority
             fill
-            className="w-48 h-48 sm:w-72 sm:h-72 md:w-96 md:h-96 lg:w-[480px] lg:h-[480px] xl:w-[576px] xl:h-[576px] object-contain z-10 absolute rotate-[15deg] sm:rotate-[12deg] lg:rotate-[15deg] opacity-10 "
+            className="w-48 h-48 sm:w-72 sm:h-72 md:w-96 md:h-96 lg:w-[480px] lg:h-[480px] xl:w-[576px] xl:h-[576px] object-contain z-10 absolute rotate-15 sm:rotate-12 lg:rotate-15 opacity-10 "
           />
-          <div className="inset-0 absolute bg-gradient-to-b from-[#142D55] to-[#4777C4]"></div>
+          <div className="inset-0 absolute bg-linear-to-b from-[#142D55] to-[#4777C4]"></div>
           {/* Logo */}
           <div className="absolute top-10 left-10">
             <div className="flex flex-row items-center gap-2">
@@ -194,7 +194,7 @@ export default function SigninPage() {
           </div>
         </div>
 
-        <div className="w-full lg:w-5/12 bg-gradient-to-br from-white to-gray-100 p-6 md:p-8 flex flex-col justify-center items-center">
+        <div className="w-full lg:w-5/12 bg-linear-to-br from-white to-gray-100 p-6 md:p-8 flex flex-col justify-center items-center">
           <div className="max-w-md w-full flex flex-col">
             <Link
               href={"/"}
@@ -217,7 +217,7 @@ export default function SigninPage() {
                 onClick={() => setLoginMethod("email")}
                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md text-sm font-medium transition-all ${
                   loginMethod === "email"
-                    ? "bg-white text-blue-600 shadow-sm"
+                    ? "bg-white text-blue-600 shadow-xs"
                     : "text-gray-600 hover:text-gray-800"
                 }`}
               >
@@ -229,7 +229,7 @@ export default function SigninPage() {
                 onClick={() => setLoginMethod("phone")}
                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md text-sm font-medium transition-all ${
                   loginMethod === "phone"
-                    ? "bg-white text-blue-600 shadow-sm"
+                    ? "bg-white text-blue-600 shadow-xs"
                     : "text-gray-600 hover:text-gray-800"
                 }`}
               >
@@ -345,10 +345,10 @@ export default function SigninPage() {
                       setPhoneNumber(value);
                       phoneForm.setValue("phoneNumber", value);
                     }}
-                    inputClass="!w-full !h-10 !text-base !bg-transparent !border-gray-300 !rounded-md"
-                    containerClass="!w-full"
-                    buttonClass="!border-gray-300 !rounded-l-md !bg-gray-50"
-                    dropdownClass="!shadow-lg"
+                    inputClass="w-full! h-10! text-base! bg-transparent! border-gray-300! rounded-md!"
+                    containerClass="w-full!"
+                    buttonClass="border-gray-300! rounded-l-md! bg-gray-50!"
+                    dropdownClass="shadow-lg!"
                     enableSearch
                     searchPlaceholder="Search country..."
                   />
@@ -424,7 +424,7 @@ export default function SigninPage() {
                 <div className="w-full border-t border-gray-300"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-gradient-to-br from-white to-gray-100 text-gray-500">
+                <span className="px-2 bg-linear-to-br from-white to-gray-100 text-gray-500">
                   or continue with
                 </span>
               </div>

@@ -69,7 +69,7 @@ const HomeCollegeCard: React.FC<{ college?: HomeCollege; isLoading: boolean }> =
     );
 
     return (
-      <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+      <div className="bg-white rounded-2xl overflow-hidden shadow-xs">
         {/* Top black bar */}
         <div className="bg-black h-12 w-full relative flex justify-center items-center">
           {/* Centered logo, overlapping the black bar */}

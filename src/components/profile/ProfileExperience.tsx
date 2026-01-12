@@ -154,7 +154,7 @@ export function ProfileExperience({ experience }: ProfileExperienceProps) {
   const isPending = addMutation.isPending || updateMutation.isPending;
 
   return (
-    <Card className="border-0 shadow-sm">
+    <Card className="border-0 shadow-xs">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -322,7 +322,7 @@ export function ProfileExperience({ experience }: ProfileExperienceProps) {
                   index !== experience.length - 1 ? "pb-4 border-b" : ""
                 }`}
               >
-                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
+                <div className="shrink-0 w-10 h-10 rounded-lg bg-linear-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
                   <Building2 className="h-5 w-5 text-blue-600" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -333,7 +333,7 @@ export function ProfileExperience({ experience }: ProfileExperienceProps) {
                         {entry.company}
                       </p>
                     </div>
-                    <div className="flex gap-1 flex-shrink-0">
+                    <div className="flex gap-1 shrink-0">
                       <Button
                         variant="ghost"
                         size="icon"

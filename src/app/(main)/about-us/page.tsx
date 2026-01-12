@@ -54,11 +54,11 @@ export const metadata: Metadata = {
 const AboutUs: React.FC = () => {
   return (
     <div className="relative w-full bg-white overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_rgba(0,167,111,0.1)_0%,_transparent_50%)] pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,167,111,0.1)_0%,transparent_50%)] pointer-events-none" />
       <section className="max-w-6xl mx-auto py-16 md:py-20 px-4 md:px-8 text-center">
         <h1 className="text-4xl md:text-5xl font-bold text-[#141A21] mb-4">
           About{" "}
-          <span className="bg-gradient-to-r from-primary-main to-[#141A21] bg-clip-text text-transparent">
+          <span className="bg-linear-to-r from-primary-main to-[#141A21] bg-clip-text text-transparent">
             TrueScholar
           </span>
         </h1>

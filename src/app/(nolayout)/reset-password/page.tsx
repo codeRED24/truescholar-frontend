@@ -114,9 +114,9 @@ function ResetPasswordForm() {
       <div className="min-h-screen bg-gray-50">
         <div className="flex flex-col lg:flex-row overflow-hidden shadow-xl min-h-screen">
           <div className="w-full hidden lg:w-8/12 p-6 md:p-8 lg:p-12 lg:flex flex-col items-center justify-center relative">
-            <div className="inset-0 absolute bg-gradient-to-b from-[#142D55] to-[#4777C4]"></div>
+            <div className="inset-0 absolute bg-linear-to-b from-[#142D55] to-[#4777C4]"></div>
           </div>
-          <div className="w-full lg:w-4/12 bg-gradient-to-br from-white to-gray-100 p-6 md:p-8 flex flex-col justify-center items-center">
+          <div className="w-full lg:w-4/12 bg-linear-to-br from-white to-gray-100 p-6 md:p-8 flex flex-col justify-center items-center">
             <div className="text-center">
               <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-gray-800 mb-4">
@@ -154,9 +154,9 @@ function ResetPasswordForm() {
             alt="lock"
             priority
             fill
-            className="w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 xl:w-96 xl:h-96 object-contain z-10 absolute rotate-[15deg] opacity-10"
+            className="w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 xl:w-96 xl:h-96 object-contain z-10 absolute rotate-15 opacity-10"
           />
-          <div className="inset-0 absolute bg-gradient-to-b from-[#142D55] to-[#4777C4]"></div>
+          <div className="inset-0 absolute bg-linear-to-b from-[#142D55] to-[#4777C4]"></div>
 
           <div className="absolute bottom-0 lg:right-28 xl:right-48 w-48 h-[300px] md:w-[280px] md:h-[400px] lg:w-[420px] lg:h-[580px] xl:w-[560px] xl:h-[770px] z-10">
             <Image
@@ -184,7 +184,7 @@ function ResetPasswordForm() {
         </div>
 
         {/* Right Side - Form */}
-        <div className="w-full lg:w-4/12 bg-gradient-to-br from-white to-gray-100 p-6 md:p-8 flex flex-col justify-center">
+        <div className="w-full lg:w-4/12 bg-linear-to-br from-white to-gray-100 p-6 md:p-8 flex flex-col justify-center">
           {isSuccess ? (
             <div className="text-center">
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />

@@ -36,24 +36,24 @@ const ExamListCard: React.FC<{ exam: ExamInformationDTO }> = ({ exam }) => {
             <div className="flex items-center gap-4 text-[13px] text-gray-600 overflow-x-auto scrollbar-hide">
               <Badge
                 variant={"secondary"}
-                className="px-2.5 py-0.5 bg-neutral-200 hover:bg-neutral-300 rounded-md text-[12px] whitespace-nowrap flex-shrink-0"
+                className="px-2.5 py-0.5 bg-neutral-200 hover:bg-neutral-300 rounded-md text-[12px] whitespace-nowrap shrink-0"
               >
                 {exam.mode_of_exam}
               </Badge>
 
               {exam.conducting_authority && (
-                <span className="flex items-center gap-1 whitespace-nowrap flex-shrink-0">
+                <span className="flex items-center gap-1 whitespace-nowrap shrink-0">
                   <Building2
                     size={14}
-                    className="text-gray-500 flex-shrink-0"
+                    className="text-gray-500 shrink-0"
                   />
                   {exam.conducting_authority}
                 </span>
               )}
 
               {exam.stream_name && (
-                <span className="flex items-center gap-1 whitespace-nowrap flex-shrink-0">
-                  <Layers size={14} className="text-gray-500 flex-shrink-0" />
+                <span className="flex items-center gap-1 whitespace-nowrap shrink-0">
+                  <Layers size={14} className="text-gray-500 shrink-0" />
                   {exam.stream_name}
                 </span>
               )}
@@ -62,9 +62,9 @@ const ExamListCard: React.FC<{ exam: ExamInformationDTO }> = ({ exam }) => {
             {/* Date Row */}
             <div className="flex gap-6 mt-1 text-[13px] text-gray-700 overflow-x-auto scrollbar-hide">
               {exam.exam_date && (
-                <div className="space-y-0.5 flex-shrink-0">
+                <div className="space-y-0.5 shrink-0">
                   <div className="text-gray-500 flex items-center gap-1 text-[12px] whitespace-nowrap">
-                    <Calendar size={13} className="flex-shrink-0" /> Exam Date
+                    <Calendar size={13} className="shrink-0" /> Exam Date
                   </div>
                   <span className="font-medium whitespace-nowrap">
                     {dayjs(exam.exam_date).format("DD MMM YYYY")}
@@ -73,9 +73,9 @@ const ExamListCard: React.FC<{ exam: ExamInformationDTO }> = ({ exam }) => {
               )}
 
               {(exam.application_start_date || exam.application_end_date) && (
-                <div className="space-y-0.5 flex-shrink-0">
+                <div className="space-y-0.5 shrink-0">
                   <div className="text-gray-500 flex items-center gap-1 text-[12px] whitespace-nowrap">
-                    <Calendar size={13} className="flex-shrink-0" />{" "}
+                    <Calendar size={13} className="shrink-0" />{" "}
                     Registrations
                   </div>
                   <span className="font-medium whitespace-nowrap">
@@ -91,9 +91,9 @@ const ExamListCard: React.FC<{ exam: ExamInformationDTO }> = ({ exam }) => {
               )}
 
               {exam.result_date && (
-                <div className="space-y-0.5 flex-shrink-0">
+                <div className="space-y-0.5 shrink-0">
                   <div className="text-gray-500 flex items-center gap-1 text-[12px] whitespace-nowrap">
-                    <Calendar size={13} className="flex-shrink-0" /> Results
+                    <Calendar size={13} className="shrink-0" /> Results
                   </div>
                   <span className="font-medium whitespace-nowrap">
                     {dayjs(exam.result_date).format("DD MMM YYYY")}
