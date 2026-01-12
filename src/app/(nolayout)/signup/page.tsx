@@ -28,7 +28,7 @@ const signupSchema = z
       .min(8, "Password must be at least 8 characters")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+        "Password must contain at least one uppercase letter, one lowercase letter, and one number",
       ),
     confirmPassword: z.string(),
     agreeToTerms: z.boolean().refine((val) => val === true, {
@@ -141,9 +141,10 @@ export default function SignupPage() {
         return;
       }
 
-      const { setSignupData, resetOtpState } = await import(
-        "@/stores/signupStore"
-      ).then((m) => m.useSignupStore.getState());
+      const { setSignupData, resetOtpState } =
+        await import("@/stores/signupStore").then((m) =>
+          m.useSignupStore.getState(),
+        );
       resetOtpState();
       setSignupData({
         name: data.name,
@@ -510,11 +511,7 @@ export default function SignupPage() {
                 <div className="w-full border-t border-gray-300"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-<<<<<<< HEAD
                 <span className="px-2 bg-linear-to-br from-white to-gray-100 text-gray-500">
-=======
-                <span className="px-2 bg-gradient-to-br from-white to-gray-100 text-gray-500">
->>>>>>> 2f51968 (feat: oauth)
                   or continue with
                 </span>
               </div>
