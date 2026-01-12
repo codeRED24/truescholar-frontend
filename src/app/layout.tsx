@@ -53,7 +53,7 @@ export default function RootLayout({
   const websiteData = buildWebSiteSchema();
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <JsonLd data={organizationData} />
         <JsonLd data={websiteData} />

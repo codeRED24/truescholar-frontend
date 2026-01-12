@@ -1,0 +1,140 @@
+// Social Media Module Types
+// Core type definitions matching backend DTOs exactly
+
+// ============================================================================
+// Author / User Types
+// ============================================================================
+
+export interface Author {
+  id: string;
+  name: string;
+  image?: string;
+  user_type?: string; // Matches backend FeedAuthorDto
+}
+
+// ============================================================================
+// Post Types
+// ============================================================================
+
+export type PostVisibility = "public" | "connections" | "private" | "college";
+
+export type AuthorType = "user" | "college" | "admin";
+
+export type PostType = "general" | "announcement" | "event" | "article";
+
+export interface PostMedia {
+  id?: string; // Optional, generated if not provided
+  url: string;
+  type: "image" | "video" | "document";
+  thumbnailUrl?: string;
+  altText?: string;
+}
+
+export interface Post {
+  id: string;
+  content: string;
+  author: Author;
+  authorType?: AuthorType;
+  type?: PostType;
+  taggedCollegeId?: number;
+  media: PostMedia[];
+  visibility: PostVisibility;
+  likeCount: number;
+  commentCount: number;
+  hasLiked: boolean;
+  createdAt: string; // ISO date string
+  updatedAt: string;
+}
+
+export interface CreatePostDto {
+  content: string;
+  visibility?: PostVisibility;
+  type?: PostType;
+  taggedCollegeId?: number;
+  // Backend expects PostMediaDto (URLs), not file uploads
+  // File upload requires a separate upload endpoint first
+  media?: PostMedia[];
+}
+
+export interface UpdatePostDto {
+  content?: string;
+  visibility?: PostVisibility;
+}
+
+// ============================================================================
+// Comment Types (matches backend comment.entity.ts)
+// ============================================================================
+
+export interface Comment {
+  id: string;
+  postId: string;
+  content: string;
+  author: Author;
+  parentId: string | null;
+  likeCount: number;
+  hasLiked: boolean;
+  replyCount: number; // Computed on frontend
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCommentDto {
+  content: string;
+  parentId?: string;
+}
+
+// ============================================================================
+// Feed Types (matches backend FeedResponseDto)
+// ============================================================================
+
+export interface FeedResponse {
+  posts: Post[];
+  nextCursor: string | null;
+}
+
+export interface FeedOptions {
+  limit?: number;
+  type?: "all" | "connections" | "trending";
+}
+
+// ============================================================================
+// Comments Response
+// ============================================================================
+
+export interface CommentsResponse {
+  comments: Comment[];
+  nextCursor: string | null;
+}
+
+// ============================================================================
+// Connection Types
+// ============================================================================
+
+export type ConnectionStatus = "pending" | "accepted" | "rejected";
+
+export interface Connection {
+  id: string;
+  user: Author;
+  status: ConnectionStatus;
+  createdAt: string;
+}
+
+// ============================================================================
+// API Response Types
+// ============================================================================
+
+export interface ApiSuccess<T> {
+  data: T;
+}
+
+export interface ApiError {
+  error: string;
+  statusCode?: number;
+}
+
+export type ApiResponse<T> = ApiSuccess<T> | ApiError;
+
+// Type guard for API responses
+export function isApiError<T>(response: ApiResponse<T>): response is ApiError {
+  return "error" in response;
+}
