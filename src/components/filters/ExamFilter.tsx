@@ -218,7 +218,7 @@ const ExamFilters: React.FC<ExamFiltersProps> = React.memo(
     };
 
     const DesktopFilters = () => (
-      <div className="w-80 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden max-h-[calc(100vh-2rem)]">
+      <div className="w-80 bg-white rounded-lg shadow-xs border border-gray-200 overflow-hidden max-h-[calc(100vh-2rem)]">
         <div className="bg-white border-b border-gray-200 p-4">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold text-gray-900">Filter By</h2>

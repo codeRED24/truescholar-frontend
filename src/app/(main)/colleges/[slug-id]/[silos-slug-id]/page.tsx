@@ -241,7 +241,7 @@ export default async function CoursesByClg({
         activeTab="Courses"
       />
       <section className="container-body md:grid grid-cols-4 gap-4 py-4">
-        <div className="col-span-3 order-none md:order-1">
+        <div className="col-span-3 order-0 md:order-1">
           <div className="article-content-body mb-6">
             <h2 className="font-bold text-sm md:text-lg">Table of Contents</h2>
             <div className="space-y-2">

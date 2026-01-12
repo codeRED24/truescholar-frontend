@@ -311,13 +311,13 @@ const Header: React.FC = () => {
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
                 <button
-                  className="text-primary-5 focus:outline-none p-2"
+                  className="text-primary-5 focus:outline-hidden p-2"
                   aria-label="Open navigation menu"
                 >
                   <Menu className="w-6 h-6 text-gray-700" />
                 </button>
               </SheetTrigger>
-              <SheetContent side="left" className="p-2 z-[101] w-[85%]">
+              <SheetContent side="left" className="p-2 z-101 w-[85%]">
                 <DialogTitle
                   asChild
                   className="flex justify-between items-center bg-[#141A21] rounded-full w-fit text-white px-4 py-2.5 shadow-md"
@@ -462,7 +462,7 @@ const Header: React.FC = () => {
             <Link
               href="/"
               prefetch
-              className="text-black py-1 rounded-full font-bold font-public focus:outline-none"
+              className="text-black py-1 rounded-full font-bold font-public focus:outline-hidden"
               aria-label="Go to homepage"
               onClick={closeNavbar}
             >
@@ -474,7 +474,7 @@ const Header: React.FC = () => {
           <div className="flex items-center gap-2">
             {/* Simple search icon button for header */}
             <button
-              className="focus:outline-none p-2 hover:bg-gray-100 rounded-full"
+              className="focus:outline-hidden p-2 hover:bg-gray-100 rounded-full"
               aria-label="Open search"
               onClick={triggerSearch}
             >
@@ -606,7 +606,7 @@ const Header: React.FC = () => {
                     style={{ marginBottom: "0px", borderRadius: "100%" }}
                   >
                     <NavigationMenuTrigger>More</NavigationMenuTrigger>
-                    <NavigationMenuContent className="z-[101] pb-4">
+                    <NavigationMenuContent className="z-101 pb-4">
                       <ul className="p-4 h-80 overflow-y-auto">
                         {additionalStreams.map((stream) => (
                           <Link
@@ -648,7 +648,7 @@ const Header: React.FC = () => {
                           className="object-cover w-full h-full"
                         />
                       ) : (
-                        <span className="bg-gradient-to-br text-white w-full h-full flex items-center justify-center text-sm font-medium">
+                        <span className="bg-linear-to-br text-white w-full h-full flex items-center justify-center text-sm font-medium">
                           {user.name.charAt(0).toUpperCase()}
                         </span>
                       )}

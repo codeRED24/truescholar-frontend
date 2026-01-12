@@ -171,7 +171,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
             aria-label="Remove all filters"
             onClick={handleClearFilters}
             disabled={!areFiltersApplied()}
-            className={`text-md text-blue-600 hover:underline focus:outline-none ${
+            className={`text-md text-blue-600 hover:underline focus:outline-hidden ${
               !areFiltersApplied() ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
@@ -193,7 +193,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
               {searchTerms.city && (
                 <button
                   onClick={() => handleClearSearch("city")}
-                  className="absolute right-3 top-[18px] transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  className="absolute right-3 top-[18px] transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-hidden"
                   disabled={isLoading}
                 >
                   <X className="text-white bg-primary-main rounded-full p-0.5" />
@@ -246,7 +246,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
               {searchTerms.state && (
                 <button
                   onClick={() => handleClearSearch("state")}
-                  className="absolute right-3 top-[18px] transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  className="absolute right-3 top-[18px] transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-hidden"
                   disabled={isLoading}
                 >
                   <X className="text-white bg-primary-main rounded-full p-0.5" />
@@ -301,7 +301,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
               {searchTerms.stream && (
                 <button
                   onClick={() => handleClearSearch("stream")}
-                  className="absolute right-3 top-[18px] transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  className="absolute right-3 top-[18px] transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-hidden"
                   disabled={isLoading}
                 >
                   <X className="text-white bg-primary-main rounded-full p-0.5" />
@@ -356,7 +356,7 @@ const CollegeFilter: React.FC<CollegeFilterProps> = memo(
               {searchTerms.course_group && (
                 <button
                   onClick={() => handleClearSearch("course_group")}
-                  className="absolute right-3 top-[18px] transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  className="absolute right-3 top-[18px] transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-hidden"
                   disabled={isLoading}
                 >
                   <X className="text-white bg-primary-main rounded-full p-0.5" />

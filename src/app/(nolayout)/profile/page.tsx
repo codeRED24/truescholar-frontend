@@ -173,7 +173,7 @@ export default function ProfilePage() {
               <Link
                 href="/"
                 prefetch
-                className="text-black py-1 rounded-full font-bold font-public focus:outline-none"
+                className="text-black py-1 rounded-full font-bold font-public focus:outline-hidden"
                 aria-label="Go to homepage"
               >
                 True<span className="text-primary-main">Scholar</span>
@@ -211,7 +211,7 @@ export default function ProfilePage() {
                   <SidebarMenuButton size="lg" className="rounded-lg">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={session.user.image || undefined} />
-                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs font-medium">
+                      <AvatarFallback className="bg-linear-to-br from-blue-500 to-indigo-600 text-white text-xs font-medium">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
@@ -227,7 +227,7 @@ export default function ProfilePage() {
                   </SidebarMenuButton>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                  className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-xl"
+                  className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-xl"
                   align="start"
                   side="top"
                 >
@@ -246,7 +246,7 @@ export default function ProfilePage() {
       </Sidebar>
 
       <SidebarInset className="bg-[#fafafa]">
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b border-border/40 bg-white/80 backdrop-blur-sm px-6">
+        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b border-border/40 bg-white/80 backdrop-blur-xs px-6">
           <SidebarTrigger className="-ml-2 text-neutral-800 hover:text-neutral-600" />
           <Separator orientation="vertical" className="h-4" />
           <h1 className="font-semibold">
@@ -259,17 +259,17 @@ export default function ProfilePage() {
             {activeTab === "profile" && (
               <>
                 {/* Profile Header Card */}
-                <Card className="overflow-hidden border-0 shadow-sm">
-                  <div className="h-24 bg-gradient-to-r bg-primary-main relative" />
+                <Card className="overflow-hidden border-0 shadow-xs">
+                  <div className="h-24 bg-linear-to-r bg-primary-main relative" />
                   <CardContent className="relative pt-0 pb-6 px-6">
                     <div className="flex flex-col items-center sm:flex-row sm:items-end gap-4 -mt-12">
-                      <div className="relative group w-24 h-24 mx-auto sm:mx-0 flex-shrink-0">
+                      <div className="relative group w-24 h-24 mx-auto sm:mx-0 shrink-0">
                         <Avatar
                           className="h-24 w-24 border-4 border-white shadow-lg cursor-pointer"
                           onClick={handleAvatarClick}
                         >
                           <AvatarImage src={session.user.image || undefined} />
-                          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-2xl font-semibold">
+                          <AvatarFallback className="bg-linear-to-br from-blue-500 to-indigo-600 text-white text-2xl font-semibold">
                             {initials}
                           </AvatarFallback>
                         </Avatar>
@@ -404,7 +404,7 @@ export default function ProfilePage() {
                 </Card>
 
                 {/* Bio */}
-                <Card className="border-0 shadow-sm">
+                <Card className="border-0 shadow-xs">
                   <CardContent className="p-6">
                     <ProfileBio
                       bio={profile?.bio || ""}
@@ -415,7 +415,7 @@ export default function ProfilePage() {
 
                 {/* Skills & Links Grid */}
                 <div className="grid md:grid-cols-2 gap-6">
-                  <Card className="border-0 shadow-sm">
+                  <Card className="border-0 shadow-xs">
                     <CardContent className="p-6">
                       <ProfileSkills
                         skills={profile?.skills || []}
@@ -424,7 +424,7 @@ export default function ProfilePage() {
                     </CardContent>
                   </Card>
 
-                  <Card className="border-0 shadow-sm">
+                  <Card className="border-0 shadow-xs">
                     <CardContent className="p-6">
                       <ProfileSocialLinks
                         linkedinUrl={profile?.linkedin_url || ""}

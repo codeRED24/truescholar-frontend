@@ -305,7 +305,7 @@ export default function UniversityComparisonForm() {
                   />
                   {idx < universities.length - 1 && (
                     <div className="flex items-center justify-center">
-                      <span className="bg-gray-6 flex h-10 w-10 items-center justify-center rounded-full border border-[#E0E0E0] text-base font-bold text-primary-2 shadow">
+                      <span className="bg-gray-6 flex h-10 w-10 items-center justify-center rounded-full border border-[#E0E0E0] text-base font-bold text-primary-2 shadow-sm">
                         VS
                       </span>
                     </div>

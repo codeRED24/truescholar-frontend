@@ -165,7 +165,7 @@ export default function AnimatedBlobLogo({
         <div className="space-y-1">
           {/* <h1
             className={
-              "text-white text-2xl md:text-3xl font-semibold drop-shadow "
+              "text-white text-2xl md:text-3xl font-semibold drop-shadow-sm "
             }
           >
             {title}
@@ -175,7 +175,7 @@ export default function AnimatedBlobLogo({
             <div className="eye h-4 w-3 rounded-full bg-white"></div>
           </div>
           {subtitle && (
-            <p className="text-white/80 text-sm md:text-base drop-shadow-sm">
+            <p className="text-white/80 text-sm md:text-base drop-shadow-xs">
               {subtitle}
             </p>
           )}

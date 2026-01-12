@@ -157,7 +157,7 @@ const NewCollegeCourseList: React.FC<CollegeCourseListProps> = ({
       <div className="relative mb-4">
         <input
           type="text"
-          className="pl-12 w-full h-10 border border-gray-3 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-3 focus:border-primary-3"
+          className="pl-12 w-full h-10 border border-gray-3 rounded-full focus:outline-hidden focus:ring-2 focus:ring-primary-3 focus:border-primary-3"
           placeholder="Search courses..."
           value={searchTerm}
           onChange={handleSearchChange}

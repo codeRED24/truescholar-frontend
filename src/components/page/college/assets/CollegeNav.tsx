@@ -116,7 +116,7 @@ const CollegeNav: React.FC<CollegeData> = ({ data, activeTab }) => {
   return (
     <nav
       ref={navRef}
-      className="container-body flex items-center gap-2 md:gap-4 bg-white overflow-x-auto no-scroll-bar text-[#637381] border border-[#DFE3E8] shadow-sm font-light whitespace-nowrap"
+      className="container-body flex items-center gap-2 md:gap-4 bg-white overflow-x-auto no-scroll-bar text-[#637381] border border-[#DFE3E8] shadow-xs font-light whitespace-nowrap"
     >
       {navItems.map(({ label, path }, idx) => {
         const fullPath = `${basePath}${path}`;

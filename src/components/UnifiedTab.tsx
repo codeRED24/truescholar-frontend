@@ -96,7 +96,7 @@ export function UnifiedTab({ authorId, type }: UnifiedTabProps) {
           {[...Array(3)].map((_, i) => (
             <div key={i} className="border rounded-lg p-4">
               <div className="flex gap-4">
-                <div className="w-20 h-20 bg-gray-200 rounded-lg flex-shrink-0"></div>
+                <div className="w-20 h-20 bg-gray-200 rounded-lg shrink-0"></div>
                 <div className="flex-1">
                   <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
                   <div className="h-3 bg-gray-200 rounded w-1/2 mb-2"></div>
@@ -176,7 +176,7 @@ export function UnifiedTab({ authorId, type }: UnifiedTabProps) {
               <div className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
                 <div className="flex gap-4">
                   {item.img1_url && (
-                    <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                    <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0">
                       <img
                         src={item.img1_url}
                         alt={item.title}
@@ -192,7 +192,7 @@ export function UnifiedTab({ authorId, type }: UnifiedTabProps) {
                       <span
                         className={`text-xs px-2 py-1 rounded-full ${getCategoryBadgeStyle(
                           item.category
-                        )} ml-2 flex-shrink-0`}
+                        )} ml-2 shrink-0`}
                       >
                         {getCategoryDisplayName(item.category)}
                       </span>
@@ -234,7 +234,7 @@ export function UnifiedTab({ authorId, type }: UnifiedTabProps) {
           <div className="animate-pulse">
             <div className="border rounded-lg p-4">
               <div className="flex gap-4">
-                <div className="w-20 h-20 bg-gray-200 rounded-lg flex-shrink-0"></div>
+                <div className="w-20 h-20 bg-gray-200 rounded-lg shrink-0"></div>
                 <div className="flex-1">
                   <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
                   <div className="h-3 bg-gray-200 rounded w-1/2 mb-2"></div>

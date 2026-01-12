@@ -22,7 +22,7 @@ const MainArticleCard = ({ article }: { article: ArticleDataPropsDTO }) => (
       loading="eager"
       priority
     />
-    <div className="absolute inset-0 bg-gradient-to-t from-black p-4 flex flex-col justify-end">
+    <div className="absolute inset-0 bg-linear-to-t from-black p-4 flex flex-col justify-end">
       <Link
         href={`/articles/${article.slug}-${article.article_id}`}
         className="text-lg font-semibold text-white line-clamp-2 mb-3 hover:underline"
@@ -50,7 +50,7 @@ const ArticleCard = ({ article }: { article: ArticleDataPropsDTO }) => (
       quality={75}
       className="object-cover w-full h-full"
     />
-    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent p-3 flex flex-col justify-end">
+    <div className="absolute inset-0 bg-linear-to-t from-black via-transparent p-3 flex flex-col justify-end">
       {article.tags && (
         <span className="text-xs text-white bg-[#4777C4] rounded-full px-2 py-1 mb-2 inline-block w-fit uppercase">
           {article.tags}

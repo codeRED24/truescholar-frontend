@@ -101,7 +101,7 @@ export function Hero() {
 
   return (
     <section
-      className="relative h-[50vh] md:h-[70vh] lg:h-[80vh] max-h-[80vh] w-full overflow-hidden flex-shrink-0"
+      className="relative h-[50vh] md:h-[70vh] lg:h-[80vh] max-h-[80vh] w-full overflow-hidden shrink-0"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       role="region"
@@ -139,7 +139,7 @@ export function Hero() {
 
             {/* Content */}
             {/* <div className="relative z-10 h-full w-full flex items-center justify-center min-h-0 max-h-full">
-              <div className="text-center text-white max-w-4xl mx-auto px-4 flex-shrink-0 max-h-full overflow-hidden">
+              <div className="text-center text-white max-w-4xl mx-auto px-4 shrink-0 max-h-full overflow-hidden">
                 <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 text-balance">
                   <span className="text-white">
                     {slide?.title?.split(" ").slice(0, -2).join(" ")}
@@ -159,7 +159,7 @@ export function Hero() {
 
                 {slide.stats && (
                   <div className="flex items-center justify-center space-x-2 text-lg md:text-xl">
-                    <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
+                    <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-xs rounded-full px-4 py-2">
                       <span className="text-2xl">{slide.stats.icon}</span>
                       <span className="font-semibold text-emerald-400">
                         {slide.stats.text}
@@ -171,7 +171,7 @@ export function Hero() {
             </div> */}
           </div>
         ))}
-        <div className="absolute inset-0 z-[2] flex flex-col gap-6 items-center justify-center text-center px-4 md:px-8 lg:px-16">
+        <div className="absolute inset-0 z-2 flex flex-col gap-6 items-center justify-center text-center px-4 md:px-8 lg:px-16">
           {" "}
           <h1 className="text-[#919EAB] text-xl md:text-3xl lg:text-5xl font-barlow font-medium leading-5 md:leading-wide max-w-4xl">
             {" "}
@@ -213,7 +213,7 @@ export function Hero() {
       </Button>
 
       {/* Dot Indicators */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[3] flex gap-2">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-3 flex gap-2">
         {slides.map((_, index) => (
           <button
             key={index}
