@@ -49,7 +49,7 @@ const CollegeSort: React.FC<CollegeSortProps> = ({ onSortChange }) => {
       <div>
         <button
           type="button"
-          className="inline-flex justify-between w-full rounded-2xl border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
+          className="inline-flex justify-between w-full rounded-2xl border border-gray-300 shadow-xs px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-hidden"
           onClick={() => setIsOpen(!isOpen)}
         >
           {selectedSort

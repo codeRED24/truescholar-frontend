@@ -83,7 +83,7 @@ export function SuccessScreen({ onReset, referralCode }: SuccessScreenProps) {
                     variant="outline"
                     size="sm"
                     onClick={handleCopyReferralUrl}
-                    className="text-teal-700 border-teal-300 hover:bg-teal-50 flex-shrink-0"
+                    className="text-teal-700 border-teal-300 hover:bg-teal-50 shrink-0"
                   >
                     <Copy className="w-4 h-4 mr-1" />
                     Copy URL

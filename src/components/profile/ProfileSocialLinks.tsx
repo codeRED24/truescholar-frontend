@@ -169,7 +169,7 @@ export function ProfileSocialLinks({
               <div key={item.key}>
                 <div className="flex items-center gap-3">
                   <item.icon
-                    className={`h-4 w-4 flex-shrink-0 ${item.color}`}
+                    className={`h-4 w-4 shrink-0 ${item.color}`}
                   />
                   <Input
                     value={formData[item.key as keyof typeof formData]}

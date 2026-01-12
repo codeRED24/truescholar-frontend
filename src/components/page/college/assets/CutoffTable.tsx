@@ -224,7 +224,7 @@ const CutoffTable: React.FC<CutoffTableProps> = React.memo(
           return (
             <div
               key={exam.exam_id}
-              className="bg-white rounded-xl shadow-sm overflow-hidden"
+              className="bg-white rounded-xl shadow-xs overflow-hidden"
             >
               <div className="p-6 border-b border-gray-100">
                 <h2 className="text-2xl font-semibold text-gray-800">

@@ -94,14 +94,14 @@ const TOCGenerator: React.FC<TOCGeneratorProps> = ({ content }) => {
       <DialogTrigger asChild>
         <button
           aria-label="Open Section Overview"
-          className="fixed bottom-4 inset-x-0 w-1/2 mx-auto z-[101] flex items-center gap-2 bg-primary-1 border border-primary-main rounded-2xl py-1 px-3 shadow-md transition hover:bg-primary-1 focus:outline-none focus:ring-1 focus:ring-primary-main"
+          className="fixed bottom-4 inset-x-0 w-1/2 mx-auto z-101 flex items-center gap-2 bg-primary-1 border border-primary-main rounded-2xl py-1 px-3 shadow-md transition hover:bg-primary-1 focus:outline-hidden focus:ring-1 focus:ring-primary-main"
           onClick={() => setIsOpen(true)}
         >
           📋 <span className="text-sm font-medium">Section Overview</span>
         </button>
       </DialogTrigger>
       <DialogContent
-        className="max-w-[340px] sm:max-w-[425px] px-2 focus:outline-none rounded-2xl"
+        className="max-w-[340px] sm:max-w-[425px] px-2 focus:outline-hidden rounded-2xl"
         aria-labelledby="toc-dialog-title"
       >
         <DialogTitle id="toc-dialog-title" className="sr-only">
@@ -123,13 +123,13 @@ const TOCGenerator: React.FC<TOCGeneratorProps> = ({ content }) => {
       <Accordion type="single" collapsible>
         <AccordionItem value="item-1" className="border-b-0">
           <AccordionTrigger
-            className="font-bold text-sm md:text-lg py-0 hover:no-underline focus:outline-none"
+            className="font-bold text-sm md:text-lg py-0 hover:no-underline focus:outline-hidden"
             aria-label="Toggle Section Overview"
           >
             Section Overview
           </AccordionTrigger>
           <AccordionContent
-            className="space-y-2 focus:outline-none pt-4"
+            className="space-y-2 focus:outline-hidden pt-4"
             role="navigation"
             aria-label="Section Overview Links"
           >

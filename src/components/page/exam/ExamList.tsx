@@ -41,10 +41,10 @@ interface ExamsResponse {
 }
 
 const SkeletonExamCard: React.FC = () => (
-  <div className="border border-gray-200 rounded-lg shadow-sm animate-pulse bg-white">
+  <div className="border border-gray-200 rounded-lg shadow-xs animate-pulse bg-white">
     {/* Header Section */}
     <div className="flex items-start gap-4 p-5 border-b border-gray-200">
-      <div className="w-14 h-14 bg-gray-200 rounded-lg flex-shrink-0" />
+      <div className="w-14 h-14 bg-gray-200 rounded-lg shrink-0" />
       <div className="flex-1 space-y-2">
         <div className="h-5 bg-gray-200 rounded w-3/4" />
         <div className="h-4 bg-gray-200 rounded w-1/2" />
@@ -272,7 +272,7 @@ const ExamsList: React.FC = () => {
                 <FilterIcon className="w-5 h-5" />
               </button>
             </DrawerTrigger>
-            <DrawerContent className="z-[120]">
+            <DrawerContent className="z-120">
               <DrawerHeader>
                 <div className="flex items-center justify-between">
                   <DrawerTitle>All Filters</DrawerTitle>
@@ -372,7 +372,7 @@ const ExamsList: React.FC = () => {
             )}
 
             {exams.length === 0 && !loading && !error && (
-              <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm">
+              <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-xs">
                 No Exam with selected Filter
               </div>
             )}

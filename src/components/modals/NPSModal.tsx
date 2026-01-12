@@ -111,7 +111,7 @@ const NPSModal: React.FC<NPSModalProps> = memo(({ open, onClose, rating }) => {
               placeholder="Your Name"
               value={formData.name}
               onChange={(e) => handleInputChange("name")(e.target.value)}
-              className="h-10 border border-[#D0D5DD] rounded-2xl px-3 focus:outline-none focus:ring-2 focus:ring-primary-3"
+              className="h-10 border border-[#D0D5DD] rounded-2xl px-3 focus:outline-hidden focus:ring-2 focus:ring-primary-3"
               required
               disabled={isSubmitting}
             />
@@ -158,7 +158,7 @@ const NPSModal: React.FC<NPSModalProps> = memo(({ open, onClose, rating }) => {
               placeholder="Email"
               value={formData.email}
               onChange={(e) => handleInputChange("email")(e.target.value)}
-              className="h-10 border border-[#D0D5DD] rounded-2xl px-3 focus:outline-none focus:ring-2 focus:ring-primary-3"
+              className="h-10 border border-[#D0D5DD] rounded-2xl px-3 focus:outline-hidden focus:ring-2 focus:ring-primary-3"
               required
               disabled={isSubmitting}
             />
@@ -175,7 +175,7 @@ const NPSModal: React.FC<NPSModalProps> = memo(({ open, onClose, rating }) => {
               onChange={(e) =>
                 handleInputChange("feedback_query")(e.target.value)
               }
-              className="border border-[#D0D5DD] rounded-2xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-3 resize-y"
+              className="border border-[#D0D5DD] rounded-2xl px-3 py-2 focus:outline-hidden focus:ring-2 focus:ring-primary-3 resize-y"
               rows={4}
               required
               disabled={isSubmitting}

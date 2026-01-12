@@ -214,7 +214,7 @@ export function PersonalDetailsStep() {
             name="contactNumber"
             control={control}
             render={({ field }) => (
-              <div className="w-full p-[1px] focus-within:ring-1 focus-within:ring-green-800 rounded-md z-10">
+              <div className="w-full p-px focus-within:ring-1 focus-within:ring-green-800 rounded-md z-10">
                 <PhoneInput
                   country="in"
                   value={field.value}

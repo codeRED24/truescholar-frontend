@@ -241,7 +241,7 @@ export const IndividualReview = ({ review }: IndividualReviewProps) => {
         </div>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex h-auto w-full items-center focus:outline-none justify-center rounded-b-xl bg-[#ECECEE] p-2 text-[#9D9D9D] transition-colors hover:bg-[#dededf] hover:text-foreground"
+          className="flex h-auto w-full items-center focus:outline-hidden justify-center rounded-b-xl bg-[#ECECEE] p-2 text-[#9D9D9D] transition-colors hover:bg-[#dededf] hover:text-foreground"
         >
           {isExpanded ? "Show Less" : "Read Full Review"}
           {isExpanded ? (

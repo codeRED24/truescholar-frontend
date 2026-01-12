@@ -314,7 +314,7 @@ const CollegeCourseFilter: React.FC<CollegeCourseFilterProps> = ({
       onClick={() => setIsOpen(false)}
     >
       <div
-        className="bg-white rounded-t-2xl md:rounded-2xl shadow-xl w-full md:w-[44rem] max-w-full flex flex-col h-[70vh] md:h-auto md:p-6 p-3 absolute bottom-0 md:static md:max-h-[80vh] overflow-y-auto animate-slide-up md:animate-none"
+        className="bg-white rounded-t-2xl md:rounded-2xl shadow-xl w-full md:w-176 max-w-full flex flex-col h-[70vh] md:h-auto md:p-6 p-3 absolute bottom-0 md:static md:max-h-[80vh] overflow-y-auto animate-slide-up md:animate-none"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-col border-b pb-2">

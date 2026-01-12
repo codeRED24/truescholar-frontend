@@ -256,7 +256,7 @@ export function ProfileEducation({ education }: ProfileEducationProps) {
   const isPending = addMutation.isPending || updateMutation.isPending;
 
   return (
-    <Card className="border-0 shadow-sm">
+    <Card className="border-0 shadow-xs">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -507,7 +507,7 @@ export function ProfileEducation({ education }: ProfileEducationProps) {
                 key={entry.id}
                 className="group flex items-start gap-4 p-4 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors"
               >
-                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
                   <GraduationCap className="h-5 w-5 text-blue-600" />
                 </div>
                 <div className="flex-1 min-w-0">

@@ -104,7 +104,7 @@ const ExamNav: React.FC<ExamData> = ({ data }) => {
   // console.log("Nav-mismatches ➞", missing);
 
   return (
-    <nav className="bg-white text-[#637381] border border-[#DFE3E8] shadow-sm font-light">
+    <nav className="bg-white text-[#637381] border border-[#DFE3E8] shadow-xs font-light">
       <div
         ref={navRef}
         className="container-body flex items-center justify-normal gap-2 md:gap-4 overflow-x-auto no-scroll-bar whitespace-nowrap"

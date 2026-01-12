@@ -209,9 +209,9 @@ export default function ForgotPasswordPage() {
             alt="lock"
             priority
             fill
-            className="w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 xl:w-96 xl:h-96 object-contain z-10 absolute rotate-[15deg] opacity-10"
+            className="w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 xl:w-96 xl:h-96 object-contain z-10 absolute rotate-15 opacity-10"
           />
-          <div className="inset-0 absolute bg-gradient-to-b from-[#142D55] to-[#4777C4]"></div>
+          <div className="inset-0 absolute bg-linear-to-b from-[#142D55] to-[#4777C4]"></div>
 
           <div className="absolute bottom-0 lg:right-28 xl:right-48 w-48 h-[300px] md:w-[280px] md:h-[400px] lg:w-[420px] lg:h-[580px] xl:w-[560px] xl:h-[770px] z-10">
             <Image
@@ -239,7 +239,7 @@ export default function ForgotPasswordPage() {
         </div>
 
         {/* Right Side - Form */}
-        <div className="w-full lg:w-4/12 bg-gradient-to-br from-white to-gray-100 p-6 md:p-8 flex flex-col justify-center">
+        <div className="w-full lg:w-4/12 bg-linear-to-br from-white to-gray-100 p-6 md:p-8 flex flex-col justify-center">
           {/* Email Success State */}
           {step === "success" && resetMethod === "email" && (
             <div className="text-center">
@@ -422,7 +422,7 @@ export default function ForgotPasswordPage() {
                   onClick={() => setResetMethod("email")}
                   className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md text-sm font-medium transition-all ${
                     resetMethod === "email"
-                      ? "bg-white text-blue-600 shadow-sm"
+                      ? "bg-white text-blue-600 shadow-xs"
                       : "text-gray-600 hover:text-gray-800"
                   }`}
                 >
@@ -434,7 +434,7 @@ export default function ForgotPasswordPage() {
                   onClick={() => setResetMethod("phone")}
                   className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md text-sm font-medium transition-all ${
                     resetMethod === "phone"
-                      ? "bg-white text-blue-600 shadow-sm"
+                      ? "bg-white text-blue-600 shadow-xs"
                       : "text-gray-600 hover:text-gray-800"
                   }`}
                 >
@@ -501,10 +501,10 @@ export default function ForgotPasswordPage() {
                         setPhoneValue(value);
                         phoneForm.setValue("phoneNumber", value);
                       }}
-                      inputClass="!w-full !h-10 !text-base !bg-transparent !border-gray-300 !rounded-md"
-                      containerClass="!w-full"
-                      buttonClass="!border-gray-300 !rounded-l-md !bg-gray-50"
-                      dropdownClass="!shadow-lg"
+                      inputClass="w-full! h-10! text-base! bg-transparent! border-gray-300! rounded-md!"
+                      containerClass="w-full!"
+                      buttonClass="border-gray-300! rounded-l-md! bg-gray-50!"
+                      dropdownClass="shadow-lg!"
                       enableSearch
                       searchPlaceholder="Search country..."
                     />

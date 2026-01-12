@@ -25,14 +25,14 @@ export default function ChatbotWrapper({ cardConfig }: ChatbotWrapperProps) {
       {/* Chatbot Toggle Button */}
       <Button
         onClick={toggleChatbot}
-        className="fixed bottom-6 right-6 z-[119] h-12 w-12 rounded-full bg-primary-main p-0 shadow-lg hover:bg-primary-5"
+        className="fixed bottom-6 right-6 z-119 h-12 w-12 rounded-full bg-primary-main p-0 shadow-lg hover:bg-primary-5"
         aria-label="Toggle chatbot"
       >
         <div className="">
           <span className="pulse-ring"></span>
 
           {/* Notification indicator */}
-          <span className="absolute -top-0 -right-0 h-3 w-3 rounded-full bg-red-500 border-2 border-white" />
+          <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-red-500 border-2 border-white" />
 
           <div className=" flex pb-1 gap-1 items-center justify-center h-6 w-6">
             <div className="eye h-3 w-4 rounded-full bg-white"></div>

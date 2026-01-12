@@ -75,7 +75,7 @@ const PlacementBarGraphWrapper: React.FC<PlacementBarGraphWrapperProps> = ({
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <div className="bg-white rounded-lg shadow-xs border border-gray-200 p-4">
         <PlacementBarGraph data={data} />
       </div>
 

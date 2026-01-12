@@ -10,7 +10,7 @@ const UniInfoCard: React.FC<any> = ({
   onDelete,
 }) => {
   return (
-    <div className="relative flex h-full min-w-[320px] max-w-[340px] flex-col items-center justify-between rounded-2xl border-none bg-white pt-8 shadow">
+    <div className="relative flex h-full min-w-[320px] max-w-[340px] flex-col items-center justify-between rounded-2xl border-none bg-white pt-8 shadow-sm">
       {/* Logo in circle above card */}
       <div className="absolute -top-20 left-1/2 z-10 flex -translate-x-1/2 items-center justify-center">
         <div className="flex h-32 w-32 items-center justify-center rounded-full border border-gray-100 bg-white shadow-lg">

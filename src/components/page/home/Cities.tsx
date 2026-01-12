@@ -29,7 +29,7 @@ const Cities: React.FC<CitiesProps> = React.memo(({ data }) => {
               />
               <Link
                 href={`/colleges-city-${name.toLowerCase()}`}
-                className="absolute inset-0 flex flex-col items-center justify-end pb-6 bg-gradient-to-t from-black/60 via-black/30 to-transparent rounded-2xl"
+                className="absolute inset-0 flex flex-col items-center justify-end pb-6 bg-linear-to-t from-black/60 via-black/30 to-transparent rounded-2xl"
               >
                 <span
                   className="text-center font-semibold text-base text-white tracking-wider"

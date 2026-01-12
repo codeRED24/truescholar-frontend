@@ -111,7 +111,7 @@ export function AggregatedReviewCard({
       <div
         className={cn(
           "flex flex-col lg:flex-row",
-          totalReviews === 0 ? "pointer-events-none blur-sm" : ""
+          totalReviews === 0 ? "pointer-events-none blur-xs" : ""
         )}
       >
         <div className="flex-1 p-6">
@@ -245,7 +245,7 @@ export function AggregatedReviewCard({
         <Link
           href="/review-form"
           target="_blank"
-          className="absolute left-1/2 top-1/2 z-[15] flex w-fit -translate-x-1/2 -translate-y-1/2 items-center justify-center"
+          className="absolute left-1/2 top-1/2 z-15 flex w-fit -translate-x-1/2 -translate-y-1/2 items-center justify-center"
         >
           <Button size={"lg"}>Write a Review</Button>
         </Link>

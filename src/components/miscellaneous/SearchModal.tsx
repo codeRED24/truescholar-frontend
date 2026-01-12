@@ -399,7 +399,7 @@ const SearchModal: React.FC = () => {
           )}
         </Button>
       </DialogTrigger>
-      <DialogContent className="z-[102] min-h-[400px] max-w-[95vw] md:max-w-[60vw] max-h-[90vh] rounded-lg">
+      <DialogContent className="z-102 min-h-[400px] max-w-[95vw] md:max-w-[60vw] max-h-[90vh] rounded-lg">
         <DialogTitle className="text-2xl font-bold mt-4 md:mt-0">
           <span className="text-primary-main">Discover</span> Colleges
         </DialogTitle>

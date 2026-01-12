@@ -164,7 +164,7 @@ const IndividualCollege = async (props: {
       <CollegeHead data={extractedData} />
       <CollegeNav data={college_information} />
       <section className="container-body md:grid grid-cols-4 gap-4 py-4">
-        <div className="col-span-3 order-none md:order-1">
+        <div className="col-span-3 order-0 md:order-1">
           <CollegeInfoContent
             data={college_information}
             info={info_section}

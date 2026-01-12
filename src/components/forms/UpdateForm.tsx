@@ -119,7 +119,7 @@ const UpdateForm: React.FC = memo(() => {
         </span>
         <input
           type="email"
-          className="h-10 rounded-lg border border-[#D0D5DD] px-4 focus:outline-none disabled:opacity-50"
+          className="h-10 rounded-lg border border-[#D0D5DD] px-4 focus:outline-hidden disabled:opacity-50"
           id="email"
           name="email"
           placeholder="Email"

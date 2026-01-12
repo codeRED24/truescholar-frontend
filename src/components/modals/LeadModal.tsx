@@ -41,7 +41,6 @@ type LeadModalProps = {
     | "link"
     | "ghost"
     | "destructive"
-    | "outline"
     | "secondary"
     | null;
   brochureUrl?: string;
@@ -165,7 +164,7 @@ const LeadModal: React.FC<LeadModalProps> = ({
         </Button>
       </DialogTrigger>
       <DialogContent
-        className="max-h-[95vh] max-w-screen-md overflow-hidden md:p-0 rounded-2xl"
+        className="max-h-[95vh] max-w-(--breakpoint-md) overflow-hidden md:p-0 rounded-2xl"
         aria-label="Lead Generation Form"
       >
         <div className="p-0 md:p-6">

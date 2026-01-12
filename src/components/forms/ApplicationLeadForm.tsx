@@ -47,7 +47,7 @@ function TextInput({
         type={type}
         placeholder={label}
         aria-label={label}
-        className={`h-11 w-full border rounded-2xl px-4 text-sm text-[#1A237E] bg-white focus:outline-none focus:ring-1 focus:ring-[#D81B60] transition-all duration-200 ${
+        className={`h-11 w-full border rounded-2xl px-4 text-sm text-[#1A237E] bg-white focus:outline-hidden focus:ring-1 focus:ring-[#D81B60] transition-all duration-200 ${
           error ? "border-[#AD1457]" : "border-[#D81B60]/30"
         }`}
         value={value}
@@ -215,7 +215,7 @@ export function ApplicationLeadForm() {
 
   return (
     <div className="bg-white md:rounded-3xl p-6 md:p-8 transform hover:scale-105 transition-transform duration-300">
-      <h4 className="text-[#D81B60] text-2xl md:text-3xl font-extrabold mb-6 bg-gradient-to-r from-[#D81B60] to-[#FFCA28] bg-clip-text text-transparent">
+      <h4 className="text-[#D81B60] text-2xl md:text-3xl font-extrabold mb-6 bg-linear-to-r from-[#D81B60] to-[#FFCA28] bg-clip-text text-transparent">
         Apply for MBA 2025 Now!
       </h4>
       <form

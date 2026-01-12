@@ -12,7 +12,7 @@ const Footer = () => {
       <Words />
       <FooterList />
       <NewsletterSignup />
-      <footer className="border-t-[1px] border-gray-3/20 pt-8 mb-5 flex flex-col md:flex-row items-center justify-center md:justify-between">
+      <footer className="border-t border-gray-3/20 pt-8 mb-5 flex flex-col md:flex-row items-center justify-center md:justify-between">
         <Link
           href="/"
           prefetch

@@ -21,7 +21,7 @@ import "@/app/styles/mba.css";
 const MBALandingPage: React.FC = () => {
   return (
     <div className="w-full overflow-hidden">
-      <section className="bg-gradient-to-br from-[#06B6D4] to-[#0EA5E9] py-24 px-4 md:px-8 text-center text-white relative overflow-hidden">
+      <section className="bg-linear-to-br from-[#06B6D4] to-[#0EA5E9] py-24 px-4 md:px-8 text-center text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-20 bg-hero-pattern animate-pulse-slow"></div>
         <div className="absolute top-10 left-10 w-20 h-20 bg-[#FACC15] rounded-full opacity-30 animate-float"></div>
         <div className="absolute bottom-10 right-10 w-24 h-24 bg-[#EC4899] rounded-full opacity-30 animate-float-delay"></div>
@@ -93,7 +93,7 @@ const MBALandingPage: React.FC = () => {
           ))}
         </div>
       </section>
-      <section className="bg-gradient-to-br from-[#0EA5E9] to-[#06B6D4] py-20 px-4 md:px-8 text-white relative overflow-hidden">
+      <section className="bg-linear-to-br from-[#0EA5E9] to-[#06B6D4] py-20 px-4 md:px-8 text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-15 bg-diagonal-lines animate-pulse-slow"></div>
         <div className="absolute bottom-0 right-0 w-40 h-40 bg-[#FACC15] opacity-20 rounded-full blur-3xl animate-float"></div>
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -208,7 +208,7 @@ const MBALandingPage: React.FC = () => {
         </div>
       </section>
 
-      <section className="bg-gradient-to-br from-[#EC4899] to-[#DB2777] py-20 px-4 md:px-8 relative overflow-hidden">
+      <section className="bg-linear-to-br from-[#EC4899] to-[#DB2777] py-20 px-4 md:px-8 relative overflow-hidden">
         <div className="absolute inset-0 opacity-15 bg-wave-pattern animate-pulse-slow"></div>
         <div className="absolute top-10 right-10 w-20 h-20 bg-[#FACC15] opacity-30 rounded-full animate-float"></div>
         <h2 className="text-3xl md:text-5xl font-bold text-[#0F172A] text-center mb-16 animate-slide-up drop-shadow-md">
@@ -236,7 +236,7 @@ const MBALandingPage: React.FC = () => {
             >
               <div className="absolute top-0 right-0 w-20 h-20 bg-[#FACC15] opacity-20 rounded-bl-full animate-pulse-slow"></div>
               <LuStar className="text-[#FACC15] mb-4" size={28} />
-              <p className="text-[#0F172A] opacity-80 italic flex-grow">
+              <p className="text-[#0F172A] opacity-80 italic grow">
                 "{testimonial.quote}"
               </p>
               <p className="mt-6 text-[#0F172A] font-medium">
@@ -284,7 +284,7 @@ const MBALandingPage: React.FC = () => {
         />
       </div>
 
-      <section className="bg-gradient-to-br from-[#06B6D4] to-[#0EA5E9] py-24 px-4 md:px-8 text-center text-white relative overflow-hidden">
+      <section className="bg-linear-to-br from-[#06B6D4] to-[#0EA5E9] py-24 px-4 md:px-8 text-center text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-20 bg-circle-pattern animate-pulse-slow"></div>
         <div className="absolute top-20 left-20 w-24 h-24 bg-[#EC4899] opacity-30 rounded-full animate-float"></div>
         <h2 className="text-3xl md:text-5xl font-bold mb-8 animate-slide-up text-[#0F172A] drop-shadow-lg relative z-10">

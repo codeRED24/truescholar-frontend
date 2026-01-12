@@ -342,7 +342,7 @@ const LeadForm: React.FC<LeadFormProps> = ({
                 placeholder="Your Email"
                 value={formData.email}
                 onChange={(e) => handleChange("email", e.target.value)}
-                className="h-8 md:h-10 border border-[#D0D5DD] rounded-2xl px-3 text-gray-800 bg-gray-50 focus:outline-none"
+                className="h-8 md:h-10 border border-[#D0D5DD] rounded-2xl px-3 text-gray-800 bg-gray-50 focus:outline-hidden"
                 disabled={isSubmitting}
               />
               {errors.email && (

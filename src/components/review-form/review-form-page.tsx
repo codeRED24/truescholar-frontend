@@ -49,7 +49,7 @@ function ReviewFormContent() {
       <div className="max-w-4xl mx-auto">
         {/* Referral Banner */}
         {wizard.referredByCode && (
-          <Card className="mb-6 p-4 bg-gradient-to-r from-teal-50 to-green-50 border-teal-200">
+          <Card className="mb-6 p-4 bg-linear-to-r from-teal-50 to-green-50 border-teal-200">
             <div className="flex items-center gap-3">
               <Gift className="w-6 h-6 text-teal-600" />
               <div>

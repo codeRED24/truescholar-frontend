@@ -245,25 +245,25 @@ export default function VerifyPage() {
     <div className="min-h-screen bg-gray-50 flex">
       {/* Left Side - Image & Character */}
       <div className="w-full lg:w-7/12 relative overflow-y-clip lg:flex items-center justify-center p-4 md:p-8 hidden">
-        <div className="inset-0 absolute bg-gradient-to-b from-[#142D55] to-[#4777C4]"></div>
+        <div className="inset-0 absolute bg-linear-to-b from-[#142D55] to-[#4777C4]"></div>
         <Image
           src="/lock.png"
           alt="lock"
           priority
           fetchPriority="high"
           fill
-          className="w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 xl:w-96 xl:h-96 object-contain z-10 absolute rotate-[15deg] opacity-10"
+          className="w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 xl:w-96 xl:h-96 object-contain z-10 absolute rotate-15 opacity-10"
         />
 
         {/* Daily Dash Feature Card */}
         <div className="absolute bottom-8 left-8 z-20 flex flex-col items-center">
-          <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg w-full max-w-md border border-white/20">
+          <div className="flex items-center gap-2 bg-white/10 backdrop-blur-xs rounded-lg w-full max-w-md border border-white/20">
             <Image
               src="/gift.gif"
               alt="Gift"
               width={40}
               height={40}
-              className="w-20 h-20 md:w-20 md:h-20 object-contain absolute -left-5 z-[1000]"
+              className="w-20 h-20 md:w-20 md:h-20 object-contain absolute -left-5 z-1000"
             />
             <h3 className="text-white font-bold text-base md:text-lg pl-14">
               Introducing Our Daily Dash Feature!
@@ -274,7 +274,7 @@ export default function VerifyPage() {
               <div className="flex items-start gap-2">
                 <Star
                   fill="currentColor"
-                  className="w-4 h-4 text-yellow-400 mt-1 flex-shrink-0"
+                  className="w-4 h-4 text-yellow-400 mt-1 shrink-0"
                 />
                 <p>
                   <strong>Maintain Your Daily Dash:</strong> Engage every day
@@ -285,7 +285,7 @@ export default function VerifyPage() {
               <div className="flex items-start gap-2">
                 <Star
                   fill="currentColor"
-                  className="w-4 h-4 text-yellow-400 mt-1 flex-shrink-0"
+                  className="w-4 h-4 text-yellow-400 mt-1 shrink-0"
                 />
                 <p>
                   <strong>Level Up:</strong> Keep the Daily Dash alive to level
