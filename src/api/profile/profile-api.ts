@@ -74,6 +74,37 @@ export async function getProfile(): Promise<
   }
 }
 
+// Get public profile by user ID
+export interface PublicProfileUser {
+  id: string;
+  name: string;
+  email: string;
+  image?: string | null;
+  createdAt: string;
+}
+
+export async function getPublicProfile(
+  userId: string
+): Promise<
+  { profile: UserProfile; user: PublicProfileUser } | { error: string }
+> {
+  try {
+    const response = await fetch(`${BASE_URL}/profile/${userId}`, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching public profile:", error);
+    return { error: "Failed to fetch profile" };
+  }
+}
+
 // Update profile
 export async function updateProfile(
   updates: UpdateProfileDto

@@ -27,7 +27,7 @@ export default function StatsCard({
     <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
       <CardContent className="p-2">
         <div className="space-y-0.5">
-          <StatItem label="Connections" value={stats.followers} />
+          <StatItem label="Followers" value={stats.followers} />
           <StatItem label="Who viewed your profile" value={stats.posts * 5} />
         </div>
       </CardContent>

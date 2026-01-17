@@ -10,6 +10,8 @@ import {
   type Post,
   type CreatePostDto,
   type UpdatePostDto,
+  type FeedResponse,
+  type FeedItem,
 } from "../types";
 import { feedKeys } from "./use-feed";
 import { toast } from "sonner";
@@ -152,16 +154,24 @@ export function useUpdatePostInCache() {
         if (!oldData || typeof oldData !== "object") return oldData;
 
         const data = oldData as {
-          pages: Array<{ posts: Post[]; nextCursor: string | null }>;
+          pages: FeedResponse[];
         };
+
+        if (!data.pages || !Array.isArray(data.pages)) return oldData;
 
         return {
           ...data,
           pages: data.pages.map((page) => ({
             ...page,
-            posts: page.posts.map((post) =>
-              post.id === postId ? { ...post, ...updates } : post
-            ),
+            items: page.items.map((item: FeedItem) => {
+              if (item.type === "post" && item.post.id === postId) {
+                return {
+                  ...item,
+                  post: { ...item.post, ...updates },
+                };
+              }
+              return item;
+            }),
           })),
         };
       }

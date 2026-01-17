@@ -4,9 +4,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ThumbsUp,
-  MessageCircle,
   Trash2,
   MoreHorizontal,
   ChevronDown,
@@ -49,6 +49,7 @@ export function CommentItem({
   className,
   depth = 0,
 }: CommentItemProps) {
+  const router = useRouter();
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
   const [replyContent, setReplyContent] = useState("");
@@ -75,6 +76,10 @@ export function CommentItem({
   const hasReplies = comment.replyCount > 0;
   const canReply = depth < MAX_DEPTH;
 
+  const handleAuthorClick = () => {
+    router.push(`/profile/${comment.author.id}`);
+  };
+
   const handleLike = () => {
     toggleLike.mutate({
       commentId: comment.id,
@@ -91,9 +96,11 @@ export function CommentItem({
     setShowReplies(!showReplies);
   };
 
+  const MAX_CHARS = 300;
+
   const handleReplySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!replyContent.trim()) return;
+    if (!replyContent.trim() || replyContent.length > MAX_CHARS) return;
 
     await createComment.mutateAsync({
       content: replyContent.trim(),
@@ -106,11 +113,25 @@ export function CommentItem({
     refetchReplies();
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      e.preventDefault();
+      // Allow submit if content is present AND within limit
+      if (replyContent.trim() && replyContent.length <= MAX_CHARS) {
+        handleReplySubmit(e as unknown as React.FormEvent);
+      }
+    }
+  };
+
   return (
     <div className={cn("group", className)}>
       <div className="flex gap-3">
         <Avatar
-          className={cn("shrink-0", depth === 0 ? "h-10 w-10" : "h-8 w-8")}
+          className={cn(
+            "shrink-0 cursor-pointer hover:opacity-80 transition-opacity",
+            depth === 0 ? "h-10 w-10" : "h-8 w-8"
+          )}
+          onClick={handleAuthorClick}
         >
           <AvatarImage src={comment.author.image ?? undefined} />
           <AvatarFallback className="text-xs">{initials}</AvatarFallback>
@@ -120,11 +141,14 @@ export function CommentItem({
           {/* Comment bubble */}
           <div className="bg-muted rounded-2xl px-4 py-2.5 inline-block max-w-full">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-sm hover:underline cursor-pointer">
+              <span
+                className="font-semibold text-sm hover:underline cursor-pointer"
+                onClick={handleAuthorClick}
+              >
                 {comment.author.name}
               </span>
             </div>
-            <p className="text-sm whitespace-pre-wrap break-words mt-0.5">
+            <p className="text-sm whitespace-pre-wrap wrap-break-word mt-0.5">
               {comment.content}
             </p>
           </div>
@@ -214,13 +238,26 @@ export function CommentItem({
                 <Textarea
                   value={replyContent}
                   onChange={(e) => setReplyContent(e.target.value)}
+                  onKeyDown={handleKeyDown}
                   placeholder={`Reply to ${
                     comment.author.name.split(" ")[0]
                   }...`}
                   className="min-h-[50px] text-sm resize-none rounded-2xl"
                   autoFocus
                 />
-                <div className="flex gap-2 justify-end">
+                <div className="flex gap-2 justify-end items-center">
+                  {replyContent.length > 200 && (
+                    <span
+                      className={cn(
+                        "text-xs",
+                        replyContent.length > MAX_CHARS
+                          ? "text-destructive font-semibold"
+                          : "text-muted-foreground"
+                      )}
+                    >
+                      {MAX_CHARS - replyContent.length}
+                    </span>
+                  )}
                   <Button
                     type="button"
                     variant="ghost"
@@ -235,7 +272,11 @@ export function CommentItem({
                   <Button
                     type="submit"
                     size="sm"
-                    disabled={!replyContent.trim() || createComment.isPending}
+                    disabled={
+                      !replyContent.trim() ||
+                      replyContent.length > MAX_CHARS ||
+                      createComment.isPending
+                    }
                   >
                     {createComment.isPending && (
                       <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />

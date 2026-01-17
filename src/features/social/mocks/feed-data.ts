@@ -5,6 +5,7 @@ import type {
   Post,
   Comment,
   FeedResponse,
+  FeedItem,
   CommentsResponse,
   Author,
 } from "../types";
@@ -726,8 +727,13 @@ export function getMockFeed(cursor?: string, limit = 20): FeedResponse {
   const posts = mockPosts.slice(startIndex, startIndex + limit);
   const hasMore = startIndex + limit < mockPosts.length;
 
+  const feedItems: FeedItem[] = posts.map((post) => ({
+    type: "post",
+    post,
+  }));
+
   return {
-    posts,
+    items: feedItems,
     nextCursor: hasMore ? posts[posts.length - 1]?.id ?? null : null,
   };
 }

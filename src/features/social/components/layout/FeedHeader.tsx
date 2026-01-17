@@ -37,6 +37,8 @@ import {
 
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 
+import { useNotificationStore } from "@/features/social/stores/notification-store";
+
 interface NavItem {
   label: string;
   icon: React.ElementType;
@@ -44,21 +46,27 @@ interface NavItem {
   count?: number;
 }
 
-const navItems: NavItem[] = [
-  { label: "Home", icon: Home, href: "/feed" },
-  { label: "Network", icon: Users, href: "/feed/network" },
-  { label: "Jobs", icon: Briefcase, href: "/feed/jobs" },
-  { label: "Messaging", icon: MessageSquare, href: "/feed/messaging" },
-  { label: "Notifications", icon: Bell, href: "/feed/notifications" },
-];
-
 export function FeedHeader() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const { data: session } = useSession(); // Assuming auth hook
+  const unreadCount = useNotificationStore((state) => state.unreadCount);
 
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+  const navItems: NavItem[] = [
+    { label: "Home", icon: Home, href: "/feed" },
+    { label: "Network", icon: Users, href: "/feed/network" },
+    { label: "Jobs", icon: Briefcase, href: "/feed/jobs" },
+    { label: "Messaging", icon: MessageSquare, href: "/feed/messaging" },
+    { 
+      label: "Notifications", 
+      icon: Bell, 
+      href: "/feed/notifications",
+      count: unreadCount 
+    },
+  ];
 
   const toggleSearch = () => setIsSearchOpen(!isSearchOpen);
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -113,6 +121,11 @@ export function FeedHeader() {
                       <item.icon
                         className={cn("h-6 w-6", isActive && "fill-current")}
                       />
+                      {!!item.count && item.count > 0 && (
+                        <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white animate-in zoom-in border-2 border-background box-content">
+                          {item.count > 99 ? "99+" : item.count}
+                        </span>
+                      )}
                     </div>
                     <span className="text-[10px] uppercase font-medium hidden lg:block">
                       {item.label}
@@ -246,9 +259,9 @@ export function FeedHeader() {
               >
                 <item.icon className="h-5 w-5" />
                 {item.label}
-                {item.count && (
-                  <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
-                    {item.count}
+                {!!item.count && item.count > 0 && (
+                  <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white">
+                    {item.count > 99 ? "99+" : item.count}
                   </span>
                 )}
               </Link>

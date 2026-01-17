@@ -5,7 +5,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { likePost, unlikePost } from "../api/social-api";
-import { isApiError, type Post } from "../types";
+import { isApiError, type Post, type FeedResponse, type FeedItem } from "../types";
 import { feedKeys } from "./use-feed";
 import { postKeys } from "./use-post";
 
@@ -61,16 +61,24 @@ export function useToggleLike() {
           if (!oldData || typeof oldData !== "object") return oldData;
 
           const data = oldData as {
-            pages: Array<{ posts: Post[]; nextCursor: string | null }>;
+            pages: FeedResponse[];
           };
+
+          if (!data.pages || !Array.isArray(data.pages)) return oldData;
 
           return {
             ...data,
             pages: data.pages.map((page) => ({
               ...page,
-              posts: page.posts.map((post) =>
-                post.id === postId ? { ...post, ...updates } : post
-              ),
+              items: page.items.map((item: FeedItem) => {
+                if (item.type === "post" && item.post.id === postId) {
+                  return {
+                    ...item,
+                    post: { ...item.post, ...updates },
+                  };
+                }
+                return item;
+              }),
             })),
           };
         }

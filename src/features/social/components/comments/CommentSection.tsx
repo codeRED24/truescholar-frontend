@@ -1,12 +1,16 @@
 // Comment Section Component
-// Displays comments for a post with nested replies
+// LinkedIn-style inline comment input with comments list
 
 "use client";
 
 import { useState } from "react";
-import { Loader2, MessageCircle } from "lucide-react";
+import {
+  Loader2,
+  MessageCircle,
+  Smile,
+  Image as ImageIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   useFlattenedComments,
@@ -39,39 +43,94 @@ export function CommentSection({
 
   const createComment = useCreateComment(postId);
 
+  const MAX_CHARS = 300;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newComment.trim()) return;
+    if (!newComment.trim() || newComment.length > MAX_CHARS) return;
 
     await createComment.mutateAsync({ content: newComment.trim() });
     setNewComment("");
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Submit on Ctrl+Enter or Cmd+Enter
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      e.preventDefault();
+      // Allow submit if content is present AND within limit
+      if (newComment.trim() && newComment.length <= MAX_CHARS) {
+        handleSubmit(e as unknown as React.FormEvent);
+      }
+    }
+  };
+
   return (
-    <div className={cn("space-y-4", className)}>
-      {/* Add Comment Form */}
-      <form onSubmit={handleSubmit} className="flex gap-3">
-        <Avatar className="h-10 w-10 shrink-0">
-          <AvatarFallback>U</AvatarFallback>
-        </Avatar>
-        <div className="flex-1 space-y-2">
-          <Textarea
+    <div className={cn("pb-4", className)}>
+      {/* LinkedIn-style Add Comment Form */}
+      <form onSubmit={handleSubmit} className="flex items-start gap-3">
+        <div className="flex-1 bg-muted rounded-2xl overflow-hidden border border-input focus-within:ring-1 focus-within:ring-ring">
+          {/* Text Input */}
+          <textarea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Write a comment..."
-            className="min-h-[60px] resize-none rounded-2xl"
+            onKeyDown={handleKeyDown}
+            placeholder="Add a comment..."
+            rows={newComment ? 3 : 1}
+            className="w-full px-4 py-3 bg-transparent resize-none focus:outline-none text-sm placeholder:text-muted-foreground focus:border-none"
           />
-          <div className="flex justify-end">
-            <Button
-              type="submit"
-              size="sm"
-              disabled={!newComment.trim() || createComment.isPending}
-            >
-              {createComment.isPending && (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+
+          {/* Bottom row with icons and button */}
+          <div className="flex items-center justify-between px-3 pb-2">
+            <div className="flex items-center gap-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground"
+              >
+                <Smile className="h-5 w-5" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground"
+              >
+                <ImageIcon className="h-5 w-5" />
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {newComment.length > 200 && (
+                <span
+                  className={cn(
+                    "text-xs",
+                    newComment.length > MAX_CHARS
+                      ? "text-destructive font-semibold"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  {MAX_CHARS - newComment.length}
+                </span>
               )}
-              Post
-            </Button>
+
+              <Button
+                type="submit"
+                size="sm"
+                disabled={
+                  !newComment.trim() ||
+                  newComment.length > MAX_CHARS ||
+                  createComment.isPending
+                }
+                className="rounded-full px-4"
+              >
+                {createComment.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Comment"
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </form>
@@ -89,7 +148,7 @@ export function CommentSection({
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4 mt-4">
           {comments.map((comment) => (
             <CommentItem
               key={comment.id}

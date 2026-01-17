@@ -92,6 +92,8 @@ function WebsiteSchema({
   return <JsonLd data={websiteData} />;
 }
 
+import { NotificationProvider } from "@/providers/notification-provider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -106,7 +108,9 @@ export default function RootLayout({
       <body className={`${publicSans.variable} ${barlow.variable} antialiased`}>
         <GTMScript gtmId="G-5CMGT07LVZ" />
         <BreadcrumbProvider />
-        <QueryProvider>{children}</QueryProvider>
+        <QueryProvider>
+          <NotificationProvider>{children}</NotificationProvider>
+        </QueryProvider>
         <Toaster />
       </body>
     </html>

@@ -74,18 +74,21 @@ export function useGuestFeed(options: UseFeedOptions = {}) {
 export function useFlattenedFeed(options: UseFeedOptions = {}) {
   const query = useFeed(options);
 
-  // Dedupe posts by ID when flattening
-  const allPosts = query.data?.pages.flatMap((page) => page.posts) ?? [];
+  // Flatten items and dedupe posts by ID
+  const allItems = query.data?.pages.flatMap((page) => page.items) ?? [];
   const seen = new Set<string>();
-  const posts = allPosts.filter((post) => {
-    if (seen.has(post.id)) return false;
-    seen.add(post.id);
+  const items = allItems.filter((item) => {
+    if (item.type === "post") {
+      if (seen.has(item.post.id)) return false;
+      seen.add(item.post.id);
+    }
+    // Always keep suggestion items (they're injected by backend at specific positions)
     return true;
   });
 
   return {
     ...query,
-    posts,
-    isEmpty: query.isSuccess && posts.length === 0,
+    items,
+    isEmpty: query.isSuccess && items.length === 0,
   };
 }

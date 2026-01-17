@@ -1,11 +1,10 @@
 // Post Actions Component
-// Like, comment, share buttons
+// Like, comment, share buttons - LinkedIn/Facebook style action bar
 
 "use client";
 
-import { Heart, MessageCircle, Share2 } from "lucide-react";
+import { ThumbsUp, MessageSquare, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatCount } from "../../utils/formatters";
 import { useLikePost } from "../../hooks/use-likes";
 import { useFeedStore } from "../../stores/feed-store";
 import { cn } from "@/lib/utils";
@@ -44,46 +43,52 @@ export function PostActions({
   };
 
   return (
-    <div className={cn("flex items-center gap-1", className)}>
-      {/* Like Button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={toggleLike}
-        disabled={isLiking}
-        className={cn(
-          "gap-1.5 px-3 hover:text-destructive hover:bg-destructive/10",
-          hasLiked && "text-destructive"
-        )}
-      >
-        <Heart className={cn("h-5 w-5", hasLiked && "fill-current")} />
-        {likeCount > 0 && (
-          <span className="text-sm">{formatCount(likeCount)}</span>
-        )}
-      </Button>
+    <div className={cn("", className)}>
+      {/* Likes count row */}
+      {likeCount > 0 && (
+        <div className="px-3 py-2 text-sm text-muted-foreground">
+          {likeCount} {likeCount === 1 ? "like" : "likes"}
+        </div>
+      )}
 
-      {/* Comment Button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => toggleExpandedComments(postId)}
-        className="gap-1.5 px-3 hover:text-primary hover:bg-primary/10"
-      >
-        <MessageCircle className="h-5 w-5" />
-        {commentCount > 0 && (
-          <span className="text-sm">{formatCount(commentCount)}</span>
-        )}
-      </Button>
+      {/* Action buttons - evenly spaced */}
+      <div className="flex items-center border-t">
+        {/* Like Button */}
+        <Button
+          variant="ghost"
+          onClick={toggleLike}
+          disabled={isLiking}
+          className={cn(
+            "flex-1 rounded-none h-11 gap-2 font-medium",
+            hasLiked
+              ? "text-primary hover:text-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <ThumbsUp className={cn("h-5 w-5", hasLiked && "fill-current")} />
+          <span>Like</span>
+        </Button>
 
-      {/* Share Button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={handleShare}
-        className="gap-1.5 px-3 hover:text-primary hover:bg-primary/10"
-      >
-        <Share2 className="h-5 w-5" />
-      </Button>
+        {/* Comment Button */}
+        <Button
+          variant="ghost"
+          onClick={() => toggleExpandedComments(postId)}
+          className="flex-1 rounded-none h-11 gap-2 font-medium text-muted-foreground hover:text-foreground"
+        >
+          <MessageSquare className="h-5 w-5" />
+          <span>Comment</span>
+        </Button>
+
+        {/* Share Button */}
+        <Button
+          variant="ghost"
+          onClick={handleShare}
+          className="flex-1 rounded-none h-11 gap-2 font-medium text-muted-foreground hover:text-foreground"
+        >
+          <Share2 className="h-5 w-5" />
+          <span>Share</span>
+        </Button>
+      </div>
     </div>
   );
 }

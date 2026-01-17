@@ -95,10 +95,13 @@ export async function getGuestFeed(
 
 export async function getPost(postId: string): Promise<ApiResponse<Post>> {
   if (USE_MOCK_DATA) {
-    const { posts } = getMockFeed();
-    const post = posts.find((p) => p.id === postId);
-    if (post) {
-      return { data: post };
+    const { items } = getMockFeed();
+    const feedItem = items.find(
+      (item) => item.type === "post" && item.post.id === postId
+    );
+
+    if (feedItem && feedItem.type === "post") {
+      return { data: feedItem.post };
     }
     return { error: "Post not found", statusCode: 404 };
   }
@@ -142,7 +145,7 @@ export async function updatePost(
   data: UpdatePostDto
 ): Promise<ApiResponse<Post>> {
   return fetchApi<Post>(`/posts/${postId}`, {
-    method: "PATCH",
+    method: "PUT",
     body: JSON.stringify(data),
   });
 }
@@ -200,13 +203,51 @@ export async function unbookmarkPost(
 }
 
 // ============================================================================
+// Follow API
+// ============================================================================
+
+export interface FollowStatusResponse {
+  isFollowing: boolean;
+  isFollowedBy: boolean;
+}
+
+export async function getFollowStatus(
+  userId: string
+): Promise<ApiResponse<FollowStatusResponse>> {
+  return fetchApi<FollowStatusResponse>(`/followers/status/${userId}`);
+}
+
+export async function followUser(
+  userId: string
+): Promise<
+  ApiResponse<{ id: string; followingId: string; createdAt: string }>
+> {
+  return fetchApi<{ id: string; followingId: string; createdAt: string }>(
+    "/followers/follow",
+    {
+      method: "POST",
+      body: JSON.stringify({ userId }),
+    }
+  );
+}
+
+export async function unfollowUser(
+  userId: string
+): Promise<ApiResponse<{ success: boolean }>> {
+  return fetchApi<{ success: boolean }>(`/followers/unfollow/${userId}`, {
+    method: "DELETE",
+    body: JSON.stringify({}),
+  });
+}
+
+// ============================================================================
 // Comment API
 // ============================================================================
 
 export async function getComments(
   postId: string,
   cursor?: string,
-  limit = 20
+  limit = 10
 ): Promise<ApiResponse<CommentsResponse>> {
   if (USE_MOCK_DATA) {
     await new Promise((resolve) => setTimeout(resolve, 300));

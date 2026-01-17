@@ -4,7 +4,14 @@
 "use client";
 
 import { useState } from "react";
-import { MoreHorizontal, Flag, Trash2, Edit, Link2 } from "lucide-react";
+import {
+  MoreHorizontal,
+  Flag,
+  Trash2,
+  Edit,
+  Link2,
+  Loader2,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +26,9 @@ import { MediaGallery } from "../shared/MediaGallery";
 import { PostActions } from "./PostActions";
 import { CommentSection } from "../comments/CommentSection";
 import { useFeedStore } from "../../stores/feed-store";
+import { followUser, unfollowUser } from "../../api/social-api";
 import type { Post } from "../../types";
+import { isApiError } from "../../types";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -47,6 +56,8 @@ export function PostCard({
   className,
 }: PostCardProps) {
   const [isExpanded, setIsExpanded] = useState(variant === "detail");
+  const [isFollowing, setIsFollowing] = useState(post.isFollowing ?? false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
   const isCommentsExpanded = useFeedStore((s) => s.isCommentsExpanded(post.id));
 
   const isOwner = currentUserId === post.author.id;
@@ -55,6 +66,42 @@ export function PostCard({
     shouldTruncate && !isExpanded
       ? post.content.slice(0, 280) + "…"
       : post.content;
+
+  const handleFollow = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isFollowLoading) return;
+
+    setIsFollowLoading(true);
+    const wasFollowing = isFollowing;
+
+    // Optimistic update
+    setIsFollowing(!wasFollowing);
+
+    try {
+      if (wasFollowing) {
+        const result = await unfollowUser(post.author.id);
+        if (isApiError(result)) {
+          setIsFollowing(true); // Revert on error
+          toast.error(result.error || "Failed to unfollow");
+        } else {
+          toast.success(`Unfollowed ${post.author.name}`);
+        }
+      } else {
+        const result = await followUser(post.author.id);
+        if (isApiError(result)) {
+          setIsFollowing(false); // Revert on error
+          toast.error(result.error || "Failed to follow");
+        } else {
+          toast.success(`Following ${post.author.name}`);
+        }
+      }
+    } catch {
+      setIsFollowing(wasFollowing); // Revert on error
+      toast.error("Something went wrong");
+    } finally {
+      setIsFollowLoading(false);
+    }
+  };
 
   const handleCopyLink = async () => {
     try {
@@ -69,7 +116,7 @@ export function PostCard({
 
   return (
     <Card className={cn("border-0 shadow-none", className)}>
-      <CardContent className={cn("p-4", variant === "compact" && "p-3")}>
+      <CardContent className={cn("p-4 pb-0", variant === "compact" && "p-3")}>
         {/* Header */}
         <div className="flex items-start mb-3">
           <AuthorHeader
@@ -79,75 +126,78 @@ export function PostCard({
             onClick={() => onAuthorClick?.(post.author.id)}
           />
 
-          {!isOwner && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="ml-auto mr-1 h-8 text-primary hover:text-primary/80 hover:bg-primary/10 font-semibold px-2"
-              onClick={(e) => {
-                e.stopPropagation();
-                toast.success(`Followed ${post.author.name}`);
-              }}
-            >
-              + Follow
-            </Button>
-          )}
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+          <div className="ml-auto flex items-center">
+            {!isOwner && currentUserId && !isFollowing && (
               <Button
                 variant="ghost"
-                size="icon"
-                className={cn(
-                  "h-8 w-8 text-muted-foreground",
-                  isOwner && "ml-auto"
-                )}
+                size="sm"
+                className="mr-1 h-8 font-semibold px-2 text-primary hover:text-primary/80 hover:bg-primary/10"
+                onClick={handleFollow}
+                disabled={isFollowLoading}
               >
-                <MoreHorizontal className="h-4 w-4" />
+                {isFollowLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "+ Follow"
+                )}
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleCopyLink}>
-                <Link2 className="h-4 w-4 mr-2" />
-                Copy link
-              </DropdownMenuItem>
+            )}
 
-              {isOwner && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => onEdit?.(post)}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => onDelete?.(post.id)}
-                    className="text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </DropdownMenuItem>
-                </>
-              )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleCopyLink}>
+                  <Link2 className="h-4 w-4 mr-2" />
+                  Copy link
+                </DropdownMenuItem>
 
-              {!isOwner && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => onReport?.(post.id)}
-                    className="text-destructive"
-                  >
-                    <Flag className="h-4 w-4 mr-2" />
-                    Report
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                {isOwner && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => onEdit?.(post)}>
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => onDelete?.(post.id)}
+                      className="text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </DropdownMenuItem>
+                  </>
+                )}
+
+                {!isOwner && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => onReport?.(post.id)}
+                      className="text-destructive"
+                    >
+                      <Flag className="h-4 w-4 mr-2" />
+                      Report
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         {/* Content */}
         <div className="mb-3">
-          <p className="whitespace-pre-wrap break-words">{displayContent}</p>
+          <p className="whitespace-pre-wrap wrap-break-word">
+            {displayContent}
+          </p>
           {shouldTruncate && !isExpanded && (
             <button
               onClick={() => setIsExpanded(true)}
@@ -178,12 +228,12 @@ export function PostCard({
           likeCount={post.likeCount}
           commentCount={post.commentCount}
           hasLiked={post.hasLiked}
-          className="border-t pt-3"
+          className=""
         />
 
         {/* Comments Section (expandable) */}
         {isCommentsExpanded && (
-          <CommentSection postId={post.id} className="mt-4 border-t pt-4" />
+          <CommentSection postId={post.id} className="mt-4" />
         )}
       </CardContent>
     </Card>

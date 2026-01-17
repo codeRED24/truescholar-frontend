@@ -9,9 +9,10 @@ import { useFlattenedFeed, useGuestFeed } from "../../hooks/use-feed";
 import { PostCard } from "../post/PostCard";
 import { PostSkeletonList } from "../post/PostSkeleton";
 import { FeedEmpty } from "./FeedEmpty";
+import { WhoToFollowCard } from "./WhoToFollowCard";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Post } from "../../types";
+import type { Post, FeedItem } from "../../types";
 
 interface FeedProps {
   isAuthenticated?: boolean;
@@ -22,8 +23,9 @@ interface FeedProps {
   className?: string;
 }
 
-// Estimated heights for different post types
+// Estimated heights for different item types
 const ESTIMATED_POST_HEIGHT = 400;
+const ESTIMATED_SUGGESTION_HEIGHT = 280;
 const LOADER_HEIGHT = 80;
 
 export function Feed({
@@ -40,10 +42,10 @@ export function Feed({
   const authenticatedFeed = useFlattenedFeed({ enabled: isAuthenticated });
   const guestFeedQuery = useGuestFeed({ enabled: !isAuthenticated });
 
-  const guestPosts = guestFeedQuery.data?.pages.flatMap((p) => p.posts) ?? [];
+  const guestItems = guestFeedQuery.data?.pages.flatMap((p) => p.items) ?? [];
 
   const {
-    posts,
+    items,
     isLoading,
     hasNextPage,
     fetchNextPage,
@@ -53,23 +55,25 @@ export function Feed({
   } = isAuthenticated
     ? authenticatedFeed
     : {
-        posts: guestPosts,
+        items: guestItems,
         isLoading: guestFeedQuery.isLoading,
         hasNextPage: guestFeedQuery.hasNextPage,
         fetchNextPage: guestFeedQuery.fetchNextPage,
         isFetchingNextPage: guestFeedQuery.isFetchingNextPage,
-        isEmpty: guestFeedQuery.isSuccess && guestPosts.length === 0,
+        isEmpty: guestFeedQuery.isSuccess && guestItems.length === 0,
         error: guestFeedQuery.error,
       };
 
-  // Total count includes posts + 1 loader row if more pages exist
-  const totalCount = posts.length + (hasNextPage ? 1 : 0);
+  // Total count includes items + 1 loader row if more pages exist
+  const totalCount = items.length + (hasNextPage ? 1 : 0);
 
   // Use WINDOW virtualizer - scrolls with the page, not a container
   const virtualizer = useWindowVirtualizer({
     count: totalCount,
     estimateSize: (index) => {
-      if (index === posts.length) return LOADER_HEIGHT;
+      if (index === items.length) return LOADER_HEIGHT;
+      const item = items[index];
+      if (item?.type === "suggestions") return ESTIMATED_SUGGESTION_HEIGHT;
       return ESTIMATED_POST_HEIGHT;
     },
     overscan: 2,
@@ -84,7 +88,7 @@ export function Feed({
     if (!lastItem) return;
 
     if (
-      lastItem.index >= posts.length - 3 &&
+      lastItem.index >= items.length - 3 &&
       hasNextPage &&
       !isFetchingNextPage
     ) {
@@ -92,7 +96,7 @@ export function Feed({
     }
   }, [
     virtualItems,
-    posts.length,
+    items.length,
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
@@ -135,8 +139,9 @@ export function Feed({
       >
         {/* Only render visible items */}
         {virtualItems.map((virtualItem) => {
-          const isLoaderRow = virtualItem.index === posts.length;
+          const isLoaderRow = virtualItem.index === items.length;
 
+          // Loader row
           if (isLoaderRow) {
             return (
               <div
@@ -168,7 +173,36 @@ export function Feed({
             );
           }
 
-          const post = posts[virtualItem.index];
+          const feedItem = items[virtualItem.index] as FeedItem;
+
+          if (!feedItem) return null;
+
+          // Suggestions card (from backend)
+          if (feedItem.type === "suggestions") {
+            return (
+              <div
+                key={`suggestions-${virtualItem.index}`}
+                data-index={virtualItem.index}
+                ref={virtualizer.measureElement}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  transform: `translateY(${
+                    virtualItem.start - virtualizer.options.scrollMargin
+                  }px)`,
+                }}
+              >
+                <div className="mb-4">
+                  <WhoToFollowCard suggestions={feedItem.suggestions} />
+                </div>
+              </div>
+            );
+          }
+
+          // Post card
+          const post = feedItem.post;
 
           return (
             <div
@@ -198,13 +232,6 @@ export function Feed({
           );
         })}
       </div>
-
-      {/* Debug info - remove in production
-      {process.env.NODE_ENV === "development" && (
-        <div className="fixed bottom-4 right-4 bg-black/80 text-white text-xs px-2 py-1 rounded z-50">
-          Rendering {virtualItems.length} of {posts.length} posts
-        </div>
-      )} */}
     </div>
   );
 }
