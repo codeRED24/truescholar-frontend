@@ -16,7 +16,7 @@ export interface Author {
 // Post Types
 // ============================================================================
 
-export type PostVisibility = "public" | "connections" | "private" | "college";
+export type PostVisibility = "public" | "followers" | "private" | "college";
 
 export type AuthorType = "user" | "college" | "admin";
 
@@ -42,6 +42,7 @@ export interface Post {
   likeCount: number;
   commentCount: number;
   hasLiked: boolean;
+  isFollowing?: boolean; // Whether current user follows the post author
   createdAt: string; // ISO date string
   updatedAt: string;
 }
@@ -87,14 +88,27 @@ export interface CreateCommentDto {
 // Feed Types (matches backend FeedResponseDto)
 // ============================================================================
 
+// Suggested user for "Who to follow" cards
+export interface FeedSuggestedUser {
+  id: string;
+  name: string;
+  image?: string;
+  mutualCount: number;
+}
+
+// Union type for heterogeneous feed items
+export type FeedItem =
+  | { type: "post"; post: Post }
+  | { type: "suggestions"; suggestions: FeedSuggestedUser[] };
+
 export interface FeedResponse {
-  posts: Post[];
+  items: FeedItem[];
   nextCursor: string | null;
 }
 
 export interface FeedOptions {
   limit?: number;
-  type?: "all" | "connections" | "trending";
+  type?: "all" | "following" | "trending";
 }
 
 // ============================================================================
@@ -104,19 +118,6 @@ export interface FeedOptions {
 export interface CommentsResponse {
   comments: Comment[];
   nextCursor: string | null;
-}
-
-// ============================================================================
-// Connection Types
-// ============================================================================
-
-export type ConnectionStatus = "pending" | "accepted" | "rejected";
-
-export interface Connection {
-  id: string;
-  user: Author;
-  status: ConnectionStatus;
-  createdAt: string;
 }
 
 // ============================================================================

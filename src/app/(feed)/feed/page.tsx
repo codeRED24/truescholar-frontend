@@ -17,9 +17,11 @@ import { Loader2 } from "lucide-react";
 import StatsCard from "@/features/social/components/sidebar/StatsCard";
 
 export default function FeedPage() {
+  // Inside FeedPage component
   const { data: session, isPending } = useSession();
   const router = useRouter();
   const [isPostComposerOpen, setIsPostComposerOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<any>(null); // Using any temporarily for Post type safely
 
   const isAuthenticated = !!session?.user;
   const currentUserId = session?.user?.id;
@@ -45,6 +47,16 @@ export default function FeedPage() {
 
   const handleAuthorClick = (authorId: string) => {
     router.push(`/profile/${authorId}`);
+  };
+
+  const handlePostEdit = (post: any) => {
+    setEditingPost(post);
+    setIsPostComposerOpen(true);
+  };
+
+  const handleComposerClose = () => {
+    setIsPostComposerOpen(false);
+    setTimeout(() => setEditingPost(null), 300); // Wait for animation
   };
 
   if (isPending) {
@@ -97,6 +109,7 @@ export default function FeedPage() {
             isAuthenticated={isAuthenticated}
             currentUserId={currentUserId}
             onAuthorClick={handleAuthorClick}
+            onPostEdit={handlePostEdit}
           />
         </div>
 
@@ -108,11 +121,12 @@ export default function FeedPage() {
         </div>
       </div>
 
-      {/* Post Composer Modal */}
+      {/* Post Composer Modal (Create & Edit) */}
       <PostComposer
         isOpen={isPostComposerOpen}
-        onClose={() => setIsPostComposerOpen(false)}
+        onClose={handleComposerClose}
         currentUser={currentUser}
+        postToEdit={editingPost}
       />
 
       {/* Messaging Widget */}

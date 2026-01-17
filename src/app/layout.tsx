@@ -4,6 +4,8 @@ import Script from "next/script";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { buildOrganizationSchema, buildWebSiteSchema } from "@/lib/seo";
+import BreadcrumbProvider from "@/components/providers/BreadcrumbProvider";
+import { NotificationProvider } from "@/providers/notification-provider";
 
 const publicSans = Public_Sans({
   weight: ["300", "400", "500", "600", "700"],
@@ -60,7 +62,10 @@ export default function RootLayout({
       </head>
       <body className={`${publicSans.variable} ${barlow.variable} antialiased`}>
         <GTMScript gtmId="G-5CMGT07LVZ" />
-        <QueryProvider>{children}</QueryProvider>
+        <BreadcrumbProvider />
+        <QueryProvider>
+          <NotificationProvider>{children}</NotificationProvider>
+        </QueryProvider>
         <Toaster />
       </body>
     </html>

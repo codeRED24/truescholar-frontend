@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import {
   Image as ImageIcon,
@@ -14,12 +14,7 @@ import {
   Loader2,
   Smile,
   Sparkles,
-  Briefcase,
-  Award,
-  FileText,
-  BarChart2,
   MoreHorizontal,
-  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,8 +33,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCreatePost } from "../../hooks/use-post";
-import type { PostVisibility, Author } from "../../types";
+import { useCreatePost, useUpdatePost } from "../../hooks/use-post";
+import type { PostVisibility, Author, Post } from "../../types";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -47,6 +42,7 @@ interface PostComposerProps {
   isOpen: boolean;
   onClose: () => void;
   currentUser?: Author;
+  postToEdit?: Post | null;
 }
 
 interface PostFormData {
@@ -56,7 +52,7 @@ interface PostFormData {
 
 const visibilityOptions = [
   { value: "public", label: "Anyone", icon: Globe },
-  { value: "connections", label: "Connections only", icon: Users },
+  { value: "followers", label: "Followers only", icon: Users },
   { value: "private", label: "Only me", icon: Lock },
 ] as const;
 
@@ -64,12 +60,15 @@ export function PostComposer({
   isOpen,
   onClose,
   currentUser,
+  postToEdit,
 }: PostComposerProps) {
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [mediaPreviews, setMediaPreviews] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const createPost = useCreatePost();
+  const updatePost = useUpdatePost();
+  const isEditing = !!postToEdit;
 
   const {
     register,
@@ -80,10 +79,26 @@ export function PostComposer({
     formState: { errors },
   } = useForm<PostFormData>({
     defaultValues: {
-      content: "",
-      visibility: "public",
+      content: postToEdit?.content || "",
+      visibility: postToEdit?.visibility || "public",
     },
   });
+
+  // Reset/Prefill form when opening
+  useEffect(() => {
+    if (isOpen) {
+      if (postToEdit) {
+        setValue("content", postToEdit.content);
+        setValue("visibility", postToEdit.visibility);
+        // Note: Handling existing media files requires more complex logic to differentiate
+        // between existing URLs and new Files. For now, ignoring existing media edit.
+      } else {
+        reset({ content: "", visibility: "public" });
+        setMediaFiles([]);
+        setMediaPreviews([]);
+      }
+    }
+  }, [isOpen, postToEdit, setValue, reset]);
 
   const content = watch("content");
   const visibility = watch("visibility");
@@ -119,18 +134,24 @@ export function PostComposer({
 
   const onSubmit = async (data: PostFormData) => {
     try {
-      // NOTE: Media upload is not yet implemented on the backend for CreatePostDto
-      // For now, we only send content and visibility.
-      // In the future, we need to upload files first, get URLs, and pass them as PostMedia[]
-      await createPost.mutateAsync({
-        content: data.content,
-        visibility: data.visibility,
-        // media: mediaFiles.length > 0 ? mediaFiles : undefined,
-      });
-      toast.success("Post created!");
+      if (isEditing && postToEdit) {
+        await updatePost.mutateAsync({
+          postId: postToEdit.id,
+          data: {
+            content: data.content,
+            visibility: data.visibility,
+          },
+        });
+      } else {
+        // NOTE: Media upload is not yet implemented on the backend for CreatePostDto
+        await createPost.mutateAsync({
+          content: data.content,
+          visibility: data.visibility,
+        });
+      }
       handleClose();
     } catch {
-      toast.error("Failed to create post");
+      // Toast handled by hooks
     }
   };
 
@@ -142,16 +163,23 @@ export function PostComposer({
       .toUpperCase()
       .slice(0, 2) || "?";
 
+  const isPending = createPost.isPending || updatePost.isPending;
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-[650px] max-h-[90vh] flex flex-col p-0 bg-background border-border/50 gap-0">
+      <DialogContent className="sm:max-w-[650px] max-h-[90vh] flex flex-col p-0 bg-background dark:bg-zinc-900 border-border/50 gap-0">
         <div className="p-6 pb-2 relative flex-1 overflow-y-auto">
-          <button
-            onClick={handleClose}
-            className="absolute top-4 right-4 p-2 rounded-full hover:bg-muted/50 transition-colors"
-          >
-            <X className="h-5 w-5 text-muted-foreground" />
-          </button>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">
+              {isEditing ? "Edit post" : "Create post"}
+            </h2>
+            <button
+              onClick={handleClose}
+              className="p-2 rounded-full hover:bg-muted/50 transition-colors"
+            >
+              <X className="h-5 w-5 text-muted-foreground" />
+            </button>
+          </div>
 
           <form
             onSubmit={handleSubmit(onSubmit)}
@@ -161,7 +189,7 @@ export function PostComposer({
             <div className="flex items-center gap-3">
               <Avatar className="h-12 w-12 border border-border/50">
                 <AvatarImage src={currentUser?.image ?? undefined} />
-                <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
+                <AvatarFallback className="bg-blue-600 text-white font-semibold">
                   {userInitials}
                 </AvatarFallback>
               </Avatar>
@@ -212,7 +240,30 @@ export function PostComposer({
               )}
             </div>
 
-            {/* Media Previews */}
+            {/* Media Previews (Read Only for existing posts for now) */}
+            {postToEdit?.media && postToEdit.media.length > 0 && isEditing && (
+              <div className="grid gap-2 mb-4">
+                <p className="text-xs text-muted-foreground mb-1">
+                  Existing media (cannot edit yet)
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {postToEdit.media.map((media, i) => (
+                    <div
+                      key={i}
+                      className="aspect-video bg-muted rounded overflow-hidden"
+                    >
+                      <img
+                        src={media.url}
+                        alt="Existing"
+                        className="w-full h-full object-cover opacity-80"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* New Media Previews */}
             {mediaPreviews.length > 0 && (
               <div
                 className={cn(
@@ -253,68 +304,48 @@ export function PostComposer({
         {/* Footer Toolbar */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-border/60 bg-muted/5 dark:bg-muted/10 gap-4 shrink-0">
           <div className="flex items-center gap-1 flex-1 overflow-x-auto min-w-0 no-scroll-bar">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              className="hidden"
-              onChange={handleMediaSelect}
-            />
+            {!isEditing && (
+              <>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={handleMediaSelect}
+                />
 
-            <ToolbarButton
-              icon={Smile}
-              tooltip="Add emoji"
-              onClick={() => toast("Emoji picker coming soon")}
-            />
+                <ToolbarButton
+                  icon={Smile}
+                  tooltip="Add emoji"
+                  onClick={() => toast("Emoji picker coming soon")}
+                />
 
-            <Button
-              type="button"
-              variant="ghost"
-              className="h-10 gap-2 rounded-lg text-foreground hover:bg-muted/60 px-3 mx-1 font-semibold shrink-0 transition-colors"
-              onClick={() => toast("AI Rewrite coming soon")}
-            >
-              <Sparkles className="h-4 w-4" />
-              <span className="text-sm">Rewrite with AI</span>
-            </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="h-10 gap-2 rounded-lg text-foreground hover:bg-muted/60 px-3 mx-1 font-semibold shrink-0 transition-colors"
+                  onClick={() => toast("AI Rewrite coming soon")}
+                >
+                  <Sparkles className="h-4 w-4" />
+                  <span className="text-sm">Rewrite with AI</span>
+                </Button>
 
-            <ToolbarButton
-              icon={ImageIcon}
-              tooltip="Add photos"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={mediaFiles.length >= 4}
-            />
-
-            <ToolbarButton
-              icon={Calendar}
-              tooltip="Create an event"
-              onClick={() => toast("Event creation coming soon")}
-            />
-            <ToolbarButton
-              icon={Award}
-              tooltip="Celebrate an occasion"
-              onClick={() => toast("Celebration coming soon")}
-            />
-
-            <ToolbarButton
-              icon={Briefcase}
-              tooltip="Share that you're hiring"
-              onClick={() => toast("Job posting coming soon")}
-            />
-
-            <ToolbarButton
-              icon={BarChart2}
-              tooltip="Create a poll"
-              onClick={() => toast("Polls coming soon")}
-            />
-
-            <ToolbarButton
-              icon={FileText}
-              tooltip="Add a document"
-              onClick={() => toast("Document upload coming soon")}
-            />
-
-            <ToolbarButton icon={MoreHorizontal} tooltip="More options" />
+                <ToolbarButton
+                  icon={ImageIcon}
+                  tooltip="Add photos"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={mediaFiles.length >= 4}
+                />
+                {/* More buttons... */}
+                <ToolbarButton icon={MoreHorizontal} tooltip="More options" />
+              </>
+            )}
+            {isEditing && (
+              <p className="text-sm text-muted-foreground italic">
+                Editing mode (media changes disabled)
+              </p>
+            )}
           </div>
 
           <div className="flex items-center gap-3 pl-4 shrink-0 border-l border-border/50 relative">
@@ -325,15 +356,11 @@ export function PostComposer({
             )}
             <Button
               onClick={handleSubmit(onSubmit)}
-              disabled={
-                !content?.trim() || charCount > maxChars || createPost.isPending
-              }
-              className="rounded-full px-8 py-5 font-bold text-base bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
+              disabled={!content?.trim() || charCount > maxChars || isPending}
+              className="rounded-full px-8 py-5 font-bold text-base bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm"
             >
-              {createPost.isPending && (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              )}
-              Post
+              {isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {isEditing ? "Save" : "Post"}
             </Button>
           </div>
         </div>

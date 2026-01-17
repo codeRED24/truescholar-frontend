@@ -58,7 +58,7 @@ export const SidebarProfile: React.FC<SidebarProfileProps> = ({
         </div>
 
         <div className="border-t border-border pt-2 mt-4 px-2">
-          <StatItem label="Connections" value={stats.followers} />
+          <StatItem label="Followers" value={stats.followers} />
           <StatItem label="Who viewed your profile" value={stats.posts * 5} />
         </div>
       </CardContent>
