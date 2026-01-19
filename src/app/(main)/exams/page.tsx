@@ -1,49 +1,49 @@
 import ExamsList from "@/components/page/exam/ExamList";
-import { Metadata } from "next";
 import React from "react";
+import {
+  generateListingMetadata,
+  JsonLd,
+  buildCollectionPageSchema,
+  buildStaticBreadcrumbTrail,
+  buildBreadcrumbSchema,
+} from "@/lib/seo";
+import { Breadcrumbs } from "@/components/seo";
 
-export const metadata: Metadata = {
-  title: "Exams in India | TrueScholar - Explore Entrance Tests & Schedules",
-  description:
-    "Find detailed information about top exams in India, including eligibility, syllabus, important dates, and preparation tips. Stay updated with TrueScholar.",
-  keywords:
-    "Exams in India, entrance exams, competitive exams, college entrance tests, exam schedules, exam details",
-  metadataBase: new URL("https://www.truescholar.in"),
-  alternates: {
-    canonical: "https://www.truescholar.in/exams",
-  },
-  openGraph: {
-    title: "Exams in India | TrueScholar - Explore Entrance Tests & Schedules",
-    description:
-      "Get the latest updates on top exams in India with details on eligibility, syllabus, dates, and preparation tips.",
-    url: "https://www.truescholar.in/exams",
-    siteName: "TrueScholar",
-    images: [
-      {
-        url: "https://www.truescholar.in/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "TrueScholar Exams",
-      },
-    ],
-    locale: "en_US",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Exams in India | TrueScholar - Explore Entrance Tests & Schedules",
-    description:
-      "Explore detailed information on all major exams in India with TrueScholar.",
-    images: ["https://www.truescholar.in/og-image.png"],
-  },
-};
+export const metadata = generateListingMetadata("exams");
 
-const page = () => {
+export const revalidate = 86400; // 24 hours
+
+const ExamsPage = () => {
+  // Build breadcrumbs
+  const breadcrumbItems = buildStaticBreadcrumbTrail("Exams", "/exams");
+
+  // Build schema
+  const collectionSchema = buildCollectionPageSchema(
+    "Entrance Exams in India",
+    "Complete list of entrance exams in India. Get exam dates, eligibility, syllabus, and preparation tips.",
+    "/exams",
+  );
+
+  // Convert breadcrumbs for schema (href -> url)
+  const schemaBreadcrumbs = breadcrumbItems.map((item) => ({
+    name: item.name,
+    url: item.href,
+  }));
+
+  const schema = {
+    "@context": "https://schema.org" as const,
+    "@graph": [collectionSchema, buildBreadcrumbSchema(schemaBreadcrumbs)],
+  };
+
   return (
-    <div>
+    <div className="bg-white">
+      <JsonLd data={schema} id="exams-listing-schema" />
+      <div className="container-body pt-4 md:pt-12">
+        <Breadcrumbs items={breadcrumbItems} showSchema={false} />
+      </div>
       <ExamsList />
     </div>
   );
 };
 
-export default page;
+export default ExamsPage;

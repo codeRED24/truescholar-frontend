@@ -2,52 +2,49 @@ import { getArticles } from "@/api/list/getArticles";
 import ArticleList from "@/components/page/article/ArticleList";
 import ArticleMain from "@/components/page/article/ArticleMain";
 import { Metadata } from "next";
+import {
+  generateListingMetadata,
+  JsonLd,
+  buildCollectionPageSchema,
+  buildStaticBreadcrumbTrail,
+  buildBreadcrumbSchema,
+} from "@/lib/seo";
+import { Breadcrumbs } from "@/components/seo";
 
-export const metadata: Metadata = {
-  title:
-    "Articles | TrueScholar.in - College Admission Tips, Career Guidance & Education Insights",
-  keywords:
-    "college admission tips, career guidance, study abroad advice, best colleges in India, higher education insights, university application tips, academic goals, scholarship tips",
-  description:
-    "Explore expert articles on college admissions, scholarships, career planning, and higher education insights. Stay informed with TrueScholar's guides for students and professionals.",
-  metadataBase: new URL("https://www.truescholar.in"),
-  alternates: {
-    canonical: "https://www.truescholar.in/articles",
-    languages: { "en-US": "/en-US", "de-DE": "/de-DE" },
-  },
-  openGraph: {
-    title:
-      "Articles | TrueScholar.in - College Admission Tips, Career Guidance & Education Insights",
-    description:
-      "Explore expert articles on college admissions, scholarships, career planning, and higher education insights. Stay informed with TrueScholar's guides for students and professionals.",
-    url: "https://www.truescholar.in/articles",
-    siteName: "TrueScholar",
-    images: [
-      {
-        url: "https://www.truescholar.in/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Articles | TrueScholar.in - College Admission Tips, Career Guidance & Education Insights",
-      },
-    ],
-    locale: "en_US",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title:
-      "Articles | TrueScholar.in - College Admission Tips, Career Guidance & Education Insights",
-    description:
-      "Explore expert articles on college admissions, scholarships, career planning, and higher education insights. Stay informed with TrueScholar's guides for students and professionals.",
-    images: ["https://www.truescholar.in/og-image.png"],
-  },
-};
+export const metadata: Metadata = generateListingMetadata("articles");
+
+export const revalidate = 43200; // 12 hours
 
 export default async function Articles() {
   const { data: articles } = await getArticles();
 
+  // Build breadcrumb trail
+  const breadcrumbItems = buildStaticBreadcrumbTrail("Articles", "/articles");
+
+  // Generate schema
+  const schema = {
+    "@context": "https://schema.org" as const,
+    "@graph": [
+      buildCollectionPageSchema(
+        "Education Articles & News",
+        "Explore expert articles on college admissions, scholarships, career planning, and higher education insights.",
+        "/articles",
+      ),
+      buildBreadcrumbSchema(
+        breadcrumbItems.map((item) => ({
+          name: item.name,
+          url: item.href,
+        })),
+      ),
+    ],
+  };
+
   return (
     <div className="min-h-screen">
+      <JsonLd data={schema} id="articles-listing-schema" />
+      <div className="container-body pt-4 md:pt-12">
+        <Breadcrumbs items={breadcrumbItems} showSchema={false} />
+      </div>
       <ArticleMain data={articles} />
       <ArticleList />
     </div>

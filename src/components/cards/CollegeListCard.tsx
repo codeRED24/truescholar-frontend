@@ -5,6 +5,7 @@ import { TiStarFullOutline } from "react-icons/ti";
 import { formatFeeRange } from "../utils/utils";
 import Link from "next/link";
 import { Headset, Notebook } from "lucide-react";
+import { buildCollegeUrl } from "@/lib/seo";
 
 interface CollegeListCardProps {
   college: CollegeDTO;
@@ -98,7 +99,7 @@ const CollegeListCard: React.FC<CollegeListCardProps> = React.memo(
           <div className="flex flex-col md:flex-row justify-between items-center border-b border-dashed pb-4">
             <div>
               <Link
-                href={`/colleges/${slug.replace(/-\d+$/, "")}-${college_id}`}
+                href={buildCollegeUrl(slug, college_id)}
                 className="text-base text-center md:text-left font-semibold font-public line-clamp-1"
               >
                 {college_name}

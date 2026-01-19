@@ -1,10 +1,12 @@
 import { getExams } from "@/api/list/getExams";
+import { getColleges } from "@/api/list/getColleges";
 import { getArticles } from "@/api/list/getArticles";
 import { getCollegeSitemapData } from "@/api/sitemap/getCollegeSitemapData";
 import { getExamSitemapData } from "@/api/sitemap/getExamSitemapData";
 import { getAuthors } from "@/api/list/getAuthors";
 import { mapCollegeTabSlugToPath } from "@/lib/collegeTab";
 import { mapExamSiloToPath } from "@/lib/examTab";
+import { buildCollegeUrl, buildExamUrl, buildArticleUrl } from "@/lib/seo";
 
 const INVALID_CHARACTERS_REGEX = /[&<>"']/;
 function isValidSlug(slug: string): boolean {
@@ -33,19 +35,17 @@ export async function generateCollegesUrls() {
       const urls = collegesData.colleges
         .map((college) => {
           if (!college.slug) return [];
-          const baseSlug = `${college.slug.replace(/(?:-\d+)+$/, "")}-${
-            college.college_id
-          }`;
-          if (!isValidSlug(baseSlug)) return [];
-          const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/colleges/${baseSlug}`;
+          const relativeUrl = buildCollegeUrl(college.slug, college.college_id);
+          if (!isValidSlug(relativeUrl)) return [];
+          const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}${relativeUrl}`;
 
           const collegeUrls = [];
 
           // Always include the base college URL (info tab)
           collegeUrls.push({
             url: baseUrl,
-            changeFrequency: "weekly",
-            priority: 1,
+            changeFrequency: "monthly",
+            priority: 0.8,
           });
 
           // Add URLs only for available tabs
@@ -69,7 +69,7 @@ export async function generateCollegesUrls() {
             } else if (tabPath === "/cutoffs" || tabPath === "/scholarship") {
               priority = 0.7;
             } else if (tabPath === "/news") {
-              priority = 1;
+              priority = 0.7;
               changeFrequency = "weekly";
             }
 
@@ -92,7 +92,7 @@ export async function generateCollegesUrls() {
       // If we got fewer results than the limit, we've reached the end
       if (collegesData.colleges.length < limit) {
         console.log(
-          `Reached end of data. Got ${collegesData.colleges.length} < ${limit}`
+          `Reached end of data. Got ${collegesData.colleges.length} < ${limit}`,
         );
         break;
       }
@@ -132,9 +132,9 @@ export async function generateExamsUrls() {
       const urls = examsData.exams
         .map((exam) => {
           if (!exam.slug) return [];
-          const baseSlug = `${exam.slug.replace(/-\d+$/, "")}-${exam.exam_id}`;
-          if (!isValidSlug(baseSlug)) return [];
-          const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/exams/${baseSlug}`;
+          const relativeUrl = buildExamUrl(exam.slug, exam.exam_id);
+          if (!isValidSlug(relativeUrl)) return [];
+          const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}${relativeUrl}`;
 
           const examUrls: {
             url: string;
@@ -200,7 +200,7 @@ export async function generateExamsUrls() {
 
       allUrls.push(...urls);
       console.log(
-        `Generated ${urls.length} URLs from page ${page}. Total so far: ${allUrls.length}`
+        `Generated ${urls.length} URLs from page ${page}. Total so far: ${allUrls.length}`,
       );
 
       // If we got fewer results than the limit, we've reached the end
@@ -235,9 +235,9 @@ export async function generateExamsUrls() {
       return allExams.exams
         .map((exam: { slug?: string; exam_id: string | number }) => {
           if (!exam.slug) return [];
-          const slug = `${exam.slug}-${exam.exam_id}`;
-          if (!isValidSlug(slug)) return [];
-          const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/exams/${slug}`;
+          const relativeUrl = buildExamUrl(exam.slug, exam.exam_id);
+          if (!isValidSlug(relativeUrl)) return [];
+          const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}${relativeUrl}`;
           return [{ url: baseUrl, changeFrequency: "weekly", priority: 0.6 }];
         })
         .flat();
@@ -245,6 +245,32 @@ export async function generateExamsUrls() {
       console.error("Fallback exam URL generation also failed:", fallbackError);
       return [];
     }
+  }
+}
+
+export async function generateCitiesUrls() {
+  try {
+    // Fetch filter data (1 college is enough to get the filter section)
+    const collegesData = await getColleges({ page: 1, limit: 1 });
+    const cities = collegesData.filter_section?.city_filter || [];
+
+    return cities
+      .filter((city) => city.city_slug && city.city_name)
+      .map((city) => {
+        // Clean the slug logic
+        const cleanSlug = city
+          .city_slug!.replace(/^colleges-in-/, "")
+          .replace(/^in-/, "");
+
+        return {
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}/colleges-city-${cleanSlug}`,
+          changeFrequency: "monthly" as const,
+          priority: 0.8,
+        };
+      });
+  } catch (error) {
+    console.error("Error generating city URLs for sitemap:", error);
+    return [];
   }
 }
 
@@ -259,10 +285,10 @@ export async function generateArticlesUrls() {
     return allArticles
       .map((article: { slug?: string; article_id: string | number }) => {
         if (!article.slug) return [];
-        const slug = `${article.slug}-${article.article_id}`;
-        if (!isValidSlug(slug)) return [];
-        const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/articles/${slug}`;
-        return [{ url: baseUrl, changeFrequency: "monthly", priority: 1 }];
+        const relativeUrl = buildArticleUrl(article.slug, article.article_id);
+        if (!isValidSlug(relativeUrl)) return [];
+        const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL}${relativeUrl}`;
+        return [{ url: baseUrl, changeFrequency: "monthly", priority: 0.8 }];
       })
       .flat();
   } catch (error) {
@@ -295,13 +321,13 @@ export async function generateExamNewsUrls() {
             return [];
           }
 
-          const baseSlug = `${exam.slug.replace(/-\d+$/, "")}-${exam.exam_id}`;
-          if (!isValidSlug(baseSlug)) return [];
+          const relativeUrl = buildExamUrl(exam.slug, exam.exam_id);
+          if (!isValidSlug(relativeUrl)) return [];
 
           return exam.news_articles.map((newsArticle) => ({
-            url: `${process.env.NEXT_PUBLIC_BASE_URL}/exams/${baseSlug}/news/${newsArticle.slug}`,
-            changeFrequency: "weekly" as const,
-            priority: 1,
+            url: `${process.env.NEXT_PUBLIC_BASE_URL}${relativeUrl}/news/${newsArticle.slug}`,
+            changeFrequency: "monthly" as const,
+            priority: 0.9,
           }));
         })
         .flat();
@@ -364,6 +390,57 @@ export async function generateAuthorsUrls() {
   } catch (error) {
     console.error("Error generating author URLs for sitemap:", error);
     // Return empty array to prevent build failure
+    return [];
+  }
+}
+
+export async function generateStatesUrls() {
+  try {
+    // Fetch filter data (1 college is enough to get the filter section)
+    const collegesData = await getColleges({ page: 1, limit: 1 });
+    const states = collegesData.filter_section?.state_filter || [];
+
+    return states
+      .filter((state) => state.state_slug && state.state_name)
+      .map((state) => {
+        // Clean the slug logic
+        const cleanSlug = state
+          .state_slug!.replace(/^colleges-in-/, "")
+          .replace(/^in-/, "");
+
+        return {
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}/colleges-state-${cleanSlug}`,
+          changeFrequency: "monthly" as const,
+          priority: 0.8,
+        };
+      });
+  } catch (error) {
+    console.error("Error generating state URLs for sitemap:", error);
+    return [];
+  }
+}
+
+export async function generateStreamsUrls() {
+  try {
+    const collegesData = await getColleges({ page: 1, limit: 1 });
+    const streams = collegesData.filter_section?.stream_filter || [];
+
+    return streams
+      .filter((stream) => stream.stream_slug && stream.stream_name)
+      .map((stream) => {
+        const cleanSlug = stream
+          .stream_slug!.replace(/^colleges-in-/, "")
+          .replace(/^in-/, "")
+          .replace(/-colleges$/, "");
+
+        return {
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}/colleges-stream-${cleanSlug}`,
+          changeFrequency: "monthly" as const,
+          priority: 0.9,
+        };
+      });
+  } catch (error) {
+    console.error("Error generating stream URLs for sitemap:", error);
     return [];
   }
 }

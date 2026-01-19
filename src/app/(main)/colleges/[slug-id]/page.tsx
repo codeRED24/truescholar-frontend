@@ -1,6 +1,5 @@
 import React from "react";
 import { notFound, redirect } from "next/navigation";
-import Script from "next/script";
 import { getCollegeById } from "@/api/individual/getIndividualCollege";
 import CollegeHead from "@/components/page/college/assets/CollegeHead";
 import CollegeNav from "@/components/page/college/assets/CollegeNav";
@@ -8,61 +7,66 @@ import CollegeInfoContent from "@/components/page/college/assets/CollegeInfoCont
 import "@/app/styles/tables.css";
 import CollegeNews from "@/components/page/college/assets/CollegeNews";
 import Image from "next/image";
+import {
+  generatePageMetadata,
+  generatePageSchema,
+  generateErrorMetadata,
+  JsonLd,
+  buildCollegeBreadcrumbTrail,
+  buildCollegeUrl,
+} from "@/lib/seo";
+import { Breadcrumbs } from "@/components/seo";
 
 export async function generateMetadata(props: {
   params: Promise<{ "slug-id": string }>;
-}): Promise<{
-  title: string;
-  description?: string;
-  keywords?: string;
-  alternates?: object;
-  openGraph?: object;
-}> {
+}) {
   const params = await props.params;
   const slugId = params["slug-id"];
-  const defaultMetadata = {
-    title: "College Not Found",
-    description: "The requested college could not be found.",
-    keywords: "college, not found",
-    alternates: { canonical: "https://www.truescholar.in" },
-  };
 
+  // Parse slug to extract college ID
   const match = slugId.match(/(.+)-(\d+)$/);
-  if (!match) return defaultMetadata;
+  if (!match) {
+    return generateErrorMetadata("not-found", "college");
+  }
 
   const collegeId = Number(match[2]);
-  if (isNaN(collegeId)) return defaultMetadata;
+  if (isNaN(collegeId)) {
+    return generateErrorMetadata("not-found", "college");
+  }
 
-  const college = await getCollegeById(collegeId, true);
-  if (!college) return defaultMetadata;
+  try {
+    const college = await getCollegeById(collegeId, true);
+    if (!college) {
+      return generateErrorMetadata("not-found", "college");
+    }
 
-  const { info_section, college_information } = college;
-  const info = info_section?.[0];
-  const collegeSlug = college_information.slug.replace(/(?:-\d+)+$/, "");
+    const { info_section, college_information } = college;
+    const info = info_section?.[0];
 
-  return {
-    title:
-      info?.title || college_information.college_name || defaultMetadata.title,
-    description:
-      info?.meta_desc ||
-      `Explore courses, scholarships, and more at ${college_information.college_name}`,
-    keywords:
-      info?.seo_param ||
-      `${college_information.college_name}, college, courses`,
-    alternates: {
-      canonical: `https://www.truescholar.in/colleges/${collegeSlug}-${collegeId}`,
-    },
-    openGraph: {
-      title: info?.title || college_information.college_name,
-      description:
-        info?.meta_desc ||
-        `Explore courses, scholarships, and more at ${college_information.college_name}`,
-      url: `https://www.truescholar.in/colleges/${collegeSlug}-${collegeId}`,
-    },
-  };
+    // Use the unified metadata generator
+    return generatePageMetadata({
+      type: "college",
+      data: {
+        college_id: collegeId,
+        college_name: college_information.college_name,
+        slug: college_information.slug,
+        city: college_information.city,
+        state: college_information.state,
+        logo_img: college_information.logo_img,
+        seo: {
+          title: info?.title,
+          meta_desc: info?.meta_desc,
+          seo_param: info?.seo_param,
+        },
+      },
+      content: info?.content,
+    });
+  } catch {
+    return generateErrorMetadata("error", "college");
+  }
 }
 
-export const revalidate = 21600;
+export const revalidate = 21600; // 6 hours (revalidationTimes.college)
 
 const IndividualCollege = async (props: {
   params: Promise<{ "slug-id": string }>;
@@ -78,73 +82,44 @@ const IndividualCollege = async (props: {
   const college = await getCollegeById(collegeId);
   if (!college) return notFound();
 
-  //   const collegeSchema = await getCollegeById(collegeId, true);
-  const {
-    college_information,
-    info_section,
-    popular_courses,
-    exam_section,
-    news_section,
-  } = college;
+  const { college_information, info_section, popular_courses, news_section } =
+    college;
 
-  const collegeSlug = college_information.slug.replace(/(?:-\d+)+$/, "");
-  const correctSlugId = `${collegeSlug}-${collegeId}`;
+  const correctUrl = buildCollegeUrl(
+    college_information.slug,
+    college_information.college_id,
+  );
+  // Extract correctSlugId from the URL (e.g. /colleges/slug-123 -> slug-123)
+  const correctSlugId = correctUrl.split("/").pop() || "";
 
+  // Redirect to canonical URL if slug doesn't match
   if (slugId !== correctSlugId) {
-    return redirect(`/colleges/${correctSlugId}`);
+    return redirect(correctUrl);
   }
-  const schemaData = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "CollegeOrUniversity",
-        name: college_information.college_name,
-        logo: college_information.logo_img,
-        url: `https://www.truescholar.in/colleges/${correctSlugId}`,
-      },
-      ...(info_section?.[0]
-        ? [
-            {
-              "@context": "https://schema.org",
-              "@type": "Article",
-              inLanguage: "en",
-              headline: info_section[0].title,
-              description: info_section[0].meta_desc,
-              dateModified: new Date().toISOString(),
-              datePublished: new Date().toISOString(),
-              url: `https://www.truescholar.in/colleges/${correctSlugId}`,
-              mainEntityOfPage: {
-                "@id": `https://www.truescholar.in/colleges/${correctSlugId}`,
-                "@type": "WebPage",
-                name: college_information.college_name,
-              },
-              author: {
-                "@type": "Person",
-                name: info_section[0].author_name || "TrueScholar",
-                url: `https://www.truescholar.in/team/${
-                  info_section[0].author_id || 16
-                }`,
-                image:
-                  info_section[0].author_image ||
-                  "https://www.truescholar.in/logo.webp",
-              },
-              publisher: {
-                "@type": "Organization",
-                name: "TrueScholar",
-                logo: {
-                  "@type": "ImageObject",
-                  url: "https://www.truescholar.in/logo.webp",
-                },
-              },
-              image: {
-                "@type": "ImageObject",
-                url: college_information.logo_img,
-              },
-            },
-          ]
-        : []),
-    ],
-  };
+
+  // Generate schema using the SEO library
+  const schema = generatePageSchema({
+    type: "college",
+    data: {
+      college_id: collegeId,
+      college_name: college_information.college_name,
+      slug: college_information.slug,
+      logo_img: college_information.logo_img,
+      city: college_information.city,
+      state: college_information.state,
+      location: college_information.location,
+      college_website: college_information.college_website,
+      college_email: college_information.college_email,
+      college_phone: college_information.college_phone,
+    },
+  });
+
+  // Build breadcrumb trail
+  const breadcrumbItems = buildCollegeBreadcrumbTrail(
+    college_information.college_name,
+    correctSlugId,
+  );
+
   const extractedData = {
     college_id: college_information.college_id,
     college_name: college_information.college_name,
@@ -155,16 +130,19 @@ const IndividualCollege = async (props: {
     title: info_section?.[0]?.title || "",
     location: college_information.location,
   };
+
   return (
     <>
-      <Script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
-      />
+      <JsonLd data={schema} id="college-schema" />
       <CollegeHead data={extractedData} />
       <CollegeNav data={college_information} />
       <section className="container-body md:grid grid-cols-4 gap-4 py-4">
-        <div className="col-span-3 order-none md:order-1">
+        <div className="col-span-3 order-0 md:order-1">
+          <Breadcrumbs
+            items={breadcrumbItems}
+            className=""
+            showSchema={false}
+          />
           <CollegeInfoContent
             data={college_information}
             info={info_section}

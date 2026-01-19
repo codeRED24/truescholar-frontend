@@ -13,7 +13,6 @@ const ArticleSkeleton = () => (
   </div>
 );
 
-
 const ArticleList = () => {
   const [articles, setArticles] = useState<ArticleDataPropsDTO[]>([]);
   const [page, setPage] = useState(1);
@@ -37,7 +36,7 @@ const ArticleList = () => {
               Authorization: `Bearer ${process.env.NEXT_PUBLIC_BEARER_TOKEN}`,
               "Content-Type": "application/json",
             },
-          }
+          },
         );
 
         if (!response.ok) throw new Error("Failed to fetch articles");
@@ -47,8 +46,8 @@ const ArticleList = () => {
           const newArticles = [...prev, ...data];
           return Array.from(
             new Map(
-              newArticles.map((article) => [article.article_id, article])
-            ).values()
+              newArticles.map((article) => [article.article_id, article]),
+            ).values(),
           );
         });
         setTotalItems(total);
@@ -59,7 +58,7 @@ const ArticleList = () => {
         setIsLoading(false);
       }
     },
-    [isLoading, hasMore]
+    [isLoading, hasMore],
   );
 
   useEffect(() => {
@@ -81,7 +80,7 @@ const ArticleList = () => {
         }
       }
     }, 200),
-    [isLoading, hasMore, fetchArticles]
+    [isLoading, hasMore, fetchArticles],
   );
 
   useEffect(() => {
@@ -100,7 +99,7 @@ const ArticleList = () => {
           }
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     const cards = document.querySelectorAll(".article-card");

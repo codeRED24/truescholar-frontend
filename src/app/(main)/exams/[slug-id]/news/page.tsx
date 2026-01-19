@@ -2,7 +2,6 @@ import React from "react";
 import { getExamNewsById } from "@/api/individual/getExamNewsById";
 import { getExamsById } from "@/api/individual/getExamsById";
 import { notFound, redirect } from "next/navigation";
-import Script from "next/script";
 import Link from "next/link";
 import ExamHead from "@/components/page/exam/ExamHead";
 import ExamNav from "@/components/page/exam/ExamNav";
@@ -10,6 +9,14 @@ import Image from "next/image";
 import { createSlugFromTitle } from "@/components/utils/utils";
 import "@/app/styles/tables.css";
 import { humanize } from "inflection";
+import {
+  generatePageMetadata,
+  generatePageSchema,
+  generateErrorMetadata,
+  JsonLd,
+  buildExamBreadcrumbTrail,
+} from "@/lib/seo";
+import { Breadcrumbs } from "@/components/seo";
 
 const formatDateWord = (dateStr: string): string => {
   return new Date(dateStr).toLocaleDateString("en-US", {
@@ -24,52 +31,63 @@ const trimText = (text: string, maxLength: number): string => {
   return text.substring(0, maxLength) + "...";
 };
 
+const parseSlugId = (slugId: string) => {
+  const match = slugId.match(/(.+)-(\d+)$/);
+  if (!match) return null;
+  const examId = Number(match[2]);
+  return isNaN(examId) ? null : { examId, slug: match[1] };
+};
+
 export async function generateMetadata(props: {
   params: Promise<{ "slug-id": string }>;
-}): Promise<{
-  title: string;
-  description?: string;
-  keywords?: string;
-  alternates?: object;
-  openGraph?: object;
-}> {
+}) {
   const params = await props.params;
   const slugId = params["slug-id"];
-  const match = slugId.match(/(.+)-(\d+)$/);
-  if (!match) return { title: "Exam Not Found" };
+  const parsed = parseSlugId(slugId);
 
-  const examId = Number(match[2]);
-  if (isNaN(examId)) return { title: "Invalid Exam" };
+  if (!parsed) {
+    return generateErrorMetadata("not-found", "exam");
+  }
 
-  // fetch nav data using exam_info silo, and fetch news content separately
-  const navExam = await getExamsById(examId, "exam_info");
-  const newsData = await getExamNewsById(examId);
-  if (!navExam || !newsData) return { title: "Exam Not Found" };
+  try {
+    const navExam = await getExamsById(parsed.examId, "exam_info");
+    const newsData = await getExamNewsById(parsed.examId);
 
-  const { examInformation } = navExam;
-  const { exam_name, slug } = examInformation;
-  const newsItem = newsData.news_section?.[0];
-  const examSlug = slug?.replace(/-\d+$/, "");
+    if (!navExam || !newsData) {
+      return generateErrorMetadata("not-found", "exam");
+    }
 
-  return {
-    title: newsItem?.title
-      ? humanize(newsItem.title).replace(/-/g, " ")
-      : `${exam_name} News`,
-    description:
-      newsItem?.meta_desc || `Latest news and updates from ${exam_name}.`,
-    keywords:
-      newsItem?.seo_param || `${exam_name}, news, exam updates, education`,
-    alternates: {
-      canonical: `https://www.truescholar.in/exams/${examSlug}-${examId}/news`,
-    },
-    openGraph: {
-      title: newsItem?.title || `${exam_name} News`,
-      description:
-        newsItem?.meta_desc || `Latest news and updates from ${exam_name}.`,
-      url: `https://www.truescholar.in/exams/${examSlug}-${examId}/news`,
-    },
-  };
+    const { examInformation } = navExam;
+    const newsItem = newsData.news_section?.[0];
+
+    // Use the unified metadata generator
+    return generatePageMetadata({
+      type: "exam-silo",
+      data: {
+        exam_id: parsed.examId,
+        exam_name: examInformation.exam_name,
+        exam_full_name: examInformation.exam_full_name,
+        slug: examInformation.slug || examInformation.exam_name,
+        exam_description: examInformation.exam_description,
+        logo_img: examInformation.exam_logo,
+        silo: "news",
+        siloContent: {
+          title: newsItem?.title
+            ? humanize(newsItem.title).replace(/-/g, " ")
+            : `${examInformation.exam_name} News`,
+          meta_desc:
+            newsItem?.meta_desc ||
+            `Latest news and updates from ${examInformation.exam_name}.`,
+          seo_param: newsItem?.seo_param,
+        },
+      },
+    });
+  } catch {
+    return generateErrorMetadata("error", "exam");
+  }
 }
+
+export const revalidate = 43200; // 12 hours (revalidationTimes.examSilo)
 
 const ExamNews = async ({
   params,
@@ -77,14 +95,13 @@ const ExamNews = async ({
   params: Promise<{ "slug-id": string }>;
 }) => {
   const { "slug-id": slugId } = await params;
-  const match = slugId.match(/(.+)-(\d+)$/);
-  if (!match) return notFound();
+  const parsed = parseSlugId(slugId);
 
-  const examId = Number(match[2]);
-  if (isNaN(examId)) return notFound();
+  if (!parsed) return notFound();
 
-  const navExam = await getExamsById(examId, "exam_info");
-  const newsData = await getExamNewsById(examId);
+  const navExam = await getExamsById(parsed.examId, "exam_info");
+  const newsData = await getExamNewsById(parsed.examId);
+
   if (!navExam?.examInformation || !newsData?.news_section) return notFound();
 
   const { examInformation } = navExam;
@@ -94,7 +111,7 @@ const ExamNews = async ({
   const trimmedExamName =
     examInformation?.slug?.replace(/-\d+$/, "") ||
     examName.toLowerCase().replace(/\s+/g, "-");
-  const correctSlugId = `${trimmedExamName}-${examId}`;
+  const correctSlugId = `${trimmedExamName}-${parsed.examId}`;
 
   if (slugId !== correctSlugId) {
     redirect(`/exams/${correctSlugId}/news`);
@@ -104,48 +121,33 @@ const ExamNews = async ({
     return notFound();
   }
 
-  // Use the full examInformation object for ExamHead
+  // Generate schema using the SEO library
+  const schema = generatePageSchema({
+    type: "exam-silo",
+    data: {
+      exam_id: parsed.examId,
+      exam_name: examInformation.exam_name,
+      exam_full_name: examInformation.exam_full_name,
+      slug: examInformation.slug || examInformation.exam_name,
+      exam_description: examInformation.exam_description,
+      logo_img: examInformation.exam_logo,
+      conducting_body: examInformation.conducting_body,
+    },
+    silo: "news",
+    siloLabel: "News",
+    siloPath: "/news",
+  });
 
-  const jsonLD = [
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      name: examName,
-      logo: examInformation?.exam_logo,
-      url: `https://www.truescholar.in/exams/${correctSlugId}`,
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "NewsArticle",
-      headline: newsList[0]?.title || `${examName} News`,
-      description: newsList[0]?.meta_desc || `Latest updates from ${examName}.`,
-      author: {
-        "@type": "Person",
-        name: newsList[0]?.author_name || "Unknown Author",
-      },
-      datePublished: newsList[0]?.updated_at,
-      dateModified: newsList[0]?.updated_at,
-      image:
-        examInformation?.exam_logo ||
-        "https://www.truescholar.in/logo-dark.webp",
-      publisher: {
-        "@type": "Organization",
-        name: "TrueScholar",
-        logo: {
-          "@type": "ImageObject",
-          url: "https://www.truescholar.in/logo-dark.webp",
-        },
-      },
-    },
-  ];
+  // Build breadcrumb trail
+  const breadcrumbItems = buildExamBreadcrumbTrail(
+    examInformation.exam_name,
+    correctSlugId,
+    "news"
+  );
 
   return (
     <div className="bg-gray-2 min-h-screen">
-      <Script
-        id="exam-news-ld-json"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLD) }}
-      />
+      <JsonLd data={schema} id="exam-news-schema" />
       <ExamHead data={examInformation} title={`${examName} News`} />
       <ExamNav data={navExam} />
       <div className="container-body lg:grid grid-cols-12 gap-4 pt-4">
@@ -153,6 +155,11 @@ const ExamNews = async ({
           <Image src="/ads/static.svg" height={250} width={500} alt="ads" />
         </div>
         <div className="col-span-9 mt-4">
+          <Breadcrumbs
+            items={breadcrumbItems}
+            className="mb-4"
+            showSchema={false}
+          />
           <div className="flex gap-4 flex-col ">
             {newsList.map(
               (newsItem: {

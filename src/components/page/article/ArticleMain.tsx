@@ -11,7 +11,10 @@ interface ArticleMainProps {
 const MainArticleCard = ({ article }: { article: ArticleDataPropsDTO }) => (
   <div className="relative overflow-hidden rounded-2xl border md:h-[430px]">
     <Image
-      src={article.img1_url || "https://d28xcrw70jd98d.cloudfront.net/articles/articleFallback5.webp"}
+      src={
+        article.img1_url ||
+        "https://d28xcrw70jd98d.cloudfront.net/articles/articleFallback5.webp"
+      }
       height={500}
       width={900}
       className="w-full object-cover max-h-60 md:max-h-full"
@@ -35,7 +38,10 @@ const MainArticleCard = ({ article }: { article: ArticleDataPropsDTO }) => (
 const ArticleCard = ({ article }: { article: ArticleDataPropsDTO }) => (
   <div className="relative overflow-hidden rounded-2xl md:h-52 shadow-lg transition-transform hover:scale-105">
     <Image
-      src={article.img1_url || "https://d28xcrw70jd98d.cloudfront.net/articles/articleFallback4.webp"}
+      src={
+        article.img1_url ||
+        "https://d28xcrw70jd98d.cloudfront.net/articles/articleFallback4.webp"
+      }
       height={400}
       width={400}
       alt={article.title}
@@ -56,7 +62,9 @@ const ArticleCard = ({ article }: { article: ArticleDataPropsDTO }) => (
       >
         {article.title}
       </Link>
-      <p className="text-[10px] text-white">{formatDateTime(article.updated_at)}</p>
+      <p className="text-[10px] text-white">
+        {formatDateTime(article.updated_at)}
+      </p>
     </div>
   </div>
 );
@@ -67,7 +75,7 @@ export default function ArticleMain({ data }: ArticleMainProps) {
   const [mainArticle, ...secondaryArticles] = data;
 
   return (
-    <section className="container-body pt-6 md:pt-14">
+    <section className="container-body ">
       <h2 className="text-lg md:text-3xl font-bold mb-6">Featured News</h2>
       <div className="grid md:grid-cols-3 gap-4">
         <div className="col-span-2">

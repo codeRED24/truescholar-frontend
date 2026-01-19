@@ -4,6 +4,7 @@ import Image from "next/image";
 import { trimText } from "../utils/utils";
 import Link from "next/link";
 import { Star } from "lucide-react";
+import { buildCollegeUrl } from "@/lib/seo";
 
 const SkeletonLoader = () => (
   <div className="bg-gray-300 h-72 rounded-2xl animate-pulse" />
@@ -89,7 +90,7 @@ const HomeCollegeCard: React.FC<{ college?: HomeCollege; isLoading: boolean }> =
         {/* Heading and city */}
         <div className="flex flex-col items-center justify-center pt-10 pb-2 px-2">
           <Link
-            href={`/colleges/${slug.replace(/-\d+$/, "")}-${college_id}`}
+            href={buildCollegeUrl(slug, college_id)}
             className="font-public font-bold text-base text-center leading-tight my-1"
           >
             {trimText(college_name, 46)}

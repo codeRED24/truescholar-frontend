@@ -1,11 +1,20 @@
 import { notFound, redirect } from "next/navigation";
-import Script from "next/script";
 import { getArticlesById } from "@/api/individual/getArticlesById";
 import "@/app/styles/tables.css";
 import { ArticleDataPropsDTO } from "@/api/@types/Articles-type";
 import ArticleContent from "@/components/page/article/ArticleContent";
+import {
+  generatePageMetadata,
+  generatePageSchema,
+  generateErrorMetadata,
+  JsonLd,
+  buildArticleBreadcrumbTrail,
+  buildArticleUrl,
+  ArticleData,
+  ArticleSchemaInput,
+} from "@/lib/seo";
 
-const BASE_URL = "https://www.truescholar.in";
+export const revalidate = 43200; // 12 hours (revalidationTimes.article)
 
 const parseSlugId = (slugId: string): { slug: string; id: number } | null => {
   const match = slugId.match(/(.+)-(\d+)$/);
@@ -15,61 +24,40 @@ const parseSlugId = (slugId: string): { slug: string; id: number } | null => {
 const generateCorrectSlugId = (article: ArticleDataPropsDTO): string =>
   `${article.slug.replace(/\s+/g, "-").toLowerCase()}-${article.article_id}`;
 
-const generateSchema = (
-  article: ArticleDataPropsDTO,
-  correctSlugId: string
-) => {
-  const articleUrl = `${BASE_URL}/articles/${correctSlugId}`;
+/**
+ * Map ArticleDataPropsDTO to ArticleData for metadata generation
+ */
+const mapToArticleData = (article: ArticleDataPropsDTO): ArticleData => ({
+  article_id: article.article_id,
+  title: article.title,
+  slug: article.slug,
+  meta_desc: article.meta_desc,
+  author: article.author,
+  category: article.type || undefined,
+  img1_url: article.img1_url ?? undefined,
+  created_at: article.created_at?.toString(),
+  updated_at: article.updated_at?.toString(),
+});
 
-  return {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebPage",
-        name: article.title,
-        description: article.meta_desc,
-        url: articleUrl,
-      },
-      {
-        "@type": "BlogPosting", // ✅ Better than generic Article
-        headline: article.title,
-        description: article.meta_desc || "Details of article",
-        author: {
-          "@type": "Person",
-          name: article.author?.author_name || "Unknown Author",
-          url: article.author?.author_id
-            ? `${BASE_URL}/team/${article.author.author_id}`
-            : undefined,
-        },
-        datePublished: article.created_at,
-        dateModified: article.updated_at,
-        image:
-          article.img1_url || article.img2_url
-            ? {
-                "@type": "ImageObject",
-                url: article.img1_url || article.img2_url,
-                width: 1200, // ✅ Recommended by Google
-                height: 1200,
-              }
-            : undefined,
-        mainEntityOfPage: {
-          "@type": "WebPage",
-          "@id": articleUrl,
-        },
-        publisher: {
-          "@type": "Organization",
-          name: "TrueScholar",
-          logo: {
-            "@type": "ImageObject",
-            url: `${BASE_URL}/logo-dark.webp`,
-            width: 600,
-            height: 100,
-          },
-        },
-      },
-    ],
-  };
-};
+/**
+ * Map ArticleDataPropsDTO to ArticleSchemaInput for schema generation
+ */
+const mapToArticleSchemaInput = (
+  article: ArticleDataPropsDTO,
+): ArticleSchemaInput => ({
+  article_id: article.article_id,
+  title: article.title,
+  slug: article.slug,
+  description: article.meta_desc,
+  content: article.content,
+  img1_url: article.img1_url ?? undefined,
+  img2_url: article.img2_url,
+  created_at: article.created_at?.toString(),
+  updated_at: article.updated_at?.toString(),
+  author: article.author,
+  category: article.type || undefined,
+  tags: article.tags ? article.tags.split(",").map((t) => t.trim()) : undefined,
+});
 
 export async function generateMetadata({
   params,
@@ -79,21 +67,16 @@ export async function generateMetadata({
   const resolvedParams = await params;
   const slugId = resolvedParams["slug-id"];
   const parsed = parseSlugId(slugId);
-  if (!parsed) return { title: "Article Not Found" };
+  if (!parsed) return generateErrorMetadata("not-found", "article");
 
   const article = await getArticlesById(parsed.id);
-  if (!article) return { title: "Article Not Found" };
+  if (!article) return generateErrorMetadata("not-found", "article");
 
-  const correctSlugId = generateCorrectSlugId(article);
-  const articleUrl = `${BASE_URL}/articles/${correctSlugId}`;
-
-  return {
-    title: article.title,
-    description: article.meta_desc || "Read this article on TrueScholar",
-    alternates: {
-      canonical: articleUrl,
-    },
-  };
+  return generatePageMetadata({
+    type: "article",
+    data: mapToArticleData(article),
+    content: article.content,
+  });
 }
 
 export default async function ArticleIndividual({
@@ -109,20 +92,31 @@ export default async function ArticleIndividual({
   const article = await getArticlesById(parsed.id);
   if (!article) return notFound();
 
-  const correctSlugId = generateCorrectSlugId(article);
-  if (parsed.slug !== correctSlugId.split("-").slice(0, -1).join("-")) {
-    redirect(`/articles/${correctSlugId}`);
+  const correctUrl = buildArticleUrl(article.slug, article.article_id);
+  // Extract correctSlugId
+  const correctSlugId = correctUrl.split("/").pop() || "";
+
+  if (slugId !== correctSlugId) {
+    return redirect(correctUrl);
   }
 
-  const schemaData = generateSchema(article, correctSlugId);
+  // Generate schema using SEO library
+  const schemaData = generatePageSchema({
+    type: "article",
+    data: mapToArticleSchemaInput(article),
+  });
+
+  // Build breadcrumb trail
+  const breadcrumbItems = buildArticleBreadcrumbTrail(
+    article.title,
+    correctSlugId,
+    article.type || undefined,
+  );
 
   return (
     <>
-      <Script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
-      />
-      <ArticleContent article={article} />
+      <JsonLd data={schemaData} id="article-schema" />
+      <ArticleContent article={article} breadcrumbItems={breadcrumbItems} />
     </>
   );
 }

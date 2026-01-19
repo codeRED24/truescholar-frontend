@@ -1,6 +1,13 @@
-import { Metadata } from "next";
-import dynamic from "next/dynamic";
 import React from "react";
+import dynamic from "next/dynamic";
+import {
+  generateListingMetadata,
+  JsonLd,
+  buildCollectionPageSchema,
+  buildBreadcrumbSchema,
+  buildStaticBreadcrumbTrail,
+} from "@/lib/seo";
+import { Breadcrumbs } from "@/components/seo";
 
 const CollegeList = dynamic(
   () => import("@/components/page/college/CollegeList"),
@@ -8,49 +15,46 @@ const CollegeList = dynamic(
     loading: () => (
       <div className="animate-pulse p-4 bg-gray-200 rounded-2xl h-32" />
     ),
-  }
+  },
 );
 
-export const metadata: Metadata = {
-  title: "Top Colleges in India | TrueScholar - Explore & Compare Colleges",
-  description:
-    "Discover top colleges in India with TrueScholar. Compare courses, fees, eligibility, rankings, and more to find the best fit for your academic goals.",
-  keywords:
-    "colleges in India, top colleges, college list, best colleges, compare colleges, TrueScholar colleges",
-  metadataBase: new URL("https://www.truescholar.in"),
-  alternates: {
-    canonical: "https://www.truescholar.in/colleges",
-  },
-  openGraph: {
-    title: "Top Colleges in India | TrueScholar - Explore & Compare Colleges",
-    description:
-      "Find and compare top colleges in India based on rankings, courses, and fees with TrueScholar.",
-    url: "https://www.truescholar.in/colleges",
-    siteName: "TrueScholar",
-    images: [
-      {
-        url: "https://www.truescholar.in/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "TrueScholar College Listings",
-      },
-    ],
-    locale: "en_US",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Top Colleges in India | TrueScholar - Explore & Compare Colleges",
-    description:
-      "Explore and compare the best colleges in India with TrueScholar. Get details on fees, courses, and eligibility.",
-    images: ["https://www.truescholar.in/og-image.png"],
-  },
-};
+// Generate metadata using the SEO library
+export const metadata = generateListingMetadata("colleges");
+
+export const revalidate = 86400; // 24 hours
 
 const Colleges = () => {
+  // Build breadcrumbs
+  const breadcrumbItems = buildStaticBreadcrumbTrail("Colleges", "/colleges");
+
+  // Build schema
+  const collectionSchema = buildCollectionPageSchema(
+    "Top Colleges in India",
+    "Discover top colleges in India with TrueScholar. Compare courses, fees, eligibility, rankings, and more.",
+    "/colleges",
+  );
+
+  const breadcrumbSchema = buildBreadcrumbSchema(
+    breadcrumbItems.map((item) => ({
+      name: item.name,
+      url: item.href,
+    })),
+  );
+
+  const schema = {
+    "@context": "https://schema.org" as const,
+    "@graph": [collectionSchema, breadcrumbSchema],
+  };
+
   return (
-    <div>
-      <CollegeList />
+    <div className="md:py-12 py-0">
+      <JsonLd data={schema} id="colleges-listing-schema" />
+      <div className="container-body">
+        <Breadcrumbs items={breadcrumbItems} showSchema={false} />
+      </div>
+      <div>
+        <CollegeList />
+      </div>
     </div>
   );
 };

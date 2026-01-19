@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { getSiteMapData } from "./getSiteMapData";
+import { buildExamUrl } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Sitemap | TrueScholar",
@@ -116,6 +117,40 @@ export default async function SitemapPage() {
           </section>
         )}
 
+        {sitemapData.streams.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-brand-primary mb-6 text-xl font-semibold">
+              Streams
+            </h2>
+            <div className="grid grid-cols-1 gap-x-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, colIndex) => {
+                const itemsPerColumn = Math.ceil(sitemapData.streams.length / 4);
+                const startIndex = colIndex * itemsPerColumn;
+                const endIndex = startIndex + itemsPerColumn;
+                const columnItems = sitemapData.streams.slice(
+                  startIndex,
+                  endIndex
+                );
+
+                return (
+                  <ul key={colIndex} className="space-y-3">
+                    {columnItems.map((stream) => (
+                      <li key={stream.url}>
+                        <Link
+                          href={stream.url}
+                          className="font-normal text-gray-700 hover:underline"
+                        >
+                          {stream.title}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
         {sitemapData.cities.length > 0 && (
           <section className="mb-12">
             <h2 className="text-brand-primary mb-6 text-xl font-semibold">
@@ -150,6 +185,40 @@ export default async function SitemapPage() {
           </section>
         )}
 
+        {sitemapData.states.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-brand-primary mb-6 text-xl font-semibold">
+              States
+            </h2>
+            <div className="grid grid-cols-1 gap-x-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, colIndex) => {
+                const itemsPerColumn = Math.ceil(sitemapData.states.length / 4);
+                const startIndex = colIndex * itemsPerColumn;
+                const endIndex = startIndex + itemsPerColumn;
+                const columnItems = sitemapData.states.slice(
+                  startIndex,
+                  endIndex
+                );
+
+                return (
+                  <ul key={colIndex} className="space-y-3">
+                    {columnItems.map((state) => (
+                      <li key={state.url}>
+                        <Link
+                          href={state.url}
+                          className="font-normal text-gray-700 hover:underline"
+                        >
+                          Colleges in {state.title}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
         {sitemapData.exams.length > 0 && (
           <section className="mb-12">
             <h2 className="text-brand-primary mb-6 text-xl font-semibold">
@@ -170,7 +239,7 @@ export default async function SitemapPage() {
                     {columnItems.map((exam) => (
                       <li key={exam.exam_id}>
                         <Link
-                          href={`/exams/${exam.slug}-${exam.exam_id}`}
+                          href={buildExamUrl(exam.slug, exam.exam_id)}
                           className="font-normal text-gray-700 hover:underline"
                         >
                           <div className="font-normal">{exam.exam_name}</div>

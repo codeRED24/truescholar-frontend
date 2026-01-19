@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import { Button } from "../ui/button";
 import { Calendar, Building2, Layers, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { buildExamUrl } from "@/lib/seo";
 
 const ExamListCard: React.FC<{ exam: ExamInformationDTO }> = ({ exam }) => {
   const logoUrl = exam.exam_logo || "/svg/exam.webp";
@@ -26,7 +27,7 @@ const ExamListCard: React.FC<{ exam: ExamInformationDTO }> = ({ exam }) => {
 
           <div className="flex flex-col gap-2 w-full overflow-hidden">
             {/* Title */}
-            <Link href={`/exams/${exam.slug}-${exam.exam_id}`}>
+            <Link href={buildExamUrl(exam.slug, exam.exam_id)}>
               <h2 className="text-base lg:text-lg hover:underline cursor-pointer font-medium text-gray-900 line-clamp-2 lg:line-clamp-1">
                 {exam.exam_name}
               </h2>
@@ -111,7 +112,7 @@ const ExamListCard: React.FC<{ exam: ExamInformationDTO }> = ({ exam }) => {
             asChild
             className="group  w-full text-[14px] font-medium py-2 bg-primary-main text-white rounded-md"
           >
-            <Link href={`/exams/${exam.slug}-${exam.exam_id}`}>
+            <Link href={buildExamUrl(exam.slug, exam.exam_id)}>
               View Details{" "}
               <ChevronRight className="group-hover:translate-x-1 transition duration-300" />
             </Link>
