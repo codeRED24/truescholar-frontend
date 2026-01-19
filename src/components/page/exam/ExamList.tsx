@@ -11,25 +11,25 @@ import {
 import { FilterIcon, X } from "lucide-react";
 import dynamic from "next/dynamic";
 const Drawer = dynamic(() =>
-  import("@/components/ui/drawer").then((mod) => mod.Drawer)
+  import("@/components/ui/drawer").then((mod) => mod.Drawer),
 );
 const DrawerClose = dynamic(() =>
-  import("@/components/ui/drawer").then((mod) => mod.DrawerClose)
+  import("@/components/ui/drawer").then((mod) => mod.DrawerClose),
 );
 const DrawerContent = dynamic(() =>
-  import("@/components/ui/drawer").then((mod) => mod.DrawerContent)
+  import("@/components/ui/drawer").then((mod) => mod.DrawerContent),
 );
 const DrawerHeader = dynamic(() =>
-  import("@/components/ui/drawer").then((mod) => mod.DrawerHeader)
+  import("@/components/ui/drawer").then((mod) => mod.DrawerHeader),
 );
 const DrawerTitle = dynamic(() =>
-  import("@/components/ui/drawer").then((mod) => mod.DrawerTitle)
+  import("@/components/ui/drawer").then((mod) => mod.DrawerTitle),
 );
 const DrawerTrigger = dynamic(() =>
-  import("@/components/ui/drawer").then((mod) => mod.DrawerTrigger)
+  import("@/components/ui/drawer").then((mod) => mod.DrawerTrigger),
 );
 const DrawerFooter = dynamic(() =>
-  import("@/components/ui/drawer").then((mod) => mod.DrawerFooter)
+  import("@/components/ui/drawer").then((mod) => mod.DrawerFooter),
 );
 const ExamListCard = dynamic(() => import("@/components/cards/ExamListCard"));
 
@@ -115,7 +115,7 @@ const ExamsList: React.FC = () => {
           const newExams =
             pageNum === 1 ? response.exams : [...prev, ...response.exams];
           setHasMore(
-            response.exams.length > 0 && newExams.length < response.total
+            response.exams.length > 0 && newExams.length < response.total,
           );
           return newExams;
         });
@@ -127,7 +127,7 @@ const ExamsList: React.FC = () => {
         setLoading(false);
       }
     },
-    [filters]
+    [filters],
   );
 
   useEffect(() => {
@@ -152,12 +152,12 @@ const ExamsList: React.FC = () => {
             setPage((prev) => prev + 1);
           }
         },
-        { threshold: 0.5 }
+        { threshold: 0.5 },
       );
 
       if (node) observer.current.observe(node);
     },
-    [loading, hasMore]
+    [loading, hasMore],
   );
 
   const handleFilterChange = useCallback(
@@ -187,7 +187,7 @@ const ExamsList: React.FC = () => {
         router.replace(newUrl, { scroll: false });
       }, 500); // 500ms debounce delay
     },
-    [router]
+    [router],
   );
 
   // Cleanup timer on unmount
@@ -208,7 +208,7 @@ const ExamsList: React.FC = () => {
       setFilters(newFilters);
       handleFilterChange(newFilters);
     },
-    [filters, handleFilterChange]
+    [filters, handleFilterChange],
   );
 
   const SelectedFiltersDisplay = () => {
@@ -245,7 +245,7 @@ const ExamsList: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="">
       {/* Mobile Sticky Header */}
       <div className="lg:hidden sticky top-0 z-40 bg-white border-b border-gray-200">
         {/* Filter Button and Exam Count */}
@@ -323,7 +323,7 @@ const ExamsList: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="container-body mx-auto py-4 lg:py-8 lg:pt-10">
+      <div className="container-body mx-auto">
         {/* Desktop Header Section */}
         <div className="hidden lg:block mb-6 px-4 lg:px-0">
           <div className="flex items-center justify-between mb-4">
@@ -343,7 +343,7 @@ const ExamsList: React.FC = () => {
 
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Desktop Filters */}
-          <div className="hidden lg:block lg:sticky lg:top-4 lg:self-start">
+          <div className="hidden lg:block lg:sticky lg:top-24 lg:self-start">
             <ExamFilters
               onFilterChange={handleFilterChange}
               initialFilters={filters}

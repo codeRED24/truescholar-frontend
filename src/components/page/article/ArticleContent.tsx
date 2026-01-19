@@ -3,10 +3,12 @@ import { sanitizeHtml } from "@/components/utils/sanitizeHtml";
 import { formatDate } from "@/components/utils/formatDate";
 import { ArticleDataPropsDTO } from "@/api/@types/Articles-type";
 import Share from "@/components/miscellaneous/Share";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
-const ArticleContent: React.FC<{ article: ArticleDataPropsDTO }> = ({
-  article,
-}) => {
+const ArticleContent: React.FC<{
+  article: ArticleDataPropsDTO;
+  breadcrumbItems: { name: string; href: string }[];
+}> = ({ article, breadcrumbItems }) => {
   const { updated_at, title, content } = article;
 
   const sanitizedHtml = sanitizeHtml(content || "");
@@ -25,7 +27,10 @@ const ArticleContent: React.FC<{ article: ArticleDataPropsDTO }> = ({
           </div>
         </div>
       </div>
-      <section className="container-body pt-6 md:pt-12">
+      <div className="container-body pt-4">
+        <Breadcrumbs items={breadcrumbItems} showSchema={false} />
+      </div>
+      <section className="container-body">
         {content && <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />}
       </section>
     </article>

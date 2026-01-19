@@ -1,11 +1,9 @@
+@import "tailwindcss";
+
 @import "./styles/article.css";
 @import "./styles/responsive.css";
 @import "./styles/faq.css";
 @import "./styles/backgrounds.css";
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 @layer utilities {
   .scrollbar-thin {

@@ -22,17 +22,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const CollegeFilter = dynamic(
   () => import("@/components/filters/CollegeFilters"),
-  { ssr: false }
+  { ssr: false },
 );
 
 const Sheet = dynamic(() =>
-  import("@/components/ui/sheet").then((mod) => mod.Sheet)
+  import("@/components/ui/sheet").then((mod) => mod.Sheet),
 );
 const SheetContent = dynamic(() =>
-  import("@/components/ui/sheet").then((mod) => mod.SheetContent)
+  import("@/components/ui/sheet").then((mod) => mod.SheetContent),
 );
 const SheetTrigger = dynamic(() =>
-  import("@/components/ui/sheet").then((mod) => mod.SheetTrigger)
+  import("@/components/ui/sheet").then((mod) => mod.SheetTrigger),
 );
 
 type CachedCollegesData = {
@@ -62,7 +62,7 @@ const CollegeListCard = dynamic(
   {
     loading: () => <Skeleton className="h-40 w-full" />,
     ssr: false,
-  }
+  },
 );
 
 type CollegeListItemProps = {
@@ -73,7 +73,7 @@ type CollegeListItemProps = {
 
 type SortFunction = (
   a: CollegesResponseDTO["colleges"][0],
-  b: CollegesResponseDTO["colleges"][0]
+  b: CollegesResponseDTO["colleges"][0],
 ) => number;
 
 // Fee ranges for label display
@@ -90,7 +90,7 @@ const CollegeListItem = React.memo(
     <div ref={isLast ? lastCollegeRef : null}>
       <CollegeListCard college={college} />
     </div>
-  )
+  ),
 );
 
 const CollegeList = () => {
@@ -118,7 +118,7 @@ const CollegeList = () => {
     CollegesResponseDTO["colleges"]
   >([]);
   const [selectedDescription, setSelectedDescription] = useState<string | null>(
-    null
+    null,
   );
   const [filterSection, setFilterSection] = useState<
     CollegesResponseDTO["filter_section"]
@@ -149,12 +149,12 @@ const CollegeList = () => {
       });
       if (node) observer.current.observe(node);
     },
-    [loading, hasMore]
+    [loading, hasMore],
   );
 
   const generateCacheKey = (
     page: number,
-    filters: Record<string, string | string[]>
+    filters: Record<string, string | string[]>,
   ) => {
     return `colleges_${page}_${JSON.stringify(filters)}`;
   };
@@ -178,11 +178,11 @@ const CollegeList = () => {
       setFilterSection(cachedData.filter_section);
       setCollegesData((prev: CollegesResponseDTO["colleges"]) => {
         const existingIds = new Set(
-          prev.map((c: CollegesResponseDTO["colleges"][0]) => c.college_id)
+          prev.map((c: CollegesResponseDTO["colleges"][0]) => c.college_id),
         );
         const newColleges = cachedData.colleges.filter(
           (c: CollegesResponseDTO["colleges"][0]) =>
-            !existingIds.has(c.college_id)
+            !existingIds.has(c.college_id),
         );
         return page === 1 ? cachedData.colleges : [...prev, ...newColleges];
       });
@@ -202,11 +202,11 @@ const CollegeList = () => {
       setFilterSection(data.filter_section);
       setCollegesData((prev: CollegesResponseDTO["colleges"]) => {
         const existingIds = new Set(
-          prev.map((c: CollegesResponseDTO["colleges"][0]) => c.college_id)
+          prev.map((c: CollegesResponseDTO["colleges"][0]) => c.college_id),
         );
         const newColleges = data.colleges.filter(
           (c: CollegesResponseDTO["colleges"][0]) =>
-            !existingIds.has(c.college_id)
+            !existingIds.has(c.college_id),
         );
         const updatedColleges =
           page === 1 ? data.colleges : [...prev, ...newColleges];
@@ -293,7 +293,7 @@ const CollegeList = () => {
       setHasMore(true);
       setSortFn(null);
     },
-    []
+    [],
   );
 
   const handleSortChange = useCallback((newSortFn: SortFunction) => {
@@ -306,11 +306,11 @@ const CollegeList = () => {
         const updatedFilters = { ...prev };
         if (filterKey === "type_of_institute" && value) {
           updatedFilters[filterKey] = (prev[filterKey] as string[]).filter(
-            (v) => v !== value
+            (v) => v !== value,
           );
         } else if (filterKey === "fee_range" && value) {
           updatedFilters[filterKey] = (prev[filterKey] as string[]).filter(
-            (v) => v !== value
+            (v) => v !== value,
           );
         } else {
           updatedFilters[filterKey] = "";
@@ -337,11 +337,11 @@ const CollegeList = () => {
         return updatedFilters;
       });
     },
-    [router]
+    [router],
   );
 
   return (
-    <div className="md:py-14 container-body">
+    <div className="container-body">
       <div className="hidden md:flex sticky top-0 z-10 pb-4 bg-[#f4f6f8] inset-x-0 items-center">
         <div className=""></div>
         <h1 className="text-2xl font-bold mb-2 mr-4">
@@ -386,7 +386,7 @@ const CollegeList = () => {
               {(() => {
                 const val =
                   filterSection.course_group_filter.find(
-                    (cg) => cg.course_group_name === filters.course_group_name
+                    (cg) => cg.course_group_name === filters.course_group_name,
                   )?.course_group_name || filters.course_group_name;
 
                 return Array.isArray(val)
@@ -514,7 +514,7 @@ const CollegeList = () => {
                       const val =
                         filterSection.course_group_filter.find(
                           (cg) =>
-                            cg.course_group_name === filters.course_group_name
+                            cg.course_group_name === filters.course_group_name,
                         )?.course_group_name || filters.course_group_name;
 
                       return Array.isArray(val)
@@ -584,7 +584,7 @@ const CollegeList = () => {
                   isLast={index === displayedColleges.length - 1}
                   lastCollegeRef={lastCollegeRef}
                 />
-              )
+              ),
             )}
             {loading &&
               Array.from({ length: 5 }, (_, i) => (

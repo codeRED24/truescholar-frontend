@@ -2,64 +2,88 @@ import { getExamsById } from "@/api/individual/getExamsById";
 import ExamContent from "@/components/page/exam/ExamContent";
 import { splitSilos } from "@/components/utils/utils";
 import { notFound, redirect } from "next/navigation";
-import Script from "next/script";
 import { parseFAQFromHTML } from "@/components/utils/parsefaqschema";
 import slugify from "slug";
+import {
+  generatePageMetadata,
+  generatePageSchema,
+  generateErrorMetadata,
+  JsonLd,
+  buildExamBreadcrumbTrail,
+  examSiloConfig,
+  buildExamUrl,
+  type FAQItem,
+} from "@/lib/seo";
+
+const parseSlugId = (slugId: string) => {
+  const match = slugId.match(/(.+)-(\d+)$/);
+  if (!match) return null;
+  const examId = Number(match[2]);
+  return isNaN(examId) ? null : { examId, slug: match[1] };
+};
+
+// Map silo slug to config key
+const getSiloConfigKey = (silos: string): keyof typeof examSiloConfig => {
+  const mapping: Record<string, keyof typeof examSiloConfig> = {
+    "exam-syllabus": "exam-syllabus",
+    "exam-pattern": "exam-pattern",
+    "exam-cutoff": "exam-cutoff",
+    "exam-result": "exam-result",
+    "admit-card": "admit-card",
+    "exam-dates": "exam-dates",
+    "exam-eligibility": "exam-eligibility",
+    "exam-registration": "exam-registration",
+    news: "news",
+  };
+  return mapping[silos] || "info";
+};
 
 export async function generateMetadata(props: {
   params: Promise<{ "slug-id": string; silos: string }>;
 }) {
   const { "slug-id": slugId, silos } = await props.params;
-  if (!slugId) return notFound();
+  if (!slugId) return generateErrorMetadata("not-found", "exam");
+
+  const parsed = parseSlugId(slugId);
+  if (!parsed) return generateErrorMetadata("not-found", "exam");
 
   const accurateSilos = splitSilos(silos);
 
-  const match = slugId.match(/(.+)-(\d+)$/);
-  if (!match) return notFound();
-
-  const examId = Number(match[2]);
-  if (isNaN(examId)) return notFound();
-
-  let exam;
   try {
-    exam = await getExamsById(examId, accurateSilos);
-  } catch (error) {
-    return notFound();
+    const exam = await getExamsById(parsed.examId, accurateSilos);
+
+    if (!exam || !exam.examInformation) {
+      return generateErrorMetadata("not-found", "exam");
+    }
+
+    const { examInformation, examContent } = exam;
+    const siloKey = getSiloConfigKey(silos);
+
+    // Use the unified metadata generator
+    return generatePageMetadata({
+      type: "exam-silo",
+      data: {
+        exam_id: parsed.examId,
+        exam_name: examInformation.exam_name,
+        exam_full_name: examInformation.exam_full_name,
+        slug: examInformation.slug || examInformation.exam_name,
+        exam_description: examInformation.exam_description,
+        logo_img: examInformation.exam_logo,
+        silo: siloKey,
+        siloContent: {
+          title: examContent?.topic_title,
+          meta_desc: examContent?.meta_desc,
+          seo_param: examContent?.seo_param,
+        },
+      },
+      content: examContent?.description,
+    });
+  } catch {
+    return generateErrorMetadata("error", "exam");
   }
-
-  if (!exam || !exam.examInformation) return notFound();
-
-  const title = exam.examContent.topic_title || "Exam Details";
-  const description =
-    exam.examContent.meta_desc || "Find details about this exam.";
-
-  // Build canonical URL using shared exam tab mapping util
-  const baseSlug = (
-    exam.examInformation.slug ||
-    exam.examInformation.exam_name ||
-    "default-exam"
-  )
-    .replace(/\s+/g, "-")
-    .toLowerCase();
-
-  const basePath = `https://www.truescholar.in/exams/${baseSlug}-${examId}`;
-
-  const { mapExamSiloToPath } = await import("@/lib/examTab");
-  const canonicalUrl = `${basePath}${mapExamSiloToPath(accurateSilos)}`;
-
-  return {
-    title,
-    description,
-    alternates: {
-      canonical: canonicalUrl,
-    },
-    openGraph: {
-      title,
-      description,
-      url: canonicalUrl,
-    },
-  };
 }
+
+export const revalidate = 43200; // 12 hours (revalidationTimes.examSilo)
 
 const ExamSiloCard: React.FC<{
   params: Promise<{ "slug-id": string; silos: string }>;
@@ -67,27 +91,24 @@ const ExamSiloCard: React.FC<{
   const { "slug-id": slugId, silos } = await params;
 
   if (!slugId) return notFound();
-  if (silos === "info") {
-    redirect(`/exams/${slugId}`);
-  }
-  if (silos === "exam-info") {
+
+  // Handle redirects for special silos
+  if (silos === "info" || silos === "exam-info") {
     redirect(`/exams/${slugId}`);
   }
   if (silos === "news") {
     redirect(`/exams/${slugId}/news`);
   }
+
+  const parsed = parseSlugId(slugId);
+  if (!parsed) return notFound();
+
   const accurateSilos = splitSilos(silos);
-
-  const match = slugId.match(/(.+)-(\d+)$/);
-  if (!match) return notFound();
-
-  const examId = Number(match[2]);
-  if (isNaN(examId)) return notFound();
 
   let exam;
   try {
-    exam = await getExamsById(examId, accurateSilos);
-  } catch (error) {
+    exam = await getExamsById(parsed.examId, accurateSilos);
+  } catch {
     return notFound();
   }
 
@@ -100,81 +121,70 @@ const ExamSiloCard: React.FC<{
     return notFound();
   }
 
-  const { examInformation: examInfo, examContent, distinctSilos } = exam;
+  const { examInformation: examInfo, examContent } = exam;
 
-  const correctSlugId = `${slugify(
-    examInfo.slug || examInfo.exam_name
-  )}-${examId}`;
+  const correctUrl = buildExamUrl(
+    examInfo.slug || examInfo.exam_name,
+    parsed.examId
+  );
+  // Extract correctSlugId
+  const correctSlugId = correctUrl.split("/").pop() || "";
 
   if (slugId !== correctSlugId) {
     return redirect(`/exams/${correctSlugId}/${silos}`);
   }
 
-  const { topic_title, meta_desc, author_name, updated_at, description } =
-    examContent;
-
-  // FAQ Schema for exam-faq silos
-  const parsedFAQs = parseFAQFromHTML(description || "");
-  const faqLD =
+  // Parse FAQs for FAQ silo
+  const parsedFAQs =
     accurateSilos === "exam_faq"
-      ? {
-          "@context": "https://schema.org",
-          "@type": "FAQPage",
-          mainEntity: parsedFAQs.map((faq, index) => ({
-            "@type": "Question",
-            name: faq.question || `FAQ ${index + 1}`,
-            acceptedAnswer: {
-              "@type": "Answer",
-              text: faq.answer || "Answer not available",
-            },
-          })),
-        }
-      : null;
+      ? parseFAQFromHTML(examContent.description || "")
+      : [];
 
-  const articleLD = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    inLanguage: "en",
-    headline: topic_title,
-    description:
-      meta_desc || "Details of the admission process for this college.",
-    author: { "@type": "Person", name: author_name || "Unknown Author" },
-    datePublished: updated_at,
-    dateModified: updated_at,
-    image: {
-      "@type": "ImageObject",
-      url: examInfo.examInformation?.exam_logo,
-      height: 800,
-      width: 800,
+  const faqItems: FAQItem[] = parsedFAQs.map((faq, index) => ({
+    question: faq.question || `FAQ ${index + 1}`,
+    answer: faq.answer || "Answer not available",
+  }));
+
+  // Get silo label for breadcrumbs
+  const siloKey = getSiloConfigKey(silos);
+  const siloConfig = examSiloConfig[siloKey];
+  const siloLabel = siloConfig?.label || silos;
+
+  // Generate schema using the SEO library
+  const schema = generatePageSchema({
+    type: "exam-silo",
+    data: {
+      exam_id: parsed.examId,
+      exam_name: examInfo.exam_name,
+      exam_full_name: examInfo.exam_full_name,
+      slug: examInfo.slug || examInfo.exam_name,
+      exam_description: examInfo.exam_description,
+      logo_img: examInfo.exam_logo,
+      conducting_body: examInfo.conducting_body,
+      exam_mode: examInfo.exam_mode,
+      exam_level: examInfo.exam_level,
+      application_start_date: examInfo.application_start_date,
+      application_end_date: examInfo.application_end_date,
+      exam_date: examInfo.exam_date,
+      result_date: examInfo.result_date,
     },
-    publisher: {
-      "@type": "Organization",
-      name: "TrueScholar",
-      logo: {
-        "@type": "ImageObject",
-        url: "https://www.truescholar.in/logo-dark.webp",
-      },
-    },
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": `https://www.truescholar.in/exams/${correctSlugId}/info`,
-    },
-  };
+    silo: siloKey,
+    siloLabel,
+    siloPath: `/${silos}`,
+    faqs: faqItems.length > 0 ? faqItems : undefined,
+  });
+
+  // Build breadcrumb trail
+  const breadcrumbItems = buildExamBreadcrumbTrail(
+    examInfo.exam_name,
+    correctSlugId,
+    siloKey
+  );
 
   return (
     <>
-      <Script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleLD) }}
-      />
-      {faqLD && (
-        <Script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLD) }}
-        />
-      )}
-
-      <ExamContent exam={exam} />
+      <JsonLd data={schema} id="exam-silo-schema" />
+      <ExamContent exam={exam} breadcrumbs={breadcrumbItems} />
     </>
   );
 };

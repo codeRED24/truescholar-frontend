@@ -1,9 +1,9 @@
 import JsonLd from "@/lib/jsonld";
 import { Barlow, Public_Sans } from "next/font/google";
 import Script from "next/script";
-import BreadcrumbProvider from "@/components/providers/BreadcrumbProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/providers/QueryProvider";
+import { buildOrganizationSchema, buildWebSiteSchema } from "@/lib/seo";
 
 const publicSans = Public_Sans({
   weight: ["300", "400", "500", "600", "700"],
@@ -44,68 +44,22 @@ function GTMScript({ gtmId }: { gtmId: string }) {
   );
 }
 
-function OrganizationSchema({
-  name = "TrueScholar",
-  url = "https://truescholar.in",
-  logo = "https://truescholar.in/favicon.ico",
-  description = "Find and compare the best colleges in India",
-  sameAs = [
-    "https://facebook.com/truescholar",
-    "https://twitter.com/truescholar",
-    "https://linkedin.com/company/truescholar",
-  ],
-  contactPoint = {
-    contactType: "customer service",
-    availableLanguage: "English",
-  },
-}: any) {
-  const organizationData = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    name,
-    url,
-    logo,
-    description,
-    sameAs,
-    contactPoint: {
-      "@type": "ContactPoint",
-      ...contactPoint,
-    },
-  };
-
-  return <JsonLd data={organizationData} />;
-}
-
-function WebsiteSchema({
-  name = "TrueScholar",
-  url = "https://www.truescholar.in",
-  description = "Discover and compare top Indian colleges",
-}: any) {
-  const websiteData = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name,
-    url,
-    description,
-  };
-
-  return <JsonLd data={websiteData} />;
-}
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const organizationData = buildOrganizationSchema();
+  const websiteData = buildWebSiteSchema();
+
   return (
     <html lang="en">
       <head>
-        <OrganizationSchema />
-        <WebsiteSchema />
+        <JsonLd data={organizationData} />
+        <JsonLd data={websiteData} />
       </head>
       <body className={`${publicSans.variable} ${barlow.variable} antialiased`}>
         <GTMScript gtmId="G-5CMGT07LVZ" />
-        <BreadcrumbProvider />
         <QueryProvider>{children}</QueryProvider>
         <Toaster />
       </body>

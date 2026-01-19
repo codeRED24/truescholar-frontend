@@ -2,6 +2,7 @@ import { ArticleDataPropsDTO } from "@/api/@types/Articles-type";
 import React from "react";
 import { formatDateTime } from "../utils/formatDateTime";
 import Link from "next/link";
+import { buildArticleUrl } from "@/lib/seo";
 
 const ArticleListCard = React.memo(
   ({ article }: { article: ArticleDataPropsDTO }) => {
@@ -13,7 +14,10 @@ const ArticleListCard = React.memo(
         aria-label={`Article: ${title}`}
       >
         <p className="text-xsm text-[#919EAB]">{formatDateTime(updated_at)}</p>
-        <Link href={`/articles/${slug}-${article_id}`} className="text-sm md:text-base font-medium font-public line-clamp-2 pt-1 text-[#1C252E]">
+        <Link
+          href={buildArticleUrl(slug, article_id)}
+          className="text-sm md:text-base font-medium font-public line-clamp-2 pt-1 text-[#1C252E]"
+        >
           {title}
         </Link>
 

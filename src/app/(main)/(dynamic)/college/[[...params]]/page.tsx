@@ -1,368 +1,229 @@
-"use client";
-
-import { CollegesResponseDTO } from "@/api/@types/college-list";
+import { Metadata } from "next";
 import { getColleges } from "@/api/list/getColleges";
-import { getStreams } from "@/api/list/getStreams";
-import { getStates, StateDto } from "@/api/list/getStates";
-import dynamic from "next/dynamic";
-import { useParams } from "next/navigation";
-import React, {
-  useEffect,
-  useState,
-  useRef,
-  useCallback,
-  useMemo,
-} from "react";
+import { getStreams, StreamProps } from "@/api/list/getStreams";
 import { getCities } from "@/api/list/getCities";
-import { HomeCity, HomeStream } from "@/api/@types/header-footer";
+import { getStates, StateDto } from "@/api/list/getStates";
+import { HomeCity } from "@/api/@types/header-footer";
+import { CollegeDTO } from "@/api/@types/college-list";
+import { generatePageMetadata, generatePageSchema, JsonLd } from "@/lib/seo";
+import { Breadcrumbs } from "@/components/seo";
+import { buildFilterBreadcrumbTrail } from "@/lib/seo/linking/breadcrumbs";
+import CollegeFilterClient from "@/components/page/college/CollegeFilterClient";
 
-const CollegeListCard = dynamic(
-  () => import("@/components/cards/CollegeListCard"),
-  {
-    loading: () => (
-      <div className="animate-pulse p-4 bg-gray-200 rounded-2xl h-32" />
-    ),
-    ssr: false,
-  }
-);
+export const revalidate = 86400; // 24 hours (revalidationTimes.filter)
 
-type CollegeListItemProps = {
-  college: CollegesResponseDTO["colleges"][0];
-  isLast: boolean;
-  lastCollegeRef: (node: HTMLDivElement | null) => void;
-};
+interface PageProps {
+  params: Promise<{ params?: string[] }>;
+}
 
-const CollegeListItem = React.memo(
-  ({ college, isLast, lastCollegeRef }: CollegeListItemProps) => (
-    <div ref={isLast ? lastCollegeRef : null}>
-      <CollegeListCard college={college} />
-    </div>
-  )
-);
-CollegeListItem.displayName = "CollegeListItem";
+/**
+ * Parse URL params to extract filter IDs and names
+ */
+async function parseUrlParams(paramArray: string[] = []) {
+  // Fetch lookup data
+  const [streamsData, citiesData, statesData] = await Promise.all([
+    getStreams(),
+    getCities(),
+    getStates(),
+  ]);
 
-const DynamicCollegeList = () => {
-  const params = useParams();
-
-  const [streamMap, setStreamMap] = useState<Record<string, string>>({});
-  const [cityMap, setCityMap] = useState<Record<string, string>>({});
-  const [stateMap, setStateMap] = useState<Record<string, string>>({});
-  const [loadingInitialData, setLoadingInitialData] = useState(true);
-  const [initialDataError, setInitialDataError] = useState<string | null>(null);
-
+  // Build lookup maps
   const formatName = (name: string) =>
     name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
 
-  const streamNameToId = useMemo(
-    () =>
-      Object.fromEntries(
-        Object.entries(streamMap).map(([id, name]) => [formatName(name), id])
-      ),
-    [streamMap]
-  );
-  const cityNameToId = useMemo(
-    () =>
-      Object.fromEntries(
-        Object.entries(cityMap).map(([id, name]) => [formatName(name), id])
-      ),
-    [cityMap]
-  );
-  const stateNameToId = useMemo(
-    () =>
-      Object.fromEntries(
-        Object.entries(stateMap).map(([id, name]) => [formatName(name), id])
-      ),
-    [stateMap]
-  );
+  const streamBySlug = new Map<string, StreamProps>();
+  streamsData.forEach((s) => streamBySlug.set(formatName(s.stream_name), s));
 
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      setLoadingInitialData(true);
-      try {
-        const [streamsData, citiesData, statesData] = await Promise.all([
-          getStreams(),
-          getCities(),
-          getStates(),
-        ]);
+  const cityBySlug = new Map<string, HomeCity>();
+  citiesData.forEach((c) => cityBySlug.set(formatName(c.city_name), c));
 
-        setStreamMap(
-          Object.fromEntries(
-            streamsData.map((item: HomeStream) => [
-              String(item.stream_id),
-              item.stream_name,
-            ])
-          )
-        );
-        setCityMap(
-          Object.fromEntries(
-            citiesData.map((item: HomeCity) => [
-              String(item.city_id),
-              item.city_name,
-            ])
-          )
-        );
-        setStateMap(
-          Object.fromEntries(
-            statesData.map(
-              (item: StateDto & { state_id: number; name: string }) => [
-                String(item.state_id),
-                item.name,
-              ]
-            )
-          )
-        );
-      } catch (err) {
-        console.error("Failed to fetch initial data:", err);
-        setInitialDataError(
-          err instanceof Error ? err.message : "Failed to load initial data"
-        );
-      } finally {
-        setLoadingInitialData(false);
-      }
-    };
-    fetchInitialData();
-  }, []);
+  const stateBySlug = new Map<string, StateDto>();
+  statesData.forEach((s) => stateBySlug.set(formatName(s.name), s));
 
-  const parseParams = (params: { params?: string[] }) => {
-    const paramArray = params.params || [];
-    let stream_id = "";
-    let city_id = "";
-    let state_id = "";
+  // Parse the URL params
+  let stream: { id: number; name: string } | undefined;
+  let city: { id: number; name: string } | undefined;
+  let state: { id: number; name: string } | undefined;
 
-    const joinedParams = paramArray.join("-").toLowerCase();
-    const parts = joinedParams.split("-");
+  const joinedParams = paramArray.join("-").toLowerCase();
 
-    // console.log("Joined params:", joinedParams);
-    // console.log("Parts:", parts);
+  // Pattern: [stream]-colleges-in-[location]
+  // Examples: engineering-colleges-in-delhi, colleges-in-maharashtra
 
-    if (joinedParams.startsWith("college-")) {
-      const cleanParts = joinedParams.replace("college-", "").split("-");
-      // console.log("Clean parts (college-):", cleanParts);
+  if (joinedParams.includes("colleges")) {
+    const collegesIndex = joinedParams.indexOf("colleges");
 
-      if (cleanParts.includes("colleges")) {
-        const collegesIndex = cleanParts.indexOf("colleges");
-        if (collegesIndex > 0) {
-          const stream = cleanParts.slice(0, collegesIndex).join("-");
-          stream_id = streamNameToId[stream] || stream;
-          // console.log("Stream detected:", stream_id);
-        }
-        if (collegesIndex < cleanParts.length - 1) {
-          const afterColleges = cleanParts.slice(collegesIndex + 1).join("-");
-          // console.log("After colleges:", afterColleges);
-
-          if (afterColleges.startsWith("in-")) {
-            const location = afterColleges.replace("in-", "");
-            // console.log("Location:", location);
-
-            if (cityNameToId[location]) {
-              city_id = cityNameToId[location];
-              // console.log("City ID from cityNameToId:", city_id);
-            } else if (stateNameToId[location]) {
-              state_id = stateNameToId[location];
-              // console.log("State ID from stateNameToId:", state_id);
-            } else if (!isNaN(Number(location))) {
-              if (location.length === 2) {
-                state_id = location;
-                // console.log("2-char State ID:", state_id);
-              } else if (location.length === 6) {
-                city_id = location;
-                // console.log("6-char City ID:", city_id);
-              } else if (cityMap[location]) city_id = location;
-              else if (stateMap[location]) state_id = location;
-              else if (streamMap[location]) stream_id = location;
-            } else {
-              if (stream_id && location !== stream_id) city_id = location;
-              else state_id = location;
-              // console.log("Fallback - City/State:", city_id, state_id);
-            }
-          }
-        }
-      }
-    } else if (parts.includes("colleges")) {
-      const collegesIndex = parts.indexOf("colleges");
-      // console.log("Colleges index:", collegesIndex);
-
-      if (collegesIndex > 0) {
-        const stream = parts.slice(0, collegesIndex).join("-");
-        stream_id = streamNameToId[stream] || stream;
-        // console.log("Stream detected:", stream_id);
-      }
-      if (collegesIndex < parts.length - 1) {
-        const afterColleges = parts.slice(collegesIndex + 1).join("-");
-        // console.log("After colleges:", afterColleges);
-
-        if (afterColleges.startsWith("in-")) {
-          const location = afterColleges.replace("in-", "");
-          // console.log("Location:", location);
-
-          if (cityNameToId[location]) {
-            city_id = cityNameToId[location];
-            // console.log("City ID from cityNameToId:", city_id);
-          } else if (stateNameToId[location]) {
-            state_id = stateNameToId[location];
-            // console.log("State ID from stateNameToId:", state_id);
-          } else if (!isNaN(Number(location))) {
-            if (location.length === 2) {
-              state_id = location;
-              // console.log("2-char State ID:", state_id);
-            } else if (location.length === 6) {
-              city_id = location;
-              // console.log("6-char City ID:", city_id);
-            } else if (cityMap[location]) city_id = location;
-            else if (stateMap[location]) state_id = location;
-            else if (streamMap[location] && !stream_id) stream_id = location;
-          } else {
-            if (stream_id && location !== stream_id) city_id = location;
-            else state_id = location;
-            // console.log("Fallback - City/State:", city_id, state_id);
-          }
-        }
+    // Extract stream (before "colleges")
+    if (collegesIndex > 0) {
+      const streamPart = joinedParams.slice(0, collegesIndex).replace(/-$/, "");
+      const matchedStream = streamBySlug.get(streamPart);
+      if (matchedStream) {
+        stream = {
+          id: matchedStream.stream_id,
+          name: matchedStream.stream_name,
+        };
       }
     }
 
-    // console.log("Final result:", { stream_id, city_id, state_id });
-    return { stream_id, city_id, state_id };
-  };
+    // Extract location (after "colleges-in-")
+    const inIndex = joinedParams.indexOf("-in-", collegesIndex);
+    if (inIndex !== -1) {
+      const locationPart = joinedParams.slice(inIndex + 4);
 
-  const {
-    stream_id: initialStreamId,
-    city_id: initialCityId,
-    state_id: initialStateId,
-  } = parseParams(params);
+      // Check if it's a city
+      const matchedCity = cityBySlug.get(locationPart);
+      if (matchedCity) {
+        city = { id: matchedCity.city_id, name: matchedCity.city_name };
+      } else {
+        // Check if it's a state
+        const matchedState = stateBySlug.get(locationPart);
+        if (matchedState) {
+          state = { id: matchedState.state_id, name: matchedState.name };
+        }
+      }
+    }
+  }
 
-  const [collegesData, setCollegesData] = useState<
-    CollegesResponseDTO["colleges"]
-  >([]);
-  const [totalCollegesCount, setTotalCollegesCount] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [filters, setFilters] = useState<Record<string, string>>({
-    city_id: initialCityId,
-    state_id: initialStateId,
-    stream_id: initialStreamId,
+  return { stream, city, state, streamsData, citiesData, statesData };
+}
+
+/**
+ * Build page title from filters
+ */
+function buildTitle(
+  stream?: { name: string },
+  city?: { name: string },
+  state?: { name: string },
+): string {
+  const parts: string[] = [];
+
+  if (stream) {
+    parts.push(`${stream.name} Colleges`);
+  } else {
+    parts.push("Colleges");
+  }
+
+  if (city) {
+    parts.push(`in ${city.name}`);
+  } else if (state) {
+    parts.push(`in ${state.name}`);
+  }
+
+  return parts.join(" ");
+}
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const resolvedParams = await params;
+  const paramArray = resolvedParams.params || [];
+
+  try {
+    const { stream, city, state } = await parseUrlParams(paramArray);
+
+    return generatePageMetadata({
+      type: "filter",
+      data: {
+        entityType: "college",
+        stream,
+        city,
+        state,
+        resultCount: 0, // Will be updated on client
+      },
+    });
+  } catch {
+    return {
+      title: "Colleges in India | TrueScholar",
+      description:
+        "Explore top colleges in India. Compare courses, fees, and placements.",
+    };
+  }
+}
+
+export default async function Page({ params }: PageProps) {
+  const resolvedParams = await params;
+  const paramArray = resolvedParams.params || [];
+
+  let stream: { id: number; name: string } | undefined;
+  let city: { id: number; name: string } | undefined;
+  let state: { id: number; name: string } | undefined;
+  let initialColleges: CollegeDTO[] = [];
+  let totalCount = 0;
+
+  try {
+    const parsed = await parseUrlParams(paramArray);
+    stream = parsed.stream;
+    city = parsed.city;
+    state = parsed.state;
+
+    // Fetch initial colleges (page 1) on server
+    const collegesData = await getColleges({
+      page: 1,
+      limit: 10,
+      filters: {
+        stream_name: stream?.name || "",
+        city_name: city?.name || "",
+        state_name: state?.name || "",
+      },
+    });
+
+    initialColleges = collegesData.colleges;
+    totalCount = collegesData.total_colleges_count;
+  } catch (error) {
+    console.error("Error fetching initial colleges:", error);
+    // Continue with empty data - client will show error or refetch
+  }
+
+  const title = buildTitle(stream, city, state);
+
+  // Generate schema
+  const schema = generatePageSchema({
+    type: "filter",
+    entityType: "college",
+    stream: stream?.name,
+    city: city?.name,
+    state: state?.name,
+    resultCount: totalCount,
   });
 
-  const observer = useRef<IntersectionObserver | null>(null);
-
-  const lastCollegeRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      if (loading || !hasMore) return;
-      if (observer.current) observer.current.disconnect();
-      observer.current = new IntersectionObserver(
-        (entries) => {
-          if (entries[0].isIntersecting) {
-            setPage((prev) => prev + 1);
-          }
-        },
-        { threshold: 0.1 }
-      );
-      if (node) observer.current.observe(node);
-    },
-    [loading, hasMore]
-  );
-
-  const fetchColleges = useCallback(async () => {
-    if (!hasMore || loadingInitialData) return;
-
-    setLoading(true);
-    try {
-      const data = await getColleges({
-        page,
-        limit: 10,
-        filters: {
-          city_id: filters.city_id,
-          state_id: filters.state_id,
-          stream_id: filters.stream_id,
-        },
-      });
-      setTotalCollegesCount(data.total_colleges_count);
-      setCollegesData((prev) => [...prev, ...data.colleges]);
-      setHasMore(data.colleges.length === 10);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load colleges");
-    } finally {
-      setLoading(false);
-    }
-  }, [page, filters, hasMore, loadingInitialData]);
-
-  useEffect(() => {
-    fetchColleges();
-    return () => {
-      if (observer.current) observer.current.disconnect();
-    };
-  }, [fetchColleges]);
-
-  const getTitle = () => {
-    const streamName = streamMap[filters.stream_id] || filters.stream_id || "";
-    const cityName = cityMap[filters.city_id] || filters.city_id || "";
-    const stateName = stateMap[filters.state_id] || filters.state_id || "";
-
-    let titleParts: string[] = [];
-    if (streamName) titleParts.push(`${streamName} Colleges`);
-    else titleParts.push("Colleges");
-    if (cityName) titleParts.push(`in ${cityName}`);
-    else if (stateName) titleParts.push(`in ${stateName}`);
-
-    return titleParts.join(" ");
-  };
-
-  if (loadingInitialData) {
-    return (
-      <div className="md:py-14 container-body">
-        <div className="text-center">Loading initial data...</div>
-      </div>
-    );
-  }
-
-  if (initialDataError) {
-    return (
-      <div className="md:py-14 container-body">
-        <div className="text-center text-red-500">{initialDataError}</div>
-      </div>
-    );
-  }
+  // Build breadcrumbs
+  const breadcrumbItems = buildFilterBreadcrumbTrail("colleges", {
+    stream: stream
+      ? {
+          name: stream.name,
+          slug: stream.name.toLowerCase().replace(/\s+/g, "-"),
+        }
+      : undefined,
+    city: city
+      ? { name: city.name, slug: city.name.toLowerCase().replace(/\s+/g, "-") }
+      : undefined,
+    state: state
+      ? {
+          name: state.name,
+          slug: state.name.toLowerCase().replace(/\s+/g, "-"),
+        }
+      : undefined,
+  });
 
   return (
-    <div className="md:py-14 container-body">
-      <div className="flex flex-col gap-2 md:gap-4">
-        <div className="w-full">
-          <h1 className="text-2xl font-bold mb-4 md:mb-2 capitalize">
-            {getTitle()} ({collegesData.length}/{totalCollegesCount})
-          </h1>
-          {error && <div className="text-red-500 mb-4">{error}</div>}
-          <div className="md:grid grid-cols-2 gap-4 space-y-4 md:space-y-0">
-            {collegesData.map((college, index) => (
-              <CollegeListItem
-                key={college.college_id}
-                college={college}
-                isLast={index === collegesData.length - 1}
-                lastCollegeRef={lastCollegeRef}
-              />
-            ))}
-            {loading &&
-              Array.from({ length: 6 }, (_, i) => (
-                <div
-                  key={`loading-${i}`}
-                  className="animate-pulse p-4 bg-gray-200 rounded-2xl h-32"
-                />
-              ))}
-            {!loading && collegesData.length === 0 && (
-              <div className="text-center text-gray-500 col-span-2">
-                No colleges found.
-              </div>
-            )}
-          </div>
-        </div>
+    <>
+      <JsonLd data={schema} id="college-filter-schema" />
+      <div className="container-body pt-4">
+        <Breadcrumbs items={breadcrumbItems} showSchema={false} />
       </div>
-    </div>
+      <CollegeFilterClient
+        initialColleges={initialColleges}
+        initialTotalCount={totalCount}
+        title={title}
+        filters={{
+          stream_name: stream?.name,
+          city_name: city?.name,
+          state_name: state?.name,
+        }}
+      />
+    </>
   );
-};
-
-export default function Page() {
-  return <DynamicCollegeList />;
 }

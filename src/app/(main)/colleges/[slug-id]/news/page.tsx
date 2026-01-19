@@ -4,12 +4,19 @@ import {
   getCollegeNewsById,
 } from "@/api/individual/getIndividualCollege";
 import { notFound, redirect } from "next/navigation";
-import Script from "next/script";
 import Link from "next/link";
 import CollegeHead from "@/components/page/college/assets/CollegeHead";
 import CollegeNav from "@/components/page/college/assets/CollegeNav";
 import Image from "next/image";
 import { createSlugFromTitle } from "@/components/utils/utils";
+import {
+  generatePageMetadata,
+  generatePageSchema,
+  generateErrorMetadata,
+  JsonLd,
+  buildCollegeBreadcrumbTrail,
+} from "@/lib/seo";
+import { Breadcrumbs } from "@/components/seo";
 
 const formatDateWord = (dateStr: string): string => {
   return new Date(dateStr).toLocaleDateString("en-US", {
@@ -24,50 +31,57 @@ const trimText = (text: string, maxLength: number): string => {
   return text.substring(0, maxLength) + "...";
 };
 
+const parseSlugId = (slugId: string) => {
+  const match = slugId.match(/(.+)-(\d+)$/);
+  if (!match) return null;
+  const collegeId = Number(match[2]);
+  return isNaN(collegeId) ? null : { collegeId, slug: match[1] };
+};
+
 export async function generateMetadata(props: {
   params: Promise<{ "slug-id": string }>;
-}): Promise<{
-  title: string;
-  description?: string;
-  keywords?: string;
-  alternates?: object;
-  openGraph?: object;
-}> {
+}) {
   const params = await props.params;
   const slugId = params["slug-id"];
-  const match = slugId.match(/(.+)-(\d+)$/);
-  if (!match) return { title: "College Not Found" };
+  const parsed = parseSlugId(slugId);
 
-  const collegeId = Number(match[2]);
-  if (isNaN(collegeId)) return { title: "Invalid College" };
+  if (!parsed) {
+    return generateErrorMetadata("not-found", "college");
+  }
 
-  const college = await getCollegeById(collegeId);
-  if (!college) return { title: "College Not Found" };
+  try {
+    const { collegeId } = parsed;
+    const college = await getCollegeById(collegeId);
 
-  const { college_information, scholarship_section } = college;
-  const { college_name, slug } = college_information;
-  const scholarship = scholarship_section?.[0];
-  const collegeSlug = slug.replace(/(?:-\d+)+$/, "");
+    if (!college) {
+      return generateErrorMetadata("not-found", "college");
+    }
 
-  return {
-    title: scholarship?.title || `${college_name} News`,
-    description:
-      scholarship?.meta_desc || `Latest news and updates from ${college_name}.`,
-    keywords:
-      scholarship?.seo_param ||
-      `${college_name}, news, college updates, education`,
-    alternates: {
-      canonical: `https://www.truescholar.in/colleges/${collegeSlug}-${collegeId}/news`,
-    },
-    openGraph: {
-      title: scholarship?.title || `${college_name} News`,
-      description:
-        scholarship?.meta_desc ||
-        `Latest news and updates from ${college_name}.`,
-      url: `https://www.truescholar.in/colleges/${collegeSlug}-${collegeId}/news`,
-    },
-  };
+    const { college_information } = college;
+
+    // Use the unified metadata generator (using generic tab since news isn't a standard tab)
+    return generatePageMetadata({
+      type: "college-tab",
+      data: {
+        college_id: collegeId,
+        college_name: college_information.college_name,
+        slug: college_information.slug,
+        city: college_information.city,
+        state: college_information.state,
+        logo_img: college_information.logo_img,
+        tab: "generic" as any,
+        tabContent: {
+          title: `${college_information.college_name} News`,
+          meta_desc: `Latest news and updates from ${college_information.college_name}.`,
+        },
+      },
+    });
+  } catch {
+    return generateErrorMetadata("error", "college");
+  }
 }
+
+export const revalidate = 43200; // 12 hours (revalidationTimes.collegeSub)
 
 const CollegeNews = async ({
   params,
@@ -75,12 +89,10 @@ const CollegeNews = async ({
   params: Promise<{ "slug-id": string }>;
 }) => {
   const { "slug-id": slugId } = await params;
-  const match = slugId.match(/(.+)-(\d+)$/);
-  if (!match) return notFound();
+  const parsed = parseSlugId(slugId);
+  if (!parsed) return notFound();
 
-  const collegeId = Number(match[2]);
-  if (isNaN(collegeId)) return notFound();
-
+  const { collegeId } = parsed;
   const college = await getCollegeNewsById(collegeId);
   if (!college?.college_information || !college?.news_section)
     return notFound();
@@ -103,6 +115,42 @@ const CollegeNews = async ({
     return notFound();
   }
 
+  // Generate schema using the SEO library
+  const schema = generatePageSchema({
+    type: "college-tab",
+    data: {
+      college_id: collegeId,
+      college_name: college_information.college_name,
+      slug: college_information.slug,
+      logo_img: college_information.logo_img,
+      city: college_information.city,
+      state: college_information.state,
+      location: college_information.location,
+      college_website: college_information.college_website,
+      college_email: college_information.college_email,
+      college_phone: college_information.college_phone,
+    },
+    tab: "news",
+    tabLabel: "News",
+    tabPath: "/news",
+  });
+
+  // Build breadcrumb trail
+  const breadcrumbItems = buildCollegeBreadcrumbTrail(
+    college_information.college_name,
+    correctSlugId,
+    "generic" as any
+  );
+
+  // Override the last breadcrumb to say "News"
+  if (breadcrumbItems.length > 0) {
+    breadcrumbItems[breadcrumbItems.length - 1] = {
+      name: "News",
+      href: `/colleges/${correctSlugId}/news`,
+      current: true,
+    };
+  }
+
   const extractedData = {
     college_id: college_information.college_id,
     college_name: college_information.college_name,
@@ -114,50 +162,9 @@ const CollegeNews = async ({
     college_brochure: college_information.college_brochure || "/",
   };
 
-  const jsonLD = [
-    {
-      "@context": "https://schema.org",
-      "@type": "CollegeOrUniversity",
-      name: collegeName,
-      logo: college.college_information?.logo_img,
-      url: college.college_information?.college_website,
-      email: college.college_information?.college_email,
-      telephone: college.college_information?.college_phone,
-      address: college.college_information?.location,
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "NewsArticle",
-      headline: newsList[0]?.title || `${collegeName} News`,
-      description:
-        newsList[0]?.meta_desc || `Latest updates from ${collegeName}.`,
-      author: {
-        "@type": "Person",
-        name: newsList[0]?.author_name || "Unknown Author",
-      },
-      datePublished: newsList[0]?.updated_at,
-      dateModified: newsList[0]?.updated_at,
-      image:
-        college.college_information?.logo_img ||
-        "https://www.truescholar.in/logo-dark.webp",
-      publisher: {
-        "@type": "Organization",
-        name: "TrueScholar",
-        logo: {
-          "@type": "ImageObject",
-          url: "https://www.truescholar.in/logo-dark.webp",
-        },
-      },
-    },
-  ];
-
   return (
     <div className="bg-gray-2 min-h-screen">
-      <Script
-        id="college-news-ld-json"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLD) }}
-      />
+      <JsonLd data={schema} id="college-news-schema" />
       <CollegeHead data={extractedData} />
       <CollegeNav data={college_information} />
       <div className="container-body lg:grid grid-cols-12 gap-4 pt-4">
@@ -165,6 +172,11 @@ const CollegeNews = async ({
           <Image src="/ads/static.svg" height={250} width={500} alt="ads" />
         </div>
         <div className="col-span-9 mt-4">
+          <Breadcrumbs
+            items={breadcrumbItems}
+            className="mb-4"
+            showSchema={false}
+          />
           <div className="flex gap-4 flex-col">
             {newsList.map(
               (newsItem: {

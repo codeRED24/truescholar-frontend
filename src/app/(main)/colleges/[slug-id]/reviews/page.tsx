@@ -2,13 +2,21 @@ import React from "react";
 import { getCollegeById } from "@/api/individual/getIndividualCollege";
 import CollegeHead from "@/components/page/college/assets/CollegeHead";
 import CollegeNav from "@/components/page/college/assets/CollegeNav";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
 import ReviewsContent from "@/components/page/college/assets/ReviewsContent";
 import dynamic from "next/dynamic";
+import {
+  generatePageMetadata,
+  generatePageSchema,
+  generateErrorMetadata,
+  JsonLd,
+  buildCollegeBreadcrumbTrail,
+} from "@/lib/seo";
+import { Breadcrumbs } from "@/components/seo";
 
 const CollegeNews = dynamic(
-  () => import("@/components/page/college/assets/CollegeNews")
+  () => import("@/components/page/college/assets/CollegeNews"),
 );
 
 const parseSlugId = (slugId: string) => {
@@ -21,45 +29,49 @@ const parseSlugId = (slugId: string) => {
 export async function generateMetadata(props: {
   params: Promise<{ "slug-id": string }>;
 }) {
-  const { "slug-id": slugId } = await props.params;
-
+  const params = await props.params;
+  const slugId = params["slug-id"];
   const parsed = parseSlugId(slugId);
-  if (!parsed) return notFound();
 
-  const { collegeId } = parsed;
-  const college = await getCollegeById(collegeId);
-  if (!college || !college.college_information) return notFound();
+  if (!parsed) {
+    return generateErrorMetadata("not-found", "college");
+  }
 
-  const { college_information } = college;
+  try {
+    const { collegeId } = parsed;
+    const college = await getCollegeById(collegeId);
 
-  const baseSlug =
-    college_information.slug?.replace(/(?:-\d+)+$/, "") ||
-    `${college_information.college_name}`
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, "-");
+    if (!college || !college.college_information) {
+      return generateErrorMetadata("not-found", "college");
+    }
 
-  const correctSlugId = `${baseSlug}-${collegeId}`;
-  const canonical = `https://www.truescholar.in/colleges/${correctSlugId}/reviews`;
+    const { college_information } = college;
 
-  const title = `${college_information.college_name} Reviews, Ratings & Student Feedback`;
-  const description =
-    college_information.meta_desc ||
-    `Read verified student reviews and ratings for ${college_information.college_name}.`;
-
-  return {
-    title,
-    description,
-    alternates: {
-      canonical,
-    },
-    openGraph: {
-      title,
-      description,
-      url: canonical,
-    },
-  };
+    // Use the unified metadata generator (using generic tab since reviews isn't a standard tab)
+    return generatePageMetadata({
+      type: "college-tab",
+      data: {
+        college_id: collegeId,
+        college_name: college_information.college_name,
+        slug: college_information.slug,
+        city: college_information.city,
+        state: college_information.state,
+        logo_img: college_information.logo_img,
+        tab: "generic" as any,
+        tabContent: {
+          title: `${college_information.college_name} Reviews, Ratings & Student Feedback`,
+          meta_desc:
+            college_information.meta_desc ||
+            `Read verified student reviews and ratings for ${college_information.college_name}.`,
+        },
+      },
+    });
+  } catch {
+    return generateErrorMetadata("error", "college");
+  }
 }
+
+export const revalidate = 43200; // 12 hours (revalidationTimes.collegeSub)
 
 const CollegeReviewsPage = async (props: {
   params: Promise<{ "slug-id": string }>;
@@ -80,6 +92,49 @@ const CollegeReviewsPage = async (props: {
 
   const { college_information, news_section } = college;
 
+  const baseSlug = college_information.slug?.replace(/(?:-\d+)+$/, "") || "";
+  const correctSlugId = `${baseSlug}-${collegeId}`;
+
+  if (slugId !== correctSlugId) {
+    redirect(`/colleges/${correctSlugId}/reviews`);
+  }
+
+  // Generate schema using the SEO library
+  const schema = generatePageSchema({
+    type: "college-tab",
+    data: {
+      college_id: collegeId,
+      college_name: college_information.college_name,
+      slug: college_information.slug,
+      logo_img: college_information.logo_img,
+      city: college_information.city,
+      state: college_information.state,
+      location: college_information.location,
+      college_website: college_information.college_website,
+      college_email: college_information.college_email,
+      college_phone: college_information.college_phone,
+    },
+    tab: "reviews",
+    tabLabel: "Reviews",
+    tabPath: "/reviews",
+  });
+
+  // Build breadcrumb trail
+  const breadcrumbItems = buildCollegeBreadcrumbTrail(
+    college_information.college_name,
+    correctSlugId,
+    "generic" as any,
+  );
+
+  // Override the last breadcrumb to say "Reviews"
+  if (breadcrumbItems.length > 0) {
+    breadcrumbItems[breadcrumbItems.length - 1] = {
+      name: "Reviews",
+      href: `/colleges/${correctSlugId}/reviews`,
+      current: true,
+    };
+  }
+
   const extractedData = {
     college_name: college_information.college_name,
     college_logo: college_information.logo_img,
@@ -91,17 +146,18 @@ const CollegeReviewsPage = async (props: {
     college_id: college_information.college_id,
   };
 
-  const correctSlugId = `${college_information.slug.replace(
-    /(?:-\d+)+$/,
-    ""
-  )}-${collegeId}`;
-
   return (
     <>
+      <JsonLd data={schema} id="college-reviews-schema" />
       <CollegeHead data={extractedData} />
       <CollegeNav data={college_information} />
       <section className="container-body md:grid grid-cols-4 gap-4 py-4">
-        <div className="col-span-3 order-none md:order-1">
+        <div className="col-span-3 order-0 md:order-1">
+          <Breadcrumbs
+            items={breadcrumbItems}
+            className="mb-4"
+            showSchema={false}
+          />
           <ReviewsContent
             collegeId={collegeId}
             collegeName={college_information.college_name}

@@ -2,10 +2,13 @@ import { CollegesResponseDTO } from "../@types/college-list";
 
 const createQueryString = (params: Record<string, string | number>): string =>
   new URLSearchParams(
-    Object.entries(params).reduce((acc, [key, value]) => {
-      acc[key] = String(value);
-      return acc;
-    }, {} as Record<string, string>)
+    Object.entries(params).reduce(
+      (acc, [key, value]) => {
+        acc[key] = String(value);
+        return acc;
+      },
+      {} as Record<string, string>,
+    ),
   ).toString();
 
 export const getColleges = async ({
@@ -22,7 +25,7 @@ export const getColleges = async ({
 
   if (!API_URL || !BEARER_TOKEN) {
     console.error(
-      "⚠️ Missing API URL or Bearer token. Check environment variables."
+      "⚠️ Missing API URL or Bearer token. Check environment variables.",
     );
     throw new Error("API URL or Bearer token is missing.");
   }
@@ -55,7 +58,7 @@ export const getColleges = async ({
   }
 
   const requestUrl = `${API_URL}/college-info?${createQueryString(
-    queryParams
+    queryParams,
   )}`;
 
   try {
@@ -69,6 +72,7 @@ export const getColleges = async ({
         Authorization: `Bearer ${BEARER_TOKEN}`,
         "Content-Type": "application/json",
       },
+      next: { revalidate: 60 * 60 * 24 }, // Revalidate every 5 minutes
       signal: controller.signal,
     });
 
@@ -100,7 +104,7 @@ export const getColleges = async ({
     // If it's an abort error (timeout), provide a more specific message
     if (error instanceof Error && error.name === "AbortError") {
       throw new Error(
-        "Request timeout: Failed to fetch colleges within 30 seconds"
+        "Request timeout: Failed to fetch colleges within 30 seconds",
       );
     }
 

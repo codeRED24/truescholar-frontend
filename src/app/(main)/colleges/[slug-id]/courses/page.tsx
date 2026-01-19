@@ -1,6 +1,5 @@
 import React from "react";
 import { notFound, redirect } from "next/navigation";
-import Script from "next/script";
 import { getCollegeCourses } from "@/api/individual/getIndividualCollege";
 import CollegeHead from "@/components/page/college/assets/CollegeHead";
 import CollegeNav from "@/components/page/college/assets/CollegeNav";
@@ -11,12 +10,17 @@ import CollegeCourseList from "@/components/page/college/assets/CollegeCourseLis
 import Image from "next/image";
 import CollegeNews from "@/components/page/college/assets/CollegeNews";
 import RatingComponent from "@/components/miscellaneous/RatingComponent";
-import dayjs from "dayjs";
-
-const BASE_URL = "https://www.truescholar.in";
+import {
+  generatePageMetadata,
+  generatePageSchema,
+  generateErrorMetadata,
+  JsonLd,
+  buildCollegeBreadcrumbTrail,
+} from "@/lib/seo";
+import { Breadcrumbs } from "@/components/seo";
 
 const parseSlugId = (
-  slugId: string
+  slugId: string,
 ): { collegeId: number; slug: string } | null => {
   const match = slugId.match(/(.+)-(\d+)$/);
   if (!match) return null;
@@ -24,14 +28,8 @@ const parseSlugId = (
   return isNaN(collegeId) ? null : { collegeId, slug: match[1] };
 };
 
-const generateJSONLD = (type: string, data: Record<string, any>) => ({
-  "@context": "https://schema.org",
-  "@type": type,
-  ...data,
-});
-
 const getCollegeData = async (
-  collegeId: number
+  collegeId: number,
 ): Promise<CollegeDTO | null> => {
   const data = await getCollegeCourses(collegeId);
   if (!data?.college_information) return null;
@@ -46,97 +44,50 @@ export async function generateMetadata({
   params,
 }: {
   params: Promise<{ "slug-id": string }>;
-}): Promise<{
-  title: string;
-  description?: string;
-  keywords?: string;
-  robots?: { index: boolean; follow: boolean };
-  alternates?: object;
-  openGraph?: object;
-  twitter?: object;
-}> {
+}) {
   const { "slug-id": slugId } = await params;
   const parsed = parseSlugId(slugId);
-  if (!parsed)
-    return {
-      title: "College Not Found | TrueScholar",
-      description:
-        "The requested college page could not be found. Browse our comprehensive database of colleges in India to find the right institution for your education.",
-      robots: { index: false, follow: true },
-    };
 
-  const { collegeId } = parsed;
-  const college = await getCollegeData(collegeId);
-  if (!college)
-    return {
-      title: "College Courses Information Not Available | TrueScholar",
-      description:
-        "Course information for this college is currently not available. Explore other colleges and their academic programs on TrueScholar.",
-      robots: { index: false, follow: true },
-    };
+  if (!parsed) {
+    return generateErrorMetadata("not-found", "college");
+  }
 
-  const { college_information: collegeInfo, courses_section } = college;
-  const courseSection = courses_section.content_section[0] || {};
-  const collegeName = collegeInfo.college_name || "College Courses";
+  try {
+    const { collegeId } = parsed;
+    const college = await getCollegeData(collegeId);
 
-  const location =
-    collegeInfo.city && collegeInfo.state
-      ? `${collegeInfo.city}, ${collegeInfo.state}`
-      : collegeInfo.city || collegeInfo.state || "";
+    if (!college) {
+      return generateErrorMetadata("not-found", "college");
+    }
 
-  const baseSlug = collegeInfo.slug?.replace(/(?:-\d+)+$/, "") || "";
-  const correctSlugId = `${baseSlug}-${collegeId}`;
-  const canonicalUrl = `${BASE_URL}/colleges/${correctSlugId}/courses`;
+    const { college_information, courses_section } = college;
+    const courseSection = courses_section.content_section[0];
 
-  // Create SEO-optimized title with location and keywords
-  const defaultTitle = location
-    ? `${collegeName} Courses ${dayjs().year()} - ${location} | TrueScholar`
-    : `${collegeName} Courses ${dayjs().year()} | TrueScholar`;
-
-  const metaDesc =
-    courseSection.meta_desc ||
-    `Explore comprehensive ${collegeName} courses and other undergraduate & postgraduate programs. Get detailed course curriculum, eligibility criteria, duration, and career prospects for ${collegeName}${
-      location ? ` in ${location}` : ""
-    }.`;
-
-  const ogImage = collegeInfo.logo_img || `${BASE_URL}/og-image.png`;
-
-  return {
-    title: courseSection.title || defaultTitle,
-    description: metaDesc,
-    keywords:
-      courseSection.seo_param ||
-      `${collegeName} courses, ${collegeName} B.Tech, ${collegeName} M.Tech, ${collegeName} MBA, ${collegeName} MCA, college courses India${
-        location ? `, ${location} college courses` : ""
-      }`,
-    robots: {
-      index: true,
-      follow: true,
-    },
-    alternates: { canonical: canonicalUrl },
-    openGraph: {
-      title: courseSection.title || defaultTitle,
-      description: metaDesc,
-      url: canonicalUrl,
-      type: "website",
-      siteName: "TrueScholar",
-      images: [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: `${collegeName} Courses`,
+    // Use the unified metadata generator
+    return generatePageMetadata({
+      type: "college-tab",
+      data: {
+        college_id: collegeId,
+        college_name: college_information.college_name,
+        slug: college_information.slug,
+        city: college_information.city,
+        state: college_information.state,
+        logo_img: college_information.logo_img,
+        tab: "courses",
+        tabContent: {
+          title: courseSection?.title,
+          meta_desc: courseSection?.meta_desc,
+          seo_param: courseSection?.seo_param,
         },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: courseSection.title || defaultTitle,
-      description: metaDesc,
-      images: [ogImage],
-    },
-  };
+      },
+      content: courseSection?.description,
+    });
+  } catch {
+    return generateErrorMetadata("error", "college");
+  }
 }
+
+export const revalidate = 43200; // 12 hours (revalidationTimes.collegeSub)
 
 const CourseInCollege = async ({
   params,
@@ -151,10 +102,7 @@ const CourseInCollege = async ({
   const collegeData = await getCollegeData(collegeId);
   if (!collegeData) return notFound();
 
-  const { college_information, news_section, courses_section, filter_section } =
-    collegeData;
-
-  const collegeName = parsed.slug.replace(/-\d+$/, "");
+  const { college_information, news_section, courses_section } = collegeData;
 
   const baseSlug = college_information.slug?.replace(/(?:-\d+)+$/, "") || "";
   const correctSlugId = `${baseSlug}-${collegeId}`;
@@ -163,28 +111,32 @@ const CourseInCollege = async ({
     redirect(`/colleges/${correctSlugId}/courses`);
   }
 
-  const {
-    title: courseTitle = college_information.college_name || "College Courses",
-    meta_desc: courseMetaDesc = "Find details about courses in this college.",
-    author_name: courseAuthor = "Unknown Author",
-    updated_at: courseUpdatedAt,
-  } = courses_section.content_section[0] || {};
+  // Generate schema using the SEO library
+  const schema = generatePageSchema({
+    type: "college-tab",
+    data: {
+      college_id: collegeId,
+      college_name: college_information.college_name,
+      slug: college_information.slug,
+      logo_img: college_information.logo_img,
+      city: college_information.city,
+      state: college_information.state,
+      location: college_information.location,
+      college_website: college_information.college_website,
+      college_email: college_information.college_email,
+      college_phone: college_information.college_phone,
+    },
+    tab: "courses",
+    tabLabel: "Courses",
+    tabPath: "/courses",
+  });
 
-  const jsonLD = [
-    generateJSONLD("CollegeOrUniversity", {
-      name: collegeName,
-      foundingDate: college_information.founded_year,
-      logo: college_information.logo_img,
-      description: `${college_information.type_of_institute} institute founded in ${college_information.founded_year}`,
-    }),
-    generateJSONLD("Article", {
-      headline: courseTitle,
-      description: courseMetaDesc,
-      author: { "@type": "Person", name: courseAuthor },
-      datePublished: courseUpdatedAt,
-      dateModified: courseUpdatedAt,
-    }),
-  ].filter(Boolean);
+  // Build breadcrumb trail
+  const breadcrumbItems = buildCollegeBreadcrumbTrail(
+    college_information.college_name,
+    correctSlugId,
+    "courses",
+  );
 
   const extractedData = {
     college_id: college_information.college_id,
@@ -199,15 +151,16 @@ const CourseInCollege = async ({
 
   return (
     <>
-      <Script
-        id="college-ld-json"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLD) }}
-      />
+      <JsonLd data={schema} id="college-courses-schema" />
       <CollegeHead data={extractedData} />
       <CollegeNav data={college_information} />
       <section className="container-body md:grid grid-cols-4 gap-4 py-4">
-        <div className="col-span-3 order-none md:order-1">
+        <div className="col-span-3 order-0 md:order-1">
+          <Breadcrumbs
+            items={breadcrumbItems}
+            className="mb-4"
+            showSchema={false}
+          />
           <CollegeCourseContent
             content={courses_section.content_section}
             news={news_section}
