@@ -67,6 +67,7 @@ export default function robots(): MetadataRoute.Robots {
       `${baseUrl}/sitemap-authors.xml`,
       `${baseUrl}/sitemap-cities.xml`,
       `${baseUrl}/sitemap-states.xml`,
+      `${baseUrl}/sitemap-streams.xml`,
     ],
     host: baseUrl,
   };
