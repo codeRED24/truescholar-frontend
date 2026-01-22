@@ -10,6 +10,7 @@ import type {
   CommentsResponse,
   CreateCommentDto,
   ApiResponse,
+  EntityHandle,
 } from "../types";
 import { getMockFeed, getMockComments } from "../mocks/feed-data";
 
@@ -157,6 +158,52 @@ export async function deletePost(postId: string): Promise<ApiResponse<void>> {
 }
 
 // ============================================================================
+// Media Upload API
+// ============================================================================
+
+export interface MediaUploadResponse {
+  url: string;
+  type: "image" | "video" | "document";
+}
+
+/**
+ * Upload a media file for a post.
+ * Returns the URL and type of the uploaded media.
+ * The URL should be included in the post's media array when creating/updating.
+ */
+export async function uploadPostMedia(
+  file: File
+): Promise<ApiResponse<MediaUploadResponse>> {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch(`${API_BASE}/posts/media`, {
+      method: "POST",
+      body: formData,
+      credentials: "include",
+      // Note: Don't set Content-Type header - browser sets it with boundary for FormData
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return {
+        error:
+          errorData.message || `Upload failed with status ${response.status}`,
+        statusCode: response.status,
+      };
+    }
+
+    const data = await response.json();
+    return { data };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Upload failed",
+    };
+  }
+}
+
+// ============================================================================
 // Like API
 // ============================================================================
 
@@ -170,6 +217,12 @@ export async function likePost(postId: string): Promise<ApiResponse<void>> {
     method: "POST",
     body: JSON.stringify({}), // Empty body required by Fastify when Content-Type is JSON
   });
+}
+
+
+export async function searchHandles(query: string): Promise<ApiResponse<EntityHandle[]>> {
+  if (USE_MOCK_DATA) return { data: [] };
+  return fetchApi<EntityHandle[]>(`/handles/search?q=${encodeURIComponent(query)}`);
 }
 
 export async function unlikePost(postId: string): Promise<ApiResponse<void>> {

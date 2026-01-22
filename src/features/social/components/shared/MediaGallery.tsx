@@ -5,6 +5,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { FileText, Download, Play } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import type { PostMedia } from "../../types";
 import { cn } from "@/lib/utils";
@@ -36,7 +37,13 @@ export function MediaGallery({ media, className }: MediaGalleryProps) {
             media={item}
             isLast={index === 3 && media.length > 4}
             remainingCount={media.length - 4}
-            onClick={() => setSelectedIndex(index)}
+            onClick={() => {
+              if (item.type === "document") {
+                window.open(item.url, "_blank");
+              } else {
+                setSelectedIndex(index);
+              }
+            }}
             className={getItemClass(media.length, index)}
           />
         ))}
@@ -88,6 +95,24 @@ function MediaItem({
   onClick,
   className,
 }: MediaItemProps) {
+  if (media.type === "document") {
+    return (
+      <div
+        className={cn(
+          "relative flex flex-col items-center justify-center p-4 bg-muted/50 border border-border/50 rounded-lg hover:bg-muted transition-colors cursor-pointer",
+          className
+        )}
+        onClick={onClick}
+      >
+        <FileText className="h-10 w-10 text-blue-500 mb-2" />
+        <span className="text-xs font-medium truncate max-w-full text-center px-2">
+          {media.altText || media.url.split("/").pop()}
+        </span>
+        <Download className="h-4 w-4 text-muted-foreground mt-2" />
+      </div>
+    );
+  }
+
   return (
     <button
       type="button"
@@ -106,21 +131,19 @@ function MediaItem({
         />
       ) : (
         <>
-          <Image
-            src={media.thumbnailUrl || media.url}
-            alt={media.altText || ""}
-            fill
-            className="object-cover"
-          />
+          {media.thumbnailUrl ? (
+            <Image
+              src={media.thumbnailUrl}
+              alt={media.altText || ""}
+              fill
+              className="object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-zinc-900" />
+          )}
           <div className="absolute inset-0 flex items-center justify-center bg-black/30">
             <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center">
-              <svg
-                className="w-6 h-6 text-black ml-1"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M8 5v14l11-7z" />
-              </svg>
+              <Play className="w-6 h-6 text-black fill-current ml-1" />
             </div>
           </div>
         </>

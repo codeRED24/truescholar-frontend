@@ -1,18 +1,20 @@
 import { NextResponse, NextRequest } from "next/server";
+import { getCookieCache } from "better-auth/cookies";
 
 // Auth pages - redirect to home if already logged in
 const authPages = ["/signin", "/signup", "/forgot-password", "/reset-password"];
 
-// Protected pages - redirect to signin if not logged in (add routes as needed)
+// Protected pages - redirect to signin if not logged in
 const protectedPages: string[] = ["/profile"];
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
   let pathname = url.pathname;
 
-  // Check for Better Auth session cookie
-  const sessionCookie = req.cookies.get("better-auth.session_token");
-  const isLoggedIn = !!sessionCookie?.value;
+  // Get session from cookie cache (validates JWT without DB call)
+  // This works because backend has cookieCache enabled with JWT strategy
+  const session = await getCookieCache(req);
+  const isLoggedIn = !!session;
 
   // Auth pages: redirect to home if already logged in
   if (authPages.some((page) => pathname.startsWith(page))) {
@@ -26,7 +28,6 @@ export function middleware(req: NextRequest) {
   if (protectedPages.some((page) => pathname.startsWith(page))) {
     if (!isLoggedIn) {
       url.pathname = "/signin";
-      // Store the original URL to redirect back after login
       url.searchParams.set("redirect", pathname);
       return NextResponse.redirect(url, 302);
     }
@@ -59,9 +60,8 @@ export const config = {
     "/signup",
     "/forgot-password",
     "/reset-password",
-    // Protected pages (add as needed)
-    // "/dashboard/:path*",
-    // "/profile/:path*",
+    // Protected pages
+    "/profile/:path*",
     // Colleges URL normalization
     "/colleges/:path*",
   ],

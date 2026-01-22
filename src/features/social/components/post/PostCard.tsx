@@ -27,6 +27,7 @@ import { PostActions } from "./PostActions";
 import { CommentSection } from "../comments/CommentSection";
 import { useFeedStore } from "../../stores/feed-store";
 import { followUser, unfollowUser } from "../../api/social-api";
+import { renderContentWithMentions } from "../../utils/mention-utils";
 import type { Post } from "../../types";
 import { isApiError } from "../../types";
 import { cn } from "@/lib/utils";
@@ -196,7 +197,7 @@ export function PostCard({
         {/* Content */}
         <div className="mb-3">
           <p className="whitespace-pre-wrap wrap-break-word">
-            {displayContent}
+            {renderContentWithMentions(displayContent, post.mentions)}
           </p>
           {shouldTruncate && !isExpanded && (
             <button
