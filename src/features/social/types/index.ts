@@ -43,6 +43,7 @@ export interface Post {
   commentCount: number;
   hasLiked: boolean;
   isFollowing?: boolean; // Whether current user follows the post author
+  mentions?: EntityHandle[];
   createdAt: string; // ISO date string
   updatedAt: string;
 }
@@ -138,4 +139,13 @@ export type ApiResponse<T> = ApiSuccess<T> | ApiError;
 // Type guard for API responses
 export function isApiError<T>(response: ApiResponse<T>): response is ApiError {
   return "error" in response;
+}
+
+export interface EntityHandle {
+  id: string;
+  handle: string;
+  entityType: "user" | "college" | "company";
+  entityId: string;
+  displayName: string;
+  image?: string;
 }

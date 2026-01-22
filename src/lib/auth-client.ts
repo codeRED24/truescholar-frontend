@@ -12,6 +12,9 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
 export const authClient = createAuthClient({
   baseURL: BASE_URL,
   basePath: "/api/auth",
+  fetchOptions: {
+    credentials: "include", // Ensure cookies are sent with cross-origin requests
+  },
   plugins: [
     organizationClient(),
     adminClient(),
@@ -92,7 +95,7 @@ export async function sendVerificationEmail(email: string) {
         },
         body: JSON.stringify({ email }),
         credentials: "include",
-      }
+      },
     );
 
     const text = await response.text();
@@ -158,7 +161,7 @@ export async function requestPasswordReset({
         },
         body: JSON.stringify({ email, redirectTo }),
         credentials: "include",
-      }
+      },
     );
 
     const text = await response.text();
