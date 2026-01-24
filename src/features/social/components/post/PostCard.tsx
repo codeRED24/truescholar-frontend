@@ -26,7 +26,12 @@ import { MediaGallery } from "../shared/MediaGallery";
 import { PostActions } from "./PostActions";
 import { CommentSection } from "../comments/CommentSection";
 import { useFeedStore } from "../../stores/feed-store";
-import { followUser, unfollowUser } from "../../api/social-api";
+import {
+  followUser,
+  unfollowUser,
+  followCollege,
+  unfollowCollege,
+} from "../../api/social-api";
 import { renderContentWithMentions } from "../../utils/mention-utils";
 import { Author, Post } from "../../types";
 import { isApiError } from "../../types";
@@ -60,6 +65,7 @@ export function PostCard({
   const [isFollowing, setIsFollowing] = useState(post.isFollowing ?? false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const isCommentsExpanded = useFeedStore((s) => s.isCommentsExpanded(post.id));
+  const reactionAuthor = useFeedStore((s) => s.reactionAuthor);
 
   const isCollegePost = post.authorType === "college" && !!post.taggedCollege;
   const isOwner = currentUserId === post.author.id; // User is still the creator
@@ -91,35 +97,42 @@ export function PostCard({
     e.stopPropagation();
     if (isFollowLoading) return;
 
-    // TODO: Implement follow college logic here if isCollegePost
-    // For now, only user following is implemented in this component
-    if (isCollegePost) {
-        toast("Following colleges from posts not yet implemented");
-        return;
-    }
-
     setIsFollowLoading(true);
     const wasFollowing = isFollowing;
 
     // Optimistic update
     setIsFollowing(!wasFollowing);
 
+    const followOptions =
+      reactionAuthor?.type === "college"
+        ? {
+            authorType: "college",
+            followerCollegeId: parseInt(reactionAuthor.id),
+          }
+        : undefined;
+
     try {
       if (wasFollowing) {
-        const result = await unfollowUser(post.author.id);
+        const result = isCollegePost
+          ? await unfollowCollege(post.taggedCollege!.college_id, followOptions)
+          : await unfollowUser(post.author.id, followOptions);
+
         if (isApiError(result)) {
           setIsFollowing(true); // Revert on error
           toast.error(result.error || "Failed to unfollow");
         } else {
-          toast.success(`Unfollowed ${post.author.name}`);
+          toast.success(`Unfollowed ${displayAuthor.name}`);
         }
       } else {
-        const result = await followUser(post.author.id);
+        const result = isCollegePost
+          ? await followCollege(post.taggedCollege!.college_id, followOptions)
+          : await followUser(post.author.id, followOptions);
+
         if (isApiError(result)) {
           setIsFollowing(false); // Revert on error
           toast.error(result.error || "Failed to follow");
         } else {
-          toast.success(`Following ${post.author.name}`);
+          toast.success(`Following ${displayAuthor.name}`);
         }
       }
     } catch {

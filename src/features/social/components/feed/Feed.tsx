@@ -73,7 +73,10 @@ export function Feed({
   const virtualizer = useWindowVirtualizer({
     count: totalCount,
     estimateSize: (index) => {
-      if (index === items.length) return LOADER_HEIGHT;
+      if (index === items.length) {
+        // Larger height for skeleton list to prevent scroll jumping
+        return isFetchingNextPage ? ESTIMATED_POST_HEIGHT * 3 : LOADER_HEIGHT;
+      }
       const item = items[index];
       if (item?.type === "suggestions") return ESTIMATED_SUGGESTION_HEIGHT;
       return ESTIMATED_POST_HEIGHT;
@@ -110,7 +113,7 @@ export function Feed({
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
-  if (isLoading || isFetching) {
+  if (isLoading) {
     return <PostSkeletonList count={3} />;
   }
 
@@ -148,20 +151,26 @@ export function Feed({
             return (
               <div
                 key="loader"
+                data-index={virtualItem.index}
+                ref={virtualizer.measureElement}
                 style={{
                   position: "absolute",
                   top: 0,
                   left: 0,
                   width: "100%",
-                  height: `${virtualItem.size}px`,
                   transform: `translateY(${
                     virtualItem.start - virtualizer.options.scrollMargin
                   }px)`,
                 }}
-                className="flex items-center justify-center py-6"
+                className={cn(
+                  "flex items-center justify-center",
+                  !isFetchingNextPage && "py-6"
+                )}
               >
                 {isFetchingNextPage ? (
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  <div className="w-full">
+                    <PostSkeletonList count={3} />
+                  </div>
                 ) : hasNextPage ? (
                   <span className="text-sm text-muted-foreground">
                     Scroll for more
