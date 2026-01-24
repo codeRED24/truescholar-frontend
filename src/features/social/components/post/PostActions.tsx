@@ -9,6 +9,7 @@ import { useLikePost } from "../../hooks/use-likes";
 import { useFeedStore } from "../../stores/feed-store";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { ReactionAuthorSelector } from "./ReactionAuthorSelector";
 
 interface PostActionsProps {
   postId: string;
@@ -30,6 +31,17 @@ export function PostActions({
     hasLiked
   );
   const toggleExpandedComments = useFeedStore((s) => s.toggleExpandedComments);
+  const reactionAuthor = useFeedStore((s) => s.reactionAuthor);
+
+  const handleLike = () => {
+    toggleLike({
+      authorType: reactionAuthor?.type,
+      collegeId:
+        reactionAuthor?.type === "college"
+          ? parseInt(reactionAuthor.id)
+          : undefined,
+    });
+  };
 
   const handleShare = async () => {
     try {
@@ -52,21 +64,24 @@ export function PostActions({
       )}
 
       {/* Action buttons - evenly spaced */}
-      <div className="flex items-center border-t">
+      <div className="flex items-center border-t relative">
+        {/* Reaction Author Selector */}
+        <ReactionAuthorSelector className="ml-3 my-2" />
+
         {/* Like Button */}
         <Button
           variant="ghost"
-          onClick={toggleLike}
+          onClick={handleLike}
           disabled={isLiking}
           className={cn(
-            "flex-1 rounded-none h-11 gap-2 font-medium",
+            "flex-1 rounded-none h-11 gap-2 font-medium px-2",
             hasLiked
               ? "text-primary hover:text-foreground"
               : "text-muted-foreground hover:text-foreground"
           )}
         >
           <ThumbsUp className={cn("h-5 w-5", hasLiked && "fill-current")} />
-          <span>Like</span>
+          <span className="hidden sm:inline">Like</span>
         </Button>
 
         {/* Comment Button */}

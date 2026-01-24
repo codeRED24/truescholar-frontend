@@ -45,8 +45,15 @@ export default function FeedPage() {
     following: 124,
   };
 
-  const handleAuthorClick = (authorId: string) => {
-    router.push(`/profile/${authorId}`);
+  const handleAuthorClick = (
+    authorId: string,
+    type: "user" | "college" = "user",
+  ) => {
+    if (type === "college") {
+      router.push(`/colleges/${authorId}`);
+    } else {
+      router.push(`/profile/${authorId}`);
+    }
   };
 
   const handlePostEdit = (post: any) => {

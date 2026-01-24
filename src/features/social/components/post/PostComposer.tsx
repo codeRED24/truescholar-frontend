@@ -1,45 +1,36 @@
 // Post Composer Component
 // Modal/form for creating new posts with media upload
+// Supports multi-step flow for settings
 
 "use client";
 
 import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { MentionTextarea } from "@/components/ui/mention-textarea";
-import {
-  Image as ImageIcon,
-  X,
-  Globe,
-  Users,
-  Lock,
-  Loader2,
-  Smile,
-  Sparkles,
-  MoreHorizontal,
-  Video,
-  FileText,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { X, Loader2 } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
-import { SimpleDropdown } from "@/components/ui/simple-dropdown";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useCreatePost, useUpdatePost } from "../../hooks/use-post";
-import { uploadPostMedia, searchHandles } from "../../api/social-api";
+import { uploadPostMedia } from "../../api/social-api";
+import { useCollegeMemberships } from "../../hooks/use-memberships";
 import {
   isApiError,
   type PostVisibility,
   Author,
   Post,
   PostMedia,
+  Member,
+  AuthorType,
 } from "../../types";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+
+// Sub-components
+import { ComposerHeader } from "./ComposerHeader";
+import { ComposerToolbar } from "./ComposerToolbar";
+import { MediaPreviewGrid, UploadedMedia } from "./MediaPreviewGrid";
+import { PostSettingsModal } from "./PostSettingsModal";
+import { PostingAsModal } from "./PostingAsModal";
+import { CollegeSelectorModal } from "./CollegeSelectorModal";
 
 interface PostComposerProps {
   isOpen: boolean;
@@ -50,24 +41,7 @@ interface PostComposerProps {
 
 interface PostFormData {
   content: string;
-  visibility: PostVisibility;
 }
-
-// Track uploaded media with upload status
-interface UploadedMedia {
-  file: File;
-  previewUrl: string;
-  uploadedUrl?: string;
-  type?: "image" | "video" | "document";
-  isUploading: boolean;
-  error?: string;
-}
-
-const visibilityOptions = [
-  { value: "public" as const, label: "Anyone", icon: Globe },
-  { value: "followers" as const, label: "Followers only", icon: Users },
-  { value: "private" as const, label: "Only me", icon: Lock },
-];
 
 export function PostComposer({
   isOpen,
@@ -75,9 +49,33 @@ export function PostComposer({
   currentUser,
   postToEdit,
 }: PostComposerProps) {
+  // --- State ---
   const [uploadedMedia, setUploadedMedia] = useState<UploadedMedia[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { data: allMemberships = [] } = useCollegeMemberships();
+  
+  // Filter for admin memberships only
+  const collegeMemberships = allMemberships.filter(
+    (m) => m.role === "college_admin"
+  );
+  
+  // Settings State
+  const [visibility, setVisibility] = useState<PostVisibility>("public");
+  const [selectedAuthor, setSelectedAuthor] = useState<{
+    type: AuthorType;
+    id: string; // userId or collegeId
+    name: string;
+    image?: string;
+  }>({
+    type: "user",
+    id: currentUser?.id || "",
+    name: currentUser?.name || "You",
+    image: currentUser?.image,
+  });
 
+  // Modal State
+  const [activeModal, setActiveModal] = useState<"composer" | "settings" | "postingAs" | "collegeSelector">("composer");
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const createPost = useCreatePost();
   const updatePost = useUpdatePost();
   const isEditing = !!postToEdit;
@@ -85,19 +83,40 @@ export function PostComposer({
   const [searchValue, setSearchValue] = useState("");
   const [suggestions, setSuggestions] = useState<any[]>([]);
 
+  // --- Effects ---
+
   useEffect(() => {
-    if (!searchValue) {
-      setSuggestions([]);
-      return;
+    // Reset state when opening fresh
+    if (isOpen && !isEditing) {
+      // Reset to defaults
+      setVisibility("public");
+      setSelectedAuthor({
+        type: "user",
+        id: currentUser?.id || "",
+        name: currentUser?.name || "You",
+        image: currentUser?.image,
+      });
+      setUploadedMedia([]);
+      setActiveModal("composer");
+    } else if (isOpen && isEditing && postToEdit) {
+      // Load existing post data
+      setVisibility(postToEdit.visibility);
+      // We don't support changing author of existing post
+      setSelectedAuthor({
+        type: postToEdit.authorType || "user",
+        id: postToEdit.authorType === "college" 
+          ? postToEdit.taggedCollege?.college_id.toString() || "" 
+          : postToEdit.author.id,
+        name: postToEdit.authorType === "college" 
+          ? postToEdit.taggedCollege?.college_name || "College" 
+          : postToEdit.author.name,
+        image: postToEdit.authorType === "college"
+          ? postToEdit.taggedCollege?.logo_img
+          : postToEdit.author.image,
+      });
+      // Load existing media as read-only preview is handled in render
     }
-    const timer = setTimeout(async () => {
-      const response = await searchHandles(searchValue);
-      if (!isApiError(response)) {
-        setSuggestions(response.data);
-      }
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchValue]);
+  }, [isOpen, isEditing, postToEdit, currentUser]);
 
   const {
     register,
@@ -109,32 +128,31 @@ export function PostComposer({
   } = useForm<PostFormData>({
     defaultValues: {
       content: postToEdit?.content || "",
-      visibility: postToEdit?.visibility || "public",
     },
   });
 
-  // Reset/Prefill form when opening
+  // Update form content when postToEdit changes
   useEffect(() => {
-    if (isOpen) {
-      if (postToEdit) {
-        setValue("content", postToEdit.content);
-        setValue("visibility", postToEdit.visibility);
-      } else {
-        reset({ content: "", visibility: "public" });
-        setUploadedMedia([]);
-      }
+    if (postToEdit) {
+      setValue("content", postToEdit.content);
     }
-  }, [isOpen, postToEdit, setValue, reset]);
+  }, [postToEdit, setValue]);
 
   const content = watch("content");
-  const visibility = watch("visibility");
   const charCount = content?.length || 0;
   const maxChars = 3000;
-
-  // Check if any media is still uploading
   const isMediaUploading = uploadedMedia.some((m) => m.isUploading);
 
-  // Upload a single file
+  // --- Handlers ---
+
+  const handleClose = () => {
+    reset();
+    uploadedMedia.forEach((m) => URL.revokeObjectURL(m.previewUrl));
+    setUploadedMedia([]);
+    setActiveModal("composer");
+    onClose();
+  };
+
   const uploadFile = async (file: File, index: number) => {
     const result = await uploadPostMedia(file);
 
@@ -167,7 +185,6 @@ export function PostComposer({
       return;
     }
 
-    // Add files to state with uploading status
     const newMedia: UploadedMedia[] = files.map((file) => ({
       file,
       previewUrl: URL.createObjectURL(file),
@@ -177,12 +194,10 @@ export function PostComposer({
     const startIndex = uploadedMedia.length;
     setUploadedMedia((prev) => [...prev, ...newMedia]);
 
-    // Start uploading each file
     files.forEach((file, i) => {
       uploadFile(file, startIndex + i);
     });
 
-    // Reset input so same file can be selected again
     e.target.value = "";
   };
 
@@ -194,16 +209,8 @@ export function PostComposer({
     setUploadedMedia((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleClose = () => {
-    reset();
-    uploadedMedia.forEach((m) => URL.revokeObjectURL(m.previewUrl));
-    setUploadedMedia([]);
-    onClose();
-  };
-
   const onSubmit = async (data: PostFormData) => {
     try {
-      // Build media array from successfully uploaded files
       const media: PostMedia[] = uploadedMedia
         .filter((m) => m.uploadedUrl && !m.error)
         .map((m) => ({
@@ -216,14 +223,19 @@ export function PostComposer({
           postId: postToEdit.id,
           data: {
             content: data.content,
-            visibility: data.visibility,
+            visibility: visibility,
           },
         });
       } else {
         await createPost.mutateAsync({
           content: data.content,
-          visibility: data.visibility,
+          visibility: visibility,
           media: media.length > 0 ? media : undefined,
+          authorType: selectedAuthor.type,
+          taggedCollegeId:
+            selectedAuthor.type === "college"
+              ? parseInt(selectedAuthor.id)
+              : undefined,
         });
       }
       handleClose();
@@ -232,17 +244,59 @@ export function PostComposer({
     }
   };
 
-  const userInitials =
-    currentUser?.name
-      ?.split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2) || "?";
+  const isPending = createPost.isPending || updatePost.isPending || isMediaUploading;
 
-  const isPending =
-    createPost.isPending || updatePost.isPending || isMediaUploading;
+  // --- Render ---
 
+  // 1. Settings Modal
+  if (activeModal === "settings") {
+    return (
+      <PostSettingsModal
+        isOpen={isOpen}
+        onClose={() => setActiveModal("composer")}
+        visibility={visibility}
+        setVisibility={setVisibility}
+        selectedAuthor={selectedAuthor}
+        onOpenAuthorSelection={() => setActiveModal("postingAs")}
+        onOpenCollegeSelection={() => setActiveModal("collegeSelector")}
+      />
+    );
+  }
+
+  // 2. Posting As Modal
+  if (activeModal === "postingAs") {
+    return (
+        <PostingAsModal
+            isOpen={isOpen}
+            onClose={() => setActiveModal("composer")}
+            onBack={() => setActiveModal("settings")}
+            currentUser={{
+                id: currentUser?.id || "",
+                name: currentUser?.name || "You",
+                image: currentUser?.image
+            }}
+            collegeMemberships={collegeMemberships}
+            selectedAuthor={selectedAuthor}
+            onSelect={(author) => {
+                setSelectedAuthor(author);
+                setActiveModal("settings");
+            }}
+        />
+    );
+  }
+
+  // 3. College Selector Modal
+  if (activeModal === "collegeSelector") {
+      return (
+          <CollegeSelectorModal
+            isOpen={isOpen}
+            onClose={() => setActiveModal("composer")}
+            onBack={() => setActiveModal("settings")}
+          />
+      );
+  }
+
+  // 4. Main Composer Modal
   return (
     <Modal
       isOpen={isOpen}
@@ -263,26 +317,14 @@ export function PostComposer({
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-          {/* Header: User Info & Visibility */}
-          <div className="flex items-center gap-3">
-            <Avatar className="h-12 w-12 border border-border/50">
-              <AvatarImage src={currentUser?.image ?? undefined} />
-              <AvatarFallback className="bg-blue-600 text-white font-semibold">
-                {userInitials}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col items-start">
-              <span className="font-bold text-lg leading-none mb-1 text-foreground">
-                {currentUser?.name || "You"}
-              </span>
-              <SimpleDropdown
-                value={visibility}
-                onChange={(val) => setValue("visibility", val)}
-                options={visibilityOptions}
-                triggerClassName="text-muted-foreground/80 hover:text-foreground font-medium transition-colors"
-              />
-            </div>
-          </div>
+          {/* Header */}
+          <ComposerHeader 
+            authorName={selectedAuthor.name}
+            authorImage={selectedAuthor.image}
+            authorType={selectedAuthor.type}
+            visibility={visibility}
+            onAuthorClick={() => !isEditing && setActiveModal("settings")}
+          />
 
           {/* Content Input */}
           <div className="py-2 min-h-[160px]">
@@ -307,117 +349,41 @@ export function PostComposer({
             )}
           </div>
 
-          {/* Media Previews (Read Only for existing posts for now) */}
+          {/* Media Previews (Existing - Read Only) */}
           {postToEdit?.media && postToEdit.media.length > 0 && isEditing && (
-            <div className="grid gap-2 mb-4">
-              <p className="text-xs text-muted-foreground mb-1">
-                Existing media (cannot edit yet)
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                {postToEdit.media.map((media, i) => (
-                  <div
-                    key={i}
-                    className="aspect-video bg-muted rounded overflow-hidden"
-                  >
-                    <img
-                      src={media.url}
-                      alt="Existing"
-                      className="w-full h-full object-cover opacity-80"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+             <div className="mb-4">
+               <p className="text-xs text-muted-foreground mb-1">
+                 Existing media (cannot edit yet)
+               </p>
+               <div className="grid grid-cols-2 gap-2">
+                 {postToEdit.media.map((media, i) => (
+                   <div
+                     key={i}
+                     className="aspect-video bg-muted rounded overflow-hidden"
+                   >
+                     <img
+                       src={media.url}
+                       alt="Existing"
+                       className="w-full h-full object-cover opacity-80"
+                     />
+                   </div>
+                 ))}
+               </div>
+             </div>
+           )}
 
           {/* New Media Previews */}
-          {uploadedMedia.length > 0 && (
-            <div
-              className={cn(
-                "grid gap-2 mb-4",
-                uploadedMedia.length === 1 && "grid-cols-1",
-                uploadedMedia.length === 2 && "grid-cols-2",
-                uploadedMedia.length >= 3 && "grid-cols-2",
-              )}
-            >
-              {uploadedMedia.map((media, index) => (
-                <div
-                  key={index}
-                  className={cn(
-                    "relative rounded-lg overflow-hidden bg-muted flex items-center justify-center",
-                    uploadedMedia.length === 1 && "aspect-video",
-                    uploadedMedia.length >= 2 && "aspect-square",
-                  )}
-                >
-                  {media.file.type.startsWith("image/") ? (
-                    <img
-                      src={media.previewUrl}
-                      alt={`Preview ${index + 1}`}
-                      className={cn(
-                        "w-full h-full object-cover",
-                        media.isUploading && "opacity-50",
-                      )}
-                    />
-                  ) : media.file.type.startsWith("video/") ? (
-                    <div className="relative w-full h-full">
-                      <video
-                        src={media.previewUrl}
-                        className={cn(
-                          "w-full h-full object-cover",
-                          media.isUploading && "opacity-50",
-                        )}
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <Video className="h-8 w-8 text-white/70" />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center gap-2 p-4 text-center">
-                      <FileText className="h-10 w-10 text-blue-500" />
-                      <span className="text-xs font-medium truncate max-w-full px-2">
-                        {media.file.name}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Upload spinner overlay */}
-                  {media.isUploading && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                      <Loader2 className="h-8 w-8 animate-spin text-white" />
-                    </div>
-                  )}
-                  {/* Error indicator */}
-                  {media.error && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-red-500/30">
-                      <span className="text-xs text-white bg-red-600 px-2 py-1 rounded">
-                        Upload failed
-                      </span>
-                    </div>
-                  )}
-                  {/* Success checkmark */}
-                  {media.uploadedUrl && !media.isUploading && (
-                    <div className="absolute bottom-2 left-2 h-5 w-5 rounded-full bg-green-500 flex items-center justify-center">
-                      <span className="text-white text-xs">✓</span>
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => removeMedia(index)}
-                    className="absolute top-2 right-2 h-6 w-6 rounded-full bg-black/70 flex items-center justify-center text-white hover:bg-black/90 transition-colors"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+          <MediaPreviewGrid 
+            media={uploadedMedia}
+            onRemove={removeMedia}
+          />
         </form>
       </div>
 
       {/* Footer Toolbar */}
       <div className="flex items-center justify-between px-6 py-4 border-t border-border/60 bg-muted/5 dark:bg-muted/10 gap-4 shrink-0">
         <div className="flex items-center gap-1 flex-1 overflow-x-auto min-w-0 no-scroll-bar">
-          {!isEditing && (
+          {!isEditing ? (
             <>
               <input
                 ref={fileInputRef}
@@ -427,34 +393,12 @@ export function PostComposer({
                 className="hidden"
                 onChange={handleMediaSelect}
               />
-
-              <ToolbarButton
-                icon={Smile}
-                tooltip="Add emoji"
-                onClick={() => toast("Emoji picker coming soon")}
+              <ComposerToolbar 
+                onMediaSelect={() => fileInputRef.current?.click()}
+                isMediaDisabled={uploadedMedia.length >= 4}
               />
-
-              <Button
-                type="button"
-                variant="ghost"
-                className="h-10 gap-2 rounded-lg text-foreground hover:bg-muted/60 px-3 mx-1 font-semibold shrink-0 transition-colors"
-                onClick={() => toast("AI Rewrite coming soon")}
-              >
-                <Sparkles className="h-4 w-4" />
-                <span className="text-sm">Rewrite with AI</span>
-              </Button>
-
-              <ToolbarButton
-                icon={ImageIcon}
-                tooltip="Add media (Image, Video, PDF)"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploadedMedia.length >= 4}
-              />
-              {/* More buttons... */}
-              <ToolbarButton icon={MoreHorizontal} tooltip="More options" />
             </>
-          )}
-          {isEditing && (
+          ) : (
             <p className="text-sm text-muted-foreground italic">
               Editing mode (media changes disabled)
             </p>
@@ -467,52 +411,21 @@ export function PostComposer({
               {charCount}/{maxChars}
             </span>
           )}
-          <Button
+          <button
             onClick={handleSubmit(onSubmit)}
             disabled={!content?.trim() || charCount > maxChars || isPending}
-            className="rounded-full px-8 py-5 font-bold text-base bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm"
+            className={cn(
+                "rounded-full px-6 py-2 font-bold text-base shadow-sm transition-all flex items-center gap-2",
+                !content?.trim() || charCount > maxChars || isPending 
+                    ? "bg-muted text-muted-foreground cursor-not-allowed"
+                    : "bg-emerald-700 hover:bg-emerald-800 text-white"
+            )}
           >
-            {isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
             {isEditing ? "Save" : "Post"}
-          </Button>
+          </button>
         </div>
       </div>
     </Modal>
-  );
-}
-
-interface ToolbarButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  icon: React.ElementType;
-  tooltip: string;
-}
-
-function ToolbarButton({
-  icon: Icon,
-  tooltip,
-  className,
-  ...props
-}: ToolbarButtonProps) {
-  return (
-    <TooltipProvider delayDuration={300}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className={cn(
-              "h-10 w-10 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full shrink-0",
-              className,
-            )}
-            {...props}
-          >
-            <Icon className="h-5 w-5" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{tooltip}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
   );
 }

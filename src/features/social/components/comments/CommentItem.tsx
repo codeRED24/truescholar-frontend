@@ -29,6 +29,7 @@ import {
   useCreateComment,
   useReplies,
 } from "../../hooks/use-comments";
+import { useFeedStore } from "../../stores/feed-store"; // Added
 import type { Comment } from "../../types";
 import { cn } from "@/lib/utils";
 
@@ -53,6 +54,8 @@ export function CommentItem({
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
   const [replyContent, setReplyContent] = useState("");
+
+  const reactionAuthor = useFeedStore((s) => s.reactionAuthor); // Added
 
   const toggleLike = useToggleCommentLike(postId);
   const deleteComment = useDeleteComment(postId);
@@ -85,6 +88,11 @@ export function CommentItem({
       commentId: comment.id,
       isLiked: comment.hasLiked,
       parentId: comment.parentId || undefined,
+      authorType: reactionAuthor?.type,
+      collegeId:
+        reactionAuthor?.type === "college"
+          ? parseInt(reactionAuthor.id)
+          : undefined,
     });
   };
 
@@ -105,6 +113,11 @@ export function CommentItem({
     await createComment.mutateAsync({
       content: replyContent.trim(),
       parentId: comment.id,
+      authorType: reactionAuthor?.type,
+      collegeId:
+        reactionAuthor?.type === "college"
+          ? parseInt(reactionAuthor.id)
+          : undefined,
     });
     setReplyContent("");
     setShowReplyForm(false);

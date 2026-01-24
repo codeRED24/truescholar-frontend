@@ -16,6 +16,7 @@ import {
   useFlattenedComments,
   useCreateComment,
 } from "../../hooks/use-comments";
+import { useFeedStore } from "../../stores/feed-store"; // Added
 import { CommentItem } from "./CommentItem";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +32,7 @@ export function CommentSection({
   className,
 }: CommentSectionProps) {
   const [newComment, setNewComment] = useState("");
+  const reactionAuthor = useFeedStore((s) => s.reactionAuthor); // Added
 
   const {
     comments,
@@ -49,7 +51,14 @@ export function CommentSection({
     e.preventDefault();
     if (!newComment.trim() || newComment.length > MAX_CHARS) return;
 
-    await createComment.mutateAsync({ content: newComment.trim() });
+    await createComment.mutateAsync({
+      content: newComment.trim(),
+      authorType: reactionAuthor?.type,
+      collegeId:
+        reactionAuthor?.type === "college"
+          ? parseInt(reactionAuthor.id)
+          : undefined,
+    });
     setNewComment("");
   };
 

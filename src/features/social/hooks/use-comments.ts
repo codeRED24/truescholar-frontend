@@ -3,6 +3,7 @@
 
 "use client";
 
+import { useEffect, useRef } from "react";
 import {
   useQuery,
   useInfiniteQuery,
@@ -19,6 +20,8 @@ import {
 } from "../api/social-api";
 import { isApiError, type Comment, type CreateCommentDto } from "../types";
 import { postKeys, useUpdatePostInCache } from "./use-post";
+import { membershipKeys } from "./use-memberships";
+import { useFeedStore } from "../stores/feed-store"; // Added import
 
 // Query key factory
 export const commentKeys = {
@@ -32,10 +35,19 @@ export const commentKeys = {
  * Hook for fetching comments with infinite scroll
  */
 export function useComments(postId: string, options?: { enabled?: boolean }) {
-  return useInfiniteQuery({
+  const reactionAuthor = useFeedStore((s) => s.reactionAuthor);
+  const prevAuthorRef = useRef<{ type?: string; id?: string } | null>(null);
+
+  const query = useInfiniteQuery({
     queryKey: commentKeys.list(postId),
     queryFn: async ({ pageParam }) => {
-      const result = await getComments(postId, pageParam);
+      const result = await getComments(postId, pageParam, 10, {
+        authorType: reactionAuthor?.type,
+        collegeId:
+          reactionAuthor?.type === "college"
+            ? parseInt(reactionAuthor.id)
+            : undefined,
+      });
 
       if (isApiError(result)) {
         throw new Error(result.error);
@@ -47,6 +59,24 @@ export function useComments(postId: string, options?: { enabled?: boolean }) {
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     enabled: options?.enabled ?? !!postId,
   });
+
+  // Refetch when identity changes
+  useEffect(() => {
+    const prev = prevAuthorRef.current;
+    const curr = reactionAuthor;
+
+    if (prev === null) {
+      prevAuthorRef.current = curr;
+      return;
+    }
+
+    if (prev?.id !== curr?.id || prev?.type !== curr?.type) {
+      prevAuthorRef.current = curr;
+      query.refetch();
+    }
+  }, [reactionAuthor, query]);
+
+  return query;
 }
 
 /**
@@ -77,14 +107,24 @@ export function useCreateComment(postId: string) {
   const updatePostInCache = useUpdatePostInCache();
 
   return useMutation({
-    mutationFn: async (data: CreateCommentDto) => {
+    mutationFn: async (
+      data: CreateCommentDto & { authorType?: string; collegeId?: number }
+    ) => {
       const result = await createComment(postId, data);
 
       if (isApiError(result)) {
-        throw new Error(result.error);
+        const error = new Error(result.error);
+        (error as any).statusCode = result.statusCode;
+        throw error;
       }
 
       return result.data;
+    },
+    onError: async (error: any) => {
+      // Refresh memberships on 403 Forbidden
+      if (error?.statusCode === 403) {
+        queryClient.invalidateQueries({ queryKey: membershipKeys.mine() });
+      }
     },
     onSuccess: () => {
       // Invalidate comments
@@ -143,23 +183,38 @@ export function useDeleteComment(postId: string) {
  */
 export function useToggleCommentLike(postId: string) {
   const queryClient = useQueryClient();
+  const reactionAuthor = useFeedStore((s) => s.reactionAuthor);
+
+  const authorContext = reactionAuthor
+    ? {
+        type: reactionAuthor.type,
+        id: reactionAuthor.id,
+      }
+    : undefined;
 
   return useMutation({
     mutationFn: async ({
       commentId,
       isLiked,
       parentId,
+      authorType,
+      collegeId,
     }: {
       commentId: string;
       isLiked: boolean;
       parentId?: string;
+      authorType?: string;
+      collegeId?: number;
     }) => {
+      const options = { authorType, collegeId };
       const result = isLiked
-        ? await unlikeComment(postId, commentId)
-        : await likeComment(postId, commentId);
+        ? await unlikeComment(postId, commentId, options)
+        : await likeComment(postId, commentId, options);
 
       if (isApiError(result)) {
-        throw new Error(result.error);
+        const error = new Error(result.error);
+        (error as any).statusCode = result.statusCode;
+        throw error;
       }
     },
 
@@ -167,7 +222,12 @@ export function useToggleCommentLike(postId: string) {
     onMutate: async ({ commentId, isLiked, parentId }) => {
       // If it's a reply, update the specific replies cache
       if (parentId) {
+        // We use setQueriesData with fuzzy matching to cover all contexts,
+        // but targeting the specific one is better if possible.
+        // However, since we want to be robust, let's try fuzzy match on the base parts.
+        // Actually, we can use the current context since that's what the user is seeing.
         const repliesKey = commentKeys.replies(postId, parentId);
+
         await queryClient.cancelQueries({ queryKey: repliesKey });
 
         queryClient.setQueryData(
@@ -191,6 +251,7 @@ export function useToggleCommentLike(postId: string) {
       }
 
       // Always try to update the main list as well (for root comments or flat views)
+      // Use fuzzy matching for the list to be safe, or specific context
       await queryClient.cancelQueries({ queryKey: commentKeys.list(postId) });
 
       queryClient.setQueriesData(
@@ -223,7 +284,12 @@ export function useToggleCommentLike(postId: string) {
       );
     },
 
-    onError: (_err, { parentId }) => {
+    onError: async (error: any, { parentId }) => {
+      // Refresh memberships on 403 Forbidden
+      if (error?.statusCode === 403) {
+        queryClient.invalidateQueries({ queryKey: membershipKeys.mine() });
+      }
+
       if (parentId) {
         queryClient.invalidateQueries({
           queryKey: commentKeys.replies(postId, parentId),
@@ -242,10 +308,19 @@ export function useReplies(
   commentId: string,
   options?: { enabled?: boolean }
 ) {
-  return useQuery({
+  const reactionAuthor = useFeedStore((s) => s.reactionAuthor);
+  const prevAuthorRef = useRef<{ type?: string; id?: string } | null>(null);
+
+  const query = useQuery({
     queryKey: commentKeys.replies(postId, commentId),
     queryFn: async () => {
-      const result = await getReplies(postId, commentId);
+      const result = await getReplies(postId, commentId, 20, {
+        authorType: reactionAuthor?.type,
+        collegeId:
+          reactionAuthor?.type === "college"
+            ? parseInt(reactionAuthor.id)
+            : undefined,
+      });
 
       if (isApiError(result)) {
         throw new Error(result.error);
@@ -255,4 +330,24 @@ export function useReplies(
     },
     enabled: options?.enabled ?? false, // Only fetch when explicitly enabled
   });
+
+  // Refetch when identity changes
+  useEffect(() => {
+    const prev = prevAuthorRef.current;
+    const curr = reactionAuthor;
+
+    if (prev === null) {
+      prevAuthorRef.current = curr;
+      return;
+    }
+
+    if (prev?.id !== curr?.id || prev?.type !== curr?.type) {
+      prevAuthorRef.current = curr;
+      if (options?.enabled) {
+        query.refetch();
+      }
+    }
+  }, [reactionAuthor, query, options?.enabled]);
+
+  return query;
 }
