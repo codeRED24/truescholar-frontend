@@ -113,24 +113,42 @@ export function PostCard({
 
     try {
       if (wasFollowing) {
-        const result = isCollegePost
-          ? await unfollowCollege(post.taggedCollege!.college_id, followOptions)
-          : await unfollowUser(post.author.id, followOptions);
+        let error: string | undefined;
 
-        if (isApiError(result)) {
+        if (isCollegePost) {
+          const result = await unfollowCollege(
+            post.taggedCollege!.college_id,
+            followOptions
+          );
+          if (isApiError(result)) error = result.error;
+        } else {
+          const result = await unfollowUser(post.author.id, followOptions);
+          if (isApiError(result)) error = result.error;
+        }
+
+        if (error) {
           setIsFollowing(true); // Revert on error
-          toast.error(result.error || "Failed to unfollow");
+          toast.error(error || "Failed to unfollow");
         } else {
           toast.success(`Unfollowed ${displayAuthor.name}`);
         }
       } else {
-        const result = isCollegePost
-          ? await followCollege(post.taggedCollege!.college_id, followOptions)
-          : await followUser(post.author.id, followOptions);
+        let error: string | undefined;
 
-        if (isApiError(result)) {
+        if (isCollegePost) {
+          const result = await followCollege(
+            post.taggedCollege!.college_id,
+            followOptions
+          );
+          if (isApiError(result)) error = result.error;
+        } else {
+          const result = await followUser(post.author.id, followOptions);
+          if (isApiError(result)) error = result.error;
+        }
+
+        if (error) {
           setIsFollowing(false); // Revert on error
-          toast.error(result.error || "Failed to follow");
+          toast.error(error || "Failed to follow");
         } else {
           toast.success(`Following ${displayAuthor.name}`);
         }
