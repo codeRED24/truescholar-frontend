@@ -293,6 +293,11 @@ export interface FollowStatusResponse {
   isFollowedBy: boolean;
 }
 
+interface FollowOptions {
+  authorType?: string;
+  followerCollegeId?: number;
+}
+
 export async function getFollowStatus(
   userId: string,
 ): Promise<ApiResponse<FollowStatusResponse>> {
@@ -301,6 +306,7 @@ export async function getFollowStatus(
 
 export async function followUser(
   userId: string,
+  options?: FollowOptions,
 ): Promise<
   ApiResponse<{ id: string; followingId: string; createdAt: string }>
 > {
@@ -308,18 +314,45 @@ export async function followUser(
     "/followers/follow",
     {
       method: "POST",
-      body: JSON.stringify({ userId }),
+      body: JSON.stringify({ userId, ...options }),
     },
   );
 }
 
 export async function unfollowUser(
   userId: string,
+  options?: FollowOptions,
 ): Promise<ApiResponse<{ success: boolean }>> {
   return fetchApi<{ success: boolean }>(`/followers/unfollow/${userId}`, {
     method: "DELETE",
-    body: JSON.stringify({}),
+    body: JSON.stringify(options || {}),
   });
+}
+
+export async function followCollege(
+  collegeId: number,
+  options?: FollowOptions,
+): Promise<ApiResponse<{ id: string; collegeId: number; createdAt: string }>> {
+  return fetchApi<{ id: string; collegeId: number; createdAt: string }>(
+    "/followers/follow/college",
+    {
+      method: "POST",
+      body: JSON.stringify({ collegeId, ...options }),
+    },
+  );
+}
+
+export async function unfollowCollege(
+  collegeId: number,
+  options?: FollowOptions,
+): Promise<ApiResponse<{ success: boolean }>> {
+  return fetchApi<{ success: boolean }>(
+    `/followers/unfollow/college/${collegeId}`,
+    {
+      method: "DELETE",
+      body: JSON.stringify(options || {}),
+    },
+  );
 }
 
 // ============================================================================
