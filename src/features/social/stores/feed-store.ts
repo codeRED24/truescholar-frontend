@@ -15,6 +15,15 @@ interface FeedState {
   // Expanded comments tracking
   expandedComments: Set<string>;
 
+  // Reaction Author State (Global)
+  reactionAuthor: {
+    id: string;
+    type: "user" | "college";
+    name: string;
+    image?: string;
+  } | null;
+  setReactionAuthor: (author: { id: string; type: "user" | "college"; name: string; image?: string } | null) => void;
+
   // Actions
   openComposer: () => void;
   closeComposer: () => void;
@@ -36,6 +45,7 @@ const initialState = {
   replyingToPostId: null,
   replyingToCommentId: null,
   expandedComments: new Set<string>(),
+  reactionAuthor: null,
 };
 
 export const useFeedStore = create<FeedState>((set, get) => ({
@@ -71,6 +81,8 @@ export const useFeedStore = create<FeedState>((set, get) => ({
   },
 
   isCommentsExpanded: (postId) => get().expandedComments.has(postId),
+
+  setReactionAuthor: (author) => set({ reactionAuthor: author }),
 
   reset: () => set(initialState),
 }));

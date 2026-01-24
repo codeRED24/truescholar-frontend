@@ -14,6 +14,7 @@ interface AuthorHeaderProps {
   createdAt: string;
   size?: "sm" | "md" | "lg";
   showBadge?: boolean;
+  subtitle?: React.ReactNode;
   className?: string;
   onClick?: () => void;
   onFollow?: () => void;
@@ -49,6 +50,7 @@ export function AuthorHeader({
   createdAt,
   size = "md",
   showBadge = true,
+  subtitle,
   className,
   onClick,
 }: AuthorHeaderProps) {
@@ -94,9 +96,15 @@ export function AuthorHeader({
           )}
         </div>
 
-        <span className={cn(classes.meta, "text-muted-foreground")}>
-          {formatRelativeTime(createdAt)}
-        </span>
+        {subtitle ? (
+            <div className={cn(classes.meta, "text-muted-foreground truncate")}>
+                {subtitle}
+            </div>
+        ) : (
+            <span className={cn(classes.meta, "text-muted-foreground")}>
+            {formatRelativeTime(createdAt)}
+            </span>
+        )}
       </div>
     </div>
   );

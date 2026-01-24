@@ -28,7 +28,7 @@ import { CommentSection } from "../comments/CommentSection";
 import { useFeedStore } from "../../stores/feed-store";
 import { followUser, unfollowUser } from "../../api/social-api";
 import { renderContentWithMentions } from "../../utils/mention-utils";
-import type { Post } from "../../types";
+import { Author, Post } from "../../types";
 import { isApiError } from "../../types";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -42,7 +42,7 @@ interface PostCardProps {
   onEdit?: (post: Post) => void;
   onDelete?: (postId: string) => void;
   onReport?: (postId: string) => void;
-  onAuthorClick?: (authorId: string) => void;
+  onAuthorClick?: (authorId: string, type?: "user" | "college") => void;
   className?: string;
 }
 
@@ -61,16 +61,42 @@ export function PostCard({
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const isCommentsExpanded = useFeedStore((s) => s.isCommentsExpanded(post.id));
 
-  const isOwner = currentUserId === post.author.id;
+  const isCollegePost = post.authorType === "college" && !!post.taggedCollege;
+  const isOwner = currentUserId === post.author.id; // User is still the creator
   const shouldTruncate = variant !== "detail" && post.content.length > 280;
   const displayContent =
     shouldTruncate && !isExpanded
       ? post.content.slice(0, 280) + "…"
       : post.content;
 
+  // Determine display author (User or College)
+  const displayAuthor: Author = isCollegePost
+    ? {
+        id:
+          post.taggedCollege!.slug ||
+          post.taggedCollege!.college_id.toString(),
+        name: post.taggedCollege!.college_name,
+        image: post.taggedCollege!.logo_img,
+        user_type: "college",
+      }
+    : post.author;
+
+  const subtitle = isCollegePost 
+    ? undefined
+    : post.author.user_type 
+        ? post.author.user_type.charAt(0).toUpperCase() + post.author.user_type.slice(1)
+        : undefined;
+
   const handleFollow = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isFollowLoading) return;
+
+    // TODO: Implement follow college logic here if isCollegePost
+    // For now, only user following is implemented in this component
+    if (isCollegePost) {
+        toast("Following colleges from posts not yet implemented");
+        return;
+    }
 
     setIsFollowLoading(true);
     const wasFollowing = isFollowing;
@@ -121,10 +147,17 @@ export function PostCard({
         {/* Header */}
         <div className="flex items-start mb-3">
           <AuthorHeader
-            author={post.author}
+            author={displayAuthor}
             createdAt={post.createdAt}
             size={variant === "compact" ? "sm" : "md"}
-            onClick={() => onAuthorClick?.(post.author.id)}
+            subtitle={subtitle}
+            showBadge={false}
+            onClick={() =>
+              onAuthorClick?.(
+                displayAuthor.id,
+                isCollegePost ? "college" : "user"
+              )
+            }
           />
 
           <div className="ml-auto flex items-center">

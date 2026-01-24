@@ -30,6 +30,22 @@ export interface PostMedia {
   altText?: string;
 }
 
+export interface CollegeInfo {
+  college_id: number;
+  college_name: string;
+  logo_img?: string;
+  short_name?: string;
+}
+
+export interface Member {
+  id: string;
+  collegeId: number;
+  college: CollegeInfo;
+  userId: string;
+  role: string; // "college_admin" | "student" | "alumni"
+  createdAt: string;
+}
+
 export interface Post {
   id: string;
   content: string;
@@ -37,6 +53,12 @@ export interface Post {
   authorType?: AuthorType;
   type?: PostType;
   taggedCollegeId?: number;
+  taggedCollege?: {
+    college_id: number;
+    college_name: string;
+    logo_img?: string;
+    slug?: string;
+  };
   media: PostMedia[];
   visibility: PostVisibility;
   likeCount: number;
@@ -53,6 +75,7 @@ export interface CreatePostDto {
   visibility?: PostVisibility;
   type?: PostType;
   taggedCollegeId?: number;
+  authorType?: AuthorType;
   // Backend expects PostMediaDto (URLs), not file uploads
   // File upload requires a separate upload endpoint first
   media?: PostMedia[];

@@ -4,6 +4,12 @@
 // Types
 export * from "./types";
 
+// API
+export {
+  getMyCollegeMemberships,
+  uploadPostMedia,
+} from "./api/social-api";
+
 // Hooks
 export {
   useFeed,

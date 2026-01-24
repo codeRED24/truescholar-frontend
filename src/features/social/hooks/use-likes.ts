@@ -8,6 +8,7 @@ import { likePost, unlikePost } from "../api/social-api";
 import { isApiError, type Post, type FeedResponse, type FeedItem } from "../types";
 import { feedKeys } from "./use-feed";
 import { postKeys } from "./use-post";
+import { membershipKeys } from "./use-memberships"; // Added
 
 interface LikeContext {
   previousPost?: Post;
@@ -22,16 +23,19 @@ export function useToggleLike() {
   return useMutation<
     void,
     Error,
-    { postId: string; isLiked: boolean },
+    { postId: string; isLiked: boolean; authorType?: string; collegeId?: number },
     LikeContext
   >({
-    mutationFn: async ({ postId, isLiked }) => {
+    mutationFn: async ({ postId, isLiked, authorType, collegeId }) => {
+      const options = { authorType, collegeId };
       const result = isLiked
-        ? await unlikePost(postId)
-        : await likePost(postId);
+        ? await unlikePost(postId, options)
+        : await likePost(postId, options);
 
       if (isApiError(result)) {
-        throw new Error(result.error);
+        const error = new Error(result.error);
+        (error as any).statusCode = result.statusCode;
+        throw error;
       }
     },
 
@@ -95,7 +99,12 @@ export function useToggleLike() {
     },
 
     // Rollback on error
-    onError: (_error, { postId }, context) => {
+    onError: async (error: any, { postId }, context) => {
+      // Refresh memberships on 403 Forbidden
+      if (error?.statusCode === 403) {
+        queryClient.invalidateQueries({ queryKey: membershipKeys.mine() });
+      }
+
       if (context?.previousPost) {
         queryClient.setQueryData(postKeys.detail(postId), context.previousPost);
       }
@@ -112,7 +121,8 @@ export function useLikePost(postId: string, isLiked: boolean) {
   const toggleLike = useToggleLike();
 
   return {
-    toggle: () => toggleLike.mutate({ postId, isLiked }),
+    toggle: (options?: { authorType?: string; collegeId?: number }) =>
+      toggleLike.mutate({ postId, isLiked, ...options }),
     isLoading: toggleLike.isPending,
   };
 }

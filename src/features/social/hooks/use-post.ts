@@ -4,6 +4,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 import { getPost, createPost, updatePost, deletePost } from "../api/social-api";
 import {
   isApiError,
@@ -15,6 +16,7 @@ import {
 } from "../types";
 import { feedKeys } from "./use-feed";
 import { toast } from "sonner";
+import { useFeedStore } from "../stores/feed-store"; // Added import
 
 // Query key factory
 export const postKeys = {
@@ -26,10 +28,19 @@ export const postKeys = {
  * Hook for fetching a single post
  */
 export function usePost(postId: string, options?: { enabled?: boolean }) {
-  return useQuery({
+  const reactionAuthor = useFeedStore((s) => s.reactionAuthor);
+  const prevAuthorRef = useRef<{ type?: string; id?: string } | null>(null);
+
+  const query = useQuery({
     queryKey: postKeys.detail(postId),
     queryFn: async () => {
-      const result = await getPost(postId);
+      const result = await getPost(postId, {
+        authorType: reactionAuthor?.type,
+        collegeId:
+          reactionAuthor?.type === "college"
+            ? parseInt(reactionAuthor.id)
+            : undefined,
+      });
 
       if (isApiError(result)) {
         throw new Error(result.error);
@@ -39,6 +50,26 @@ export function usePost(postId: string, options?: { enabled?: boolean }) {
     },
     enabled: options?.enabled ?? !!postId,
   });
+
+  // Refetch when identity changes
+  useEffect(() => {
+    const prev = prevAuthorRef.current;
+    const curr = reactionAuthor;
+
+    if (prev === null) {
+      prevAuthorRef.current = curr;
+      return;
+    }
+
+    if (prev?.id !== curr?.id || prev?.type !== curr?.type) {
+      prevAuthorRef.current = curr;
+      if (options?.enabled !== false && postId) {
+        query.refetch();
+      }
+    }
+  }, [reactionAuthor, query, options?.enabled, postId]);
+
+  return query;
 }
 
 /**

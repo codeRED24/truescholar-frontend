@@ -17,7 +17,7 @@ import type { Post, FeedItem } from "../../types";
 interface FeedProps {
   isAuthenticated?: boolean;
   currentUserId?: string;
-  onAuthorClick?: (authorId: string) => void;
+  onAuthorClick?: (authorId: string, type?: "user" | "college") => void;
   onPostEdit?: (post: Post) => void;
   onPostDelete?: (postId: string) => void;
   className?: string;
@@ -47,6 +47,7 @@ export function Feed({
   const {
     items,
     isLoading,
+    isFetching,
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
@@ -57,6 +58,7 @@ export function Feed({
     : {
         items: guestItems,
         isLoading: guestFeedQuery.isLoading,
+        isFetching: guestFeedQuery.isFetching,
         hasNextPage: guestFeedQuery.hasNextPage,
         fetchNextPage: guestFeedQuery.fetchNextPage,
         isFetchingNextPage: guestFeedQuery.isFetchingNextPage,
@@ -108,7 +110,7 @@ export function Feed({
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return <PostSkeletonList count={3} />;
   }
 
