@@ -61,7 +61,7 @@ export default function LinkedInStyleProfilePage() {
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [profileUser, setProfileUser] = useState<PublicProfileUser | null>(
-    null
+    null,
   );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -125,7 +125,7 @@ export default function LinkedInStyleProfilePage() {
     const result = await uploadAvatar(file);
     if (!("error" in result)) {
       setProfileUser((prev) =>
-        prev ? { ...prev, image: result.imageUrl } : prev
+        prev ? { ...prev, image: result.imageUrl } : prev,
       );
     }
     setIsUploadingAvatar(false);
@@ -147,7 +147,7 @@ export default function LinkedInStyleProfilePage() {
       try {
         await updateUser({ name: editName.trim() });
         setProfileUser((prev) =>
-          prev ? { ...prev, name: editName.trim() } : prev
+          prev ? { ...prev, name: editName.trim() } : prev,
         );
         setIsEditingName(false);
       } catch (error) {
@@ -159,7 +159,7 @@ export default function LinkedInStyleProfilePage() {
   };
 
   const handleProfileUpdate = async (
-    updates: Parameters<typeof updateProfile>[0]
+    updates: Parameters<typeof updateProfile>[0],
   ) => {
     const result = await updateProfile(updates);
     if (!("error" in result)) {
@@ -319,7 +319,7 @@ export default function LinkedInStyleProfilePage() {
                 <Button
                   variant="outline"
                   className="rounded-full"
-                  onClick={() => router.push("/profile")}
+                  onClick={() => router.push("/feed/profile")}
                 >
                   <Pencil className="h-4 w-4 mr-2" />
                   Edit profile
@@ -410,7 +410,7 @@ export default function LinkedInStyleProfilePage() {
                       Joined{" "}
                       {new Date(profileUser.createdAt).toLocaleDateString(
                         "en-US",
-                        { month: "short", year: "numeric" }
+                        { month: "short", year: "numeric" },
                       )}
                     </span>
                   </div>

@@ -66,5 +66,11 @@ export {
   networkKeys,
 } from "./hooks/use-network";
 
+// Groups (Facebook-style)
+export * from "./components/groups";
+export * from "./hooks/use-groups-list";
+export * from "./hooks/use-group-detail";
+export * from "./hooks/use-group-admin";
+
 // Utils
 export * from "./utils/formatters";

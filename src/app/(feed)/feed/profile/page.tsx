@@ -13,10 +13,10 @@ export default function ProfileRedirect() {
     if (!isPending) {
       if (session?.user?.id) {
         // Redirect to user's own profile
-        router.replace(`/profile/${session.user.id}`);
+        router.replace(`/feed/profile/${session.user.id}`);
       } else {
         // Not logged in - redirect to sign in
-        sessionStorage.setItem("redirectAfterLogin", "/profile");
+        sessionStorage.setItem("redirectAfterLogin", "/feed/profile");
         router.replace("/signin");
       }
     }

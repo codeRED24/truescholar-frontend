@@ -34,7 +34,27 @@ export interface CollegeInfo {
   college_id: number;
   college_name: string;
   logo_img?: string;
+  banner_img?: string;
   short_name?: string;
+  member_count?: number;
+  slug?: string;
+  city_name?: string;
+  state_name?: string;
+  description?: string;
+}
+
+export interface CollegeMember {
+  id: string;
+  userId: string;
+  collegeId: number;
+  role: string;
+  user: {
+    id: string;
+    name: string;
+    image?: string;
+    headline?: string;
+  };
+  createdAt: string;
 }
 
 export interface Member {
@@ -43,6 +63,18 @@ export interface Member {
   college: CollegeInfo;
   userId: string;
   role: string; // "college_admin" | "student" | "alumni"
+  createdAt: string;
+}
+
+export interface LinkRequest {
+  id: string;
+  userId: string;
+  collegeId: number;
+  college: CollegeInfo;
+  status: "pending" | "approved" | "rejected";
+  requestedRole: string;
+  enrollmentYear?: number;
+  graduationYear?: number;
   createdAt: string;
 }
 
@@ -172,3 +204,75 @@ export interface EntityHandle {
   displayName: string;
   image?: string;
 }
+
+// ============================================================================
+// College Profile Types (for /feed/colleges/:slugId page)
+// ============================================================================
+
+export interface MutualFollower {
+  id: string;
+  name: string;
+  image: string | null;
+}
+
+export interface CollegeProfileInfo {
+  id: number;
+  name: string;
+  shortName: string | null;
+  slug: string;
+  logo: string | null;
+  banner: string | null;
+  tagline: string | null;
+  website: string | null;
+  city: string | null;
+  state: string | null;
+  foundedYear: string | null;
+  totalStudents: number | null;
+  followerCount: number;
+  isFollowing: boolean;
+}
+
+export interface CollegeProfileResponse {
+  college: CollegeProfileInfo;
+  socialProof: {
+    mutualFollowers: MutualFollower[];
+    totalMutualCount: number;
+  };
+  group: {
+    slugId: string;
+    memberCount: number;
+  };
+}
+
+export interface CollegeStats {
+  totalStudents: number | null;
+  campusSize: number | null;
+  foundedYear: string | null;
+  naccGrade: string | null;
+}
+
+export interface CollegeAboutResponse {
+  overview: string | null;
+  highlights: string[];
+  stats: CollegeStats;
+}
+
+export interface CollegePerson {
+  id: string;
+  name: string;
+  image: string | null;
+  handle: string | null;
+  role?: string;
+}
+
+export interface CollegePeopleResponse {
+  people: CollegePerson[];
+  nextCursor: string | null;
+  total: number;
+}
+
+// ============================================================================
+// Facebook-style Groups Types
+// ============================================================================
+
+export * from "./groups";

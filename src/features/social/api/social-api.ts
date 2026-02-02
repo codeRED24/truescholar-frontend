@@ -1,17 +1,21 @@
 // Social API Client
 // Uses real API with fallback to mock data for development
 
-import type {
-  Post,
-  FeedResponse,
-  CreatePostDto,
-  UpdatePostDto,
-  Comment,
-  CommentsResponse,
-  CreateCommentDto,
-  ApiResponse,
-  EntityHandle,
-  Member,
+import {
+  type Post,
+  type FeedResponse,
+  type CreatePostDto,
+  type UpdatePostDto,
+  type Comment,
+  type CommentsResponse,
+  type CreateCommentDto,
+  type ApiResponse,
+  type EntityHandle,
+  type Member,
+  type CollegeMember,
+  type LinkRequest,
+  type CollegeInfo,
+  isApiError,
 } from "../types";
 import { getMockFeed, getMockComments } from "../mocks/feed-data";
 
@@ -47,7 +51,8 @@ async function fetchApi<T>(
       };
     }
 
-    const data = await response.json();
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : undefined;
     return { data };
   } catch (error) {
     return {
@@ -209,7 +214,8 @@ export async function uploadPostMedia(
       };
     }
 
-    const data = await response.json();
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : undefined;
     return { data };
   } catch (error) {
     return {
@@ -363,8 +369,54 @@ export async function getMyCollegeMemberships(): Promise<
   ApiResponse<Member[]>
 > {
   if (USE_MOCK_DATA) return { data: [] };
-  // Only fetch colleges where user is an admin (can act as the college)
-  return fetchApi<Member[]>("/memberships/me?role=college_admin");
+  // Fetch actual memberships where the user is a member
+  return fetchApi<Member[]>("/memberships/me");
+}
+
+export async function getMyRequests(): Promise<ApiResponse<LinkRequest[]>> {
+  if (USE_MOCK_DATA) return { data: [] };
+  return fetchApi<LinkRequest[]>("/colleges/my-requests");
+}
+
+export async function createLinkRequest(
+  collegeId: number,
+  data: { role: string; enrollmentYear?: number; graduationYear?: number },
+): Promise<ApiResponse<LinkRequest>> {
+  return fetchApi<LinkRequest>(`/colleges/${collegeId}/link-request`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function cancelLinkRequest(
+  requestId: string,
+): Promise<ApiResponse<void>> {
+  return fetchApi<void>(`/colleges/requests/${requestId}`, {
+    method: "DELETE",
+  });
+}
+
+export async function getSuggestedColleges(
+  limit = 5,
+): Promise<ApiResponse<CollegeInfo[]>> {
+  // Use dedicated suggestions API which returns correct format and member count
+  const response = await fetchApi<CollegeInfo[]>(
+    `/college-info/suggestions?limit=${limit}`,
+  );
+
+  return response;
+}
+
+export async function getCollegeInfo(
+  collegeId: number,
+): Promise<ApiResponse<CollegeInfo>> {
+  return fetchApi<CollegeInfo>(`/college-info/${collegeId}`);
+}
+
+export async function getCollegeMembers(
+  collegeId: number,
+): Promise<ApiResponse<CollegeMember[]>> {
+  return fetchApi<CollegeMember[]>(`/college-member/members/${collegeId}`);
 }
 
 export async function getComments(
@@ -457,3 +509,47 @@ export async function unlikeComment(
     body: JSON.stringify(options || {}),
   });
 }
+
+// ============================================================================
+// College Profile API (/feed/colleges/:slugId)
+// ============================================================================
+
+import {
+  type CollegeProfileResponse,
+  type CollegeAboutResponse,
+  type CollegePeopleResponse,
+  type GroupFeedResponse,
+} from "../types";
+
+export async function getCollegeProfile(
+  slugId: string,
+): Promise<ApiResponse<CollegeProfileResponse>> {
+  return fetchApi<CollegeProfileResponse>(`/colleges/${slugId}`);
+}
+
+export async function getCollegeAbout(
+  slugId: string,
+): Promise<ApiResponse<CollegeAboutResponse>> {
+  return fetchApi<CollegeAboutResponse>(`/colleges/${slugId}/about`);
+}
+
+export async function getCollegeAlumni(
+  slugId: string,
+  cursor?: string,
+): Promise<ApiResponse<CollegePeopleResponse>> {
+  const queryParams = new URLSearchParams({ limit: "10" });
+  if (cursor) queryParams.set("cursor", cursor);
+
+  return fetchApi<CollegePeopleResponse>(
+    `/colleges/${slugId}/alumni?${queryParams}`,
+  );
+}
+
+export async function getCollegePosts(
+  slugId: string,
+  cursor?: string,
+): Promise<ApiResponse<GroupFeedResponse>> {
+  // Placeholder for college feed
+  return { data: { posts: [], total: 0, nextCursor: null } };
+}
+
