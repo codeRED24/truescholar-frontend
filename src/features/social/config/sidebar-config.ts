@@ -13,10 +13,10 @@ export const SIDEBAR_NAVIGATION_ITEMS = [
   {
     title: "",
     items: [
-      { label: "Saved items", icon: Bookmark, href: "/saved" },
-      { label: "Groups", icon: Users, href: "/groups" },
-      { label: "Newsletters", icon: Newspaper, href: "/newsletters" },
-      { label: "Events", icon: Calendar, href: "/events" },
+      { label: "Saved items", icon: Bookmark, href: "/feed/saved" },
+      { label: "Groups", icon: Users, href: "/feed/groups" },
+      { label: "Newsletters", icon: Newspaper, href: "/feed/newsletters" },
+      { label: "Events", icon: Calendar, href: "/feed/events" },
     ],
   },
 ];

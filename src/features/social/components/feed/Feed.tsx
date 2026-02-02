@@ -10,7 +10,6 @@ import { PostCard } from "../post/PostCard";
 import { PostSkeletonList } from "../post/PostSkeleton";
 import { FeedEmpty } from "./FeedEmpty";
 import { WhoToFollowCard } from "./WhoToFollowCard";
-import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Post, FeedItem } from "../../types";
 
@@ -164,7 +163,7 @@ export function Feed({
                 }}
                 className={cn(
                   "flex items-center justify-center",
-                  !isFetchingNextPage && "py-6"
+                  !isFetchingNextPage && "py-6",
                 )}
               >
                 {isFetchingNextPage ? (

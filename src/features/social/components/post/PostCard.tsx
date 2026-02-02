@@ -78,9 +78,9 @@ export function PostCard({
   // Determine display author (User or College)
   const displayAuthor: Author = isCollegePost
     ? {
-        id:
-          post.taggedCollege!.slug ||
-          post.taggedCollege!.college_id.toString(),
+        id: post.taggedCollege!.slug
+          ? `${post.taggedCollege!.slug}-${post.taggedCollege!.college_id}`
+          : post.taggedCollege!.college_id.toString(),
         name: post.taggedCollege!.college_name,
         image: post.taggedCollege!.logo_img,
         user_type: "college",

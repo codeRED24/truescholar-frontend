@@ -37,6 +37,7 @@ interface PostComposerProps {
   onClose: () => void;
   currentUser?: Author;
   postToEdit?: Post | null;
+  initialCollegeId?: number;
 }
 
 interface PostFormData {
@@ -48,6 +49,7 @@ export function PostComposer({
   onClose,
   currentUser,
   postToEdit,
+  initialCollegeId,
 }: PostComposerProps) {
   // --- State ---
   const [uploadedMedia, setUploadedMedia] = useState<UploadedMedia[]>([]);
@@ -75,6 +77,9 @@ export function PostComposer({
   // Modal State
   const [activeModal, setActiveModal] = useState<"composer" | "settings" | "postingAs" | "collegeSelector">("composer");
   
+  // Tagged College State (for posting to group feeds)
+  const [taggedCollegeId, setTaggedCollegeId] = useState<number | undefined>(initialCollegeId);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const createPost = useCreatePost();
   const updatePost = useUpdatePost();
@@ -90,12 +95,29 @@ export function PostComposer({
     if (isOpen && !isEditing) {
       // Reset to defaults
       setVisibility("public");
-      setSelectedAuthor({
-        type: "user",
-        id: currentUser?.id || "",
-        name: currentUser?.name || "You",
-        image: currentUser?.image,
-      });
+      setTaggedCollegeId(initialCollegeId);
+      
+      // Default selected author
+      const collegeAdminMembership = initialCollegeId 
+        ? collegeMemberships.find(m => m.collegeId === initialCollegeId)
+        : null;
+
+      if (collegeAdminMembership) {
+        setSelectedAuthor({
+          type: "college",
+          id: String(collegeAdminMembership.collegeId),
+          name: collegeAdminMembership.college.college_name,
+          image: collegeAdminMembership.college.logo_img,
+        });
+      } else {
+        setSelectedAuthor({
+          type: "user",
+          id: currentUser?.id || "",
+          name: currentUser?.name || "You",
+          image: currentUser?.image,
+        });
+      }
+      
       setUploadedMedia([]);
       setActiveModal("composer");
     } else if (isOpen && isEditing && postToEdit) {
@@ -116,7 +138,7 @@ export function PostComposer({
       });
       // Load existing media as read-only preview is handled in render
     }
-  }, [isOpen, isEditing, postToEdit, currentUser]);
+  }, [isOpen, isEditing, postToEdit, currentUser, initialCollegeId]);
 
   const {
     register,
@@ -235,7 +257,7 @@ export function PostComposer({
           taggedCollegeId:
             selectedAuthor.type === "college"
               ? parseInt(selectedAuthor.id)
-              : undefined,
+              : (taggedCollegeId || undefined),
         });
       }
       handleClose();
