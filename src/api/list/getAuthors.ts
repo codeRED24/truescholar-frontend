@@ -20,7 +20,7 @@ export async function getAuthors(): Promise<Author[]> {
         "Content-Type": "application/json",
         Authorization: `Bearer ${BEARER_TOKEN}`,
       },
-      cache: "no-store",
+      next: { revalidate: 3600 },
     });
 
     if (!response.ok) {

@@ -1,17 +1,21 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { Loader2 } from "lucide-react";
 import { useGroupDetail, useJoinGroup, useLeaveGroup, useRequestToJoin, useCancelJoinRequest } from "@/features/social/hooks/use-group-detail";
+import { useDeletePost } from "@/features/social/hooks/use-post";
 import { GroupHeader } from "@/features/social/components/groups/GroupHeader";
 import { GroupAbout } from "@/features/social/components/groups/GroupAbout";
 import { GroupFeed } from "@/features/social/components/groups/GroupFeed";
-import { GroupPostComposer } from "@/features/social/components/groups/GroupPostComposer";
+import { PostComposer } from "@/features/social/components/post/PostComposer";
 import { GroupMembersList } from "@/features/social/components/groups/GroupMembersList";
+import { Post } from "@/features/social/types";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function GroupProfilePage(props: {
   params: Promise<{ slugId: string }>;
@@ -49,6 +53,29 @@ export default function GroupProfilePage(props: {
   const leaveGroup = useLeaveGroup(targetId);
   const requestJoin = useRequestToJoin(targetId);
   const cancelRequest = useCancelJoinRequest(targetId);
+  const deletePost = useDeletePost();
+  const [isComposerOpen, setIsComposerOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
+
+  const handlePostEdit = (post: Post) => {
+    setEditingPost(post);
+    setIsComposerOpen(true);
+  };
+
+  const handlePostDelete = async (postId: string) => {
+    if (!confirm("Are you sure you want to delete this post?")) return;
+    try {
+      await deletePost.mutateAsync(postId);
+      toast.success("Post deleted");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to delete post");
+    }
+  };
+
+  const handleComposerClose = () => {
+    setIsComposerOpen(false);
+    setEditingPost(null);
+  };
 
   const handleJoin = async () => {
     try {
@@ -154,11 +181,39 @@ export default function GroupProfilePage(props: {
 
             <TabsContent value="feed" className="space-y-6 mt-6">
               {canPost && currentUser && (
-                <GroupPostComposer slugId={targetId} currentUser={currentUser} />
+                <>
+                  <Card 
+                    onClick={() => setIsComposerOpen(true)} 
+                    className="cursor-pointer hover:bg-muted/50 transition-colors shadow-sm"
+                  >
+                    <CardContent className="p-4 flex items-center gap-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={currentUser.image} />
+                        <AvatarFallback>{currentUser.name.charAt(0).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 bg-muted/50 rounded-full px-4 py-2.5 text-muted-foreground text-sm font-medium hover:bg-muted/80 transition-colors">
+                        Write something...
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <PostComposer
+                    isOpen={isComposerOpen}
+                    onClose={handleComposerClose}
+                    currentUser={currentUser}
+                    groupId={targetId}
+                    postToEdit={editingPost}
+                  />
+                </>
               )}
 
               {canViewFeed ? (
-                <GroupFeed slugId={targetId} currentUserId={currentUser?.id} />
+                <GroupFeed 
+                  slugId={targetId} 
+                  currentUserId={currentUser?.id}
+                  onEdit={handlePostEdit}
+                  onDelete={handlePostDelete}
+                />
               ) : (
                 <div className="text-center py-12 border rounded-xl bg-muted/20">
                   <h3 className="text-lg font-medium">This group is private</h3>

@@ -50,7 +50,7 @@ export default function FeedPage() {
     type: "user" | "college" = "user",
   ) => {
     if (type === "college") {
-      router.push(`/feed/groups/${authorId}`);
+      router.push(`/feed/colleges/${authorId}`);
     } else {
       router.push(`/feed/profile/${authorId}`);
     }

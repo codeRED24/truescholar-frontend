@@ -23,9 +23,9 @@ export function JoinRequestCard({
   return (
     <div className="flex items-start gap-4 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
       <Avatar className="h-10 w-10 mt-1">
-        <AvatarImage src={request.user.image || undefined} />
+        <AvatarImage src={request.userImage || undefined} />
         <AvatarFallback>
-          {request.user.name.charAt(0).toUpperCase()}
+          {request.userName.charAt(0).toUpperCase()}
         </AvatarFallback>
       </Avatar>
 
@@ -35,7 +35,7 @@ export function JoinRequestCard({
             href={`/feed/profile/${request.userId}`}
             className="font-medium hover:underline truncate"
           >
-            {request.user.name}
+            {request.userName}
           </Link>
           <span className="text-xs text-muted-foreground whitespace-nowrap">
             {formatDistanceToNow(new Date(request.createdAt), { addSuffix: true })}

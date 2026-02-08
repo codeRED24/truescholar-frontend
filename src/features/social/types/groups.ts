@@ -64,13 +64,9 @@ export interface GroupMember {
 
 export interface GroupJoinRequest {
   id: string;
-  groupId: string;
   userId: string;
-  user: {
-    id: string;
-    name: string;
-    image: string | null;
-  };
+  userName: string;
+  userImage: string | null;
   message: string | null;
   status: JoinRequestStatus;
   createdAt: string;
@@ -79,20 +75,15 @@ export interface GroupJoinRequest {
 export interface GroupInvitation {
   id: string;
   groupId: string;
-  group: {
-    id: string;
-    name: string;
-    slug: string;
-    logoImage: string | null;
-  };
-  inviterId: string;
-  inviter: {
+  groupName: string;
+  groupSlug: string;
+  groupLogo: string | null;
+  invitedBy: {
     id: string;
     name: string;
     image: string | null;
   };
-  inviteeId: string;
-  invitee: {
+  invitedUser?: {
     id: string;
     name: string;
     image: string | null;
@@ -176,7 +167,8 @@ export interface GroupFeedPost {
   }>;
   likeCount: number;
   commentCount: number;
-  isLiked: boolean;
+  hasLiked: boolean;
+  isFollowing?: boolean;
   visibility: string;
   createdAt: string;
   updatedAt: string;

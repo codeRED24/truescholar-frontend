@@ -8,6 +8,7 @@ import { ArrowLeft, Loader2, Shield, Users, Mail, Settings } from "lucide-react"
 import { useGroupDetail } from "@/features/social/hooks/use-group-detail";
 import { GroupSettingsForm } from "@/features/social/components/groups/GroupSettingsForm";
 import { JoinRequestsList } from "@/features/social/components/groups/JoinRequestsList";
+import { SentInvitationsList } from "@/features/social/components/groups/SentInvitationsList";
 import { GroupMembersList } from "@/features/social/components/groups/GroupMembersList";
 import { InviteMemberDialog } from "@/features/social/components/groups/InviteMemberDialog";
 import { useState } from "react";
@@ -153,11 +154,7 @@ export default function GroupSettingsPage(props: {
                   Invite New
                 </Button>
               </div>
-              {/* Reuse Invite Dialog for sending new ones */}
-              <div className="text-center py-12 text-muted-foreground border rounded-xl bg-muted/20">
-                <p>Use the "Invite New" button to send invitations.</p>
-                <p className="text-sm mt-1">Invitation management coming soon.</p>
-              </div>
+              <SentInvitationsList groupId={group.id} />
             </TabsContent>
           </div>
         </Tabs>

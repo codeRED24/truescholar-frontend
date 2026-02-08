@@ -2,6 +2,7 @@
 // Bottom toolbar with action buttons
 "use client";
 
+import { useRouter } from "next/navigation";
 import {
   Image as ImageIcon,
   Smile,
@@ -30,6 +31,8 @@ export function ComposerToolbar({
   isMediaDisabled,
   className,
 }: ComposerToolbarProps) {
+  const router = useRouter();
+
   return (
     <div className={cn("flex items-center gap-1", className)}>
       <ToolbarButton
@@ -42,7 +45,7 @@ export function ComposerToolbar({
       <ToolbarButton
         icon={Calendar}
         tooltip="Create an event"
-        onClick={() => toast("Events coming soon")}
+        onClick={() => router.push("/feed/events/create")}
       />
       
       <ToolbarButton

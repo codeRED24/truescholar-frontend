@@ -51,7 +51,7 @@ export function CollegeFeed({
       author: {
         id: p.author.id,
         name: p.author.name,
-        image: p.author.avatar ?? undefined,
+        image: p.author.image ?? undefined,
         user_type: p.authorType,
       } as Author,
       authorType: p.authorType as any,
@@ -59,13 +59,14 @@ export function CollegeFeed({
       visibility: p.visibility as any,
       likeCount: p.likeCount,
       commentCount: p.commentCount,
-      hasLiked: p.isLiked,
+      hasLiked: p.hasLiked,
+      isFollowing: p.isFollowing, // Add isFollowing mapping
       createdAt: p.createdAt,
       updatedAt: p.updatedAt,
       taggedCollege: p.authorType === "college" ? {
         college_id: parseInt(p.author.id.split("-").pop() || "0"),
         college_name: p.author.name,
-        logo_img: p.author.avatar ?? undefined,
+        logo_img: p.author.image ?? undefined,
         slug: p.author.id.split("-").slice(0, -1).join("-"),
       } : undefined
     }))

@@ -22,8 +22,10 @@ import {
   type GroupDetail,
   type CreateGroupPostDto,
   type GroupRole,
+  type GroupFeedResponse,
   isApiError,
 } from "../types";
+import { toast } from "sonner";
 import { groupListKeys } from "./use-groups-list";
 
 // ============================================================================
@@ -112,11 +114,32 @@ export function useCreateGroupPost(id: string) {
       if (isApiError(result)) throw new Error(result.error);
       return result.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: groupDetailKeys.feed(id) });
+    onSuccess: (newPost) => {
+      // Optimistically update feed
+      queryClient.setQueryData(
+        groupDetailKeys.feed(id),
+        (oldData: { pages: GroupFeedResponse[]; pageParams: any[] } | undefined) => {
+          if (!oldData) return oldData;
+          
+          const newPages = [...oldData.pages];
+          if (newPages.length > 0) {
+            newPages[0] = {
+              ...newPages[0],
+              posts: [newPost, ...newPages[0].posts],
+            };
+          }
+          
+          return {
+            ...oldData,
+            pages: newPages,
+          };
+        }
+      );
+
       queryClient.invalidateQueries({
         queryKey: groupDetailKeys.detail(id),
       });
+      toast.success("Post created!");
     },
   });
 }

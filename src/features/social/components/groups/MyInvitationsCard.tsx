@@ -49,16 +49,16 @@ export function MyInvitationsCard({ invitations }: MyInvitationsCardProps) {
           <CardContent className="p-4">
             <div className="flex items-center gap-4">
               <Avatar className="h-12 w-12 rounded-lg">
-                <AvatarImage src={invitation.group?.logoImage || undefined} />
+                <AvatarImage src={invitation.groupLogo || undefined} />
                 <AvatarFallback className="rounded-lg">
-                  {invitation.group?.name?.charAt(0).toUpperCase() || "G"}
+                  {invitation.groupName?.charAt(0).toUpperCase() || "G"}
                 </AvatarFallback>
               </Avatar>
 
               <div className="flex-1 min-w-0">
-                <h3 className="font-medium truncate">{invitation.group?.name || "Unknown Group"}</h3>
+                <h3 className="font-medium truncate">{invitation.groupName || "Unknown Group"}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Invited by {invitation.inviter?.name || "Unknown"}
+                  Invited by {invitation.invitedBy?.name || "Unknown"}
                 </p>
               </div>
 

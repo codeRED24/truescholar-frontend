@@ -11,6 +11,7 @@ import {
   type JoinRequestsResponse,
   type InvitationsResponse,
   type GroupFeedResponse,
+  type GroupFeedPost,
   type CreateGroupDto,
   type UpdateGroupDto,
   type CreateGroupPostDto,
@@ -335,8 +336,8 @@ export async function getGroupFeed(
 export async function createGroupPost(
   id: string,
   data: CreateGroupPostDto,
-): Promise<ApiResponse<{ id: string; message: string }>> {
-  return fetchApi<{ id: string; message: string }>(`/groups/${id}/posts`, {
+): Promise<ApiResponse<GroupFeedPost>> {
+  return fetchApi<GroupFeedPost>(`/groups/${id}/posts`, {
     method: "POST",
     body: JSON.stringify(data),
   });

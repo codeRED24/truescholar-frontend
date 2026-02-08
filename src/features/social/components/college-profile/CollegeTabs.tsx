@@ -20,6 +20,7 @@ export function CollegeTabs({ slugId }: CollegeTabsProps) {
     { name: "Home", path: basePath, exact: true },
     { name: "About", path: `${basePath}/about` },
     { name: "Posts", path: `${basePath}/posts` },
+    { name: "Events", path: `${basePath}/events` },
     { name: "People", path: `${basePath}/people` },
   ];
 

@@ -3,8 +3,6 @@ export { CreateGroupDialog } from "./CreateGroupDialog";
 export { GroupHeader } from "./GroupHeader";
 export { GroupAbout } from "./GroupAbout";
 export { GroupFeed } from "./GroupFeed";
-export { GroupFeedPostCard } from "./GroupFeedPostCard";
-export { GroupPostComposer } from "./GroupPostComposer";
 export { GroupMembersList } from "./GroupMembersList";
 export { GroupMemberCard } from "./GroupMemberCard";
 export { JoinRequestsList } from "./JoinRequestsList";

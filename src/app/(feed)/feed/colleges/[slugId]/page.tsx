@@ -20,7 +20,7 @@ export default function CollegeHomePage(props: {
     <>
       <OverviewSection profile={profile} slugId={slugId} />
       <PostsCarousel slugId={slugId} />
-      <EventsSection />
+      <EventsSection slugId={slugId} />
       <PeoplesSection />
     </>
   );
