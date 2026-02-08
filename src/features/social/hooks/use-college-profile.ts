@@ -1,4 +1,5 @@
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 import {
   getCollegeProfile,
   getCollegeAbout,
@@ -8,6 +9,7 @@ import {
   unfollowCollege,
 } from "../api/social-api";
 import { type CollegeProfileResponse } from "../types";
+import { useFeedStore } from "../stores/feed-store";
 
 export function useCollegeProfile(slugId: string) {
   return useQuery({
@@ -47,11 +49,26 @@ export function useCollegeAlumni(slugId: string) {
   });
 }
 
+export const collegePostsKeys = {
+  all: ["college-posts"] as const,
+  list: (slugId: string) => [...collegePostsKeys.all, slugId] as const,
+};
+
 export function useCollegePosts(slugId: string) {
-  return useInfiniteQuery({
-    queryKey: ["college-posts", slugId],
+  const reactionAuthor = useFeedStore((s) => s.reactionAuthor);
+  const prevAuthorRef = useRef<{ type?: string; id?: string } | null>(null);
+
+  const query = useInfiniteQuery({
+    queryKey: collegePostsKeys.list(slugId),
     queryFn: async ({ pageParam }) => {
-      const response = await getCollegePosts(slugId, pageParam);
+      const response = await getCollegePosts(
+        slugId,
+        pageParam,
+        reactionAuthor?.type,
+        reactionAuthor?.type === "college"
+          ? parseInt(reactionAuthor.id)
+          : undefined
+      );
       if ("error" in response) throw new Error(response.error);
       return response.data;
     },
@@ -59,6 +76,26 @@ export function useCollegePosts(slugId: string) {
     getNextPageParam: (lastPage) => lastPage.nextCursor || undefined,
     enabled: !!slugId,
   });
+
+  // Refetch when identity changes
+  useEffect(() => {
+    const prev = prevAuthorRef.current;
+    const curr = reactionAuthor;
+
+    // Skip initial render
+    if (prev === null) {
+      prevAuthorRef.current = curr;
+      return;
+    }
+
+    // Refetch if identity changed
+    if (prev?.id !== curr?.id || prev?.type !== curr?.type) {
+      prevAuthorRef.current = curr;
+      query.refetch();
+    }
+  }, [reactionAuthor, query]);
+
+  return query;
 }
 
 export function useFollowCollege(slugId: string, collegeId: number) {

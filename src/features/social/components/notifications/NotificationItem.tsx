@@ -3,10 +3,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { Bell, MessageCircle, Heart, UserPlus, Briefcase } from "lucide-react";
+import { Bell, MessageCircle, Heart, UserPlus, Briefcase, Users, UserCheck, ShieldCheck } from "lucide-react";
+
+import { Notification } from "../../types";
 
 interface NotificationItemProps {
-  notification: any;
+  notification: Notification;
   onRead: (id: string) => void;
   onDelete: (id: string) => void;
 }
@@ -25,6 +27,14 @@ const getIcon = (type: string) => {
     case "job_application_received":
     case "application_status_changed":
       return <Briefcase className="h-4 w-4 text-purple-500" />;
+    case "group_invite_received":
+      return <Users className="h-4 w-4 text-blue-500" />;
+    case "group_join_request_received":
+      return <UserPlus className="h-4 w-4 text-orange-500" />;
+    case "group_join_request_approved":
+      return <UserCheck className="h-4 w-4 text-green-500" />;
+    case "group_role_updated":
+      return <ShieldCheck className="h-4 w-4 text-purple-500" />;
     default:
       return <Bell className="h-4 w-4 text-gray-500" />;
   }

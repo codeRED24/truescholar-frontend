@@ -548,8 +548,17 @@ export async function getCollegeAlumni(
 export async function getCollegePosts(
   slugId: string,
   cursor?: string,
+  authorType?: string,
+  collegeId?: number,
 ): Promise<ApiResponse<GroupFeedResponse>> {
-  // Placeholder for college feed
-  return { data: { posts: [], total: 0, nextCursor: null } };
+  const queryParams = new URLSearchParams();
+  if (cursor) queryParams.set("cursor", cursor);
+  if (authorType) queryParams.set("authorType", authorType);
+  if (collegeId) queryParams.set("collegeId", String(collegeId));
+
+  const queryString = queryParams.toString();
+  return fetchApi<GroupFeedResponse>(
+    `/colleges/${slugId}/posts${queryString ? `?${queryString}` : ""}`
+  );
 }
 

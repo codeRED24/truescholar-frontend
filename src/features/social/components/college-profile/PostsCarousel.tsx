@@ -46,15 +46,21 @@ export function PostsCarousel({ slugId }: PostsCarouselProps) {
             image: p.author.image ?? undefined,
             user_type: p.author.id.startsWith("college-") ? "college" : "user", // fallback
           } as Author,
-          authorType: "user" as AuthorType, // Default to user since backend doesn't send type
+          authorType: (p.author.id.startsWith("college-") ? "college" : "user") as AuthorType, // Derive from author id
           media: p.media,
           visibility: p.visibility as PostVisibility,
           likeCount: p.likeCount,
           commentCount: p.commentCount,
-          hasLiked: p.isLiked,
+          hasLiked: p.hasLiked,
+          isFollowing: p.isFollowing,
           createdAt: p.createdAt,
           updatedAt: p.updatedAt,
-          taggedCollege: undefined, // Removed college logic for now
+          taggedCollege: p.author.id.startsWith("college-") ? {
+            college_id: parseInt(p.author.id.split("-").pop() || "0"),
+            college_name: p.author.name,
+            logo_img: p.author.image ?? undefined,
+            slug: p.author.id.split("-").slice(0, -1).join("-"),
+          } : undefined,
         })),
       )
       .slice(0, 8) ?? [];
@@ -273,7 +279,7 @@ function PostPreviewCard({ post, slugId }: PostPreviewCardProps) {
         </div>
 
         {/* Media thumbnail */}
-        {firstMedia ? (
+        {firstMedia && (
           <div className="relative aspect-video rounded-md overflow-hidden bg-muted mb-3 flex-shrink-0">
             {firstMedia.type === "image" ? (
               <img
@@ -311,10 +317,6 @@ function PostPreviewCard({ post, slugId }: PostPreviewCardProps) {
                 +{post.media.length - 1}
               </div>
             )}
-          </div>
-        ) : (
-          <div className="aspect-video rounded-md bg-muted mb-3 flex items-center justify-center flex-shrink-0">
-            <MessageSquare className="h-8 w-8 text-muted-foreground/50" />
           </div>
         )}
 

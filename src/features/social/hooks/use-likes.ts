@@ -5,10 +5,12 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { likePost, unlikePost } from "../api/social-api";
-import { isApiError, type Post, type FeedResponse, type FeedItem } from "../types";
+import { isApiError, type Post, type FeedResponse, type FeedItem, type GroupFeedResponse } from "../types";
 import { feedKeys } from "./use-feed";
 import { postKeys } from "./use-post";
-import { membershipKeys } from "./use-memberships"; // Added
+import { membershipKeys } from "./use-memberships";
+import { groupDetailKeys } from "./use-group-detail";
+import { collegePostsKeys } from "./use-college-profile";
 
 interface LikeContext {
   previousPost?: Post;
@@ -95,6 +97,62 @@ export function useToggleLike() {
           oldPost ? { ...oldPost, ...updates } : oldPost
       );
 
+      // Update group feed caches (different structure: { pages: [{ posts: [...] }] })
+      queryClient.setQueriesData(
+        { queryKey: groupDetailKeys.all },
+        (oldData: unknown) => {
+          if (!oldData || typeof oldData !== "object") return oldData;
+
+          const data = oldData as {
+            pages?: GroupFeedResponse[];
+            pageParams?: any[];
+          };
+
+          if (!data.pages || !Array.isArray(data.pages)) return oldData;
+
+          return {
+            ...data,
+            pages: data.pages.map((page) => ({
+              ...page,
+              posts: page.posts?.map((post) => {
+                if (post.id === postId) {
+                  return { ...post, ...updates };
+                }
+                return post;
+              }) ?? [],
+            })),
+          };
+        }
+      );
+
+      // Update college posts caches
+      queryClient.setQueriesData(
+        { queryKey: collegePostsKeys.all },
+        (oldData: unknown) => {
+          if (!oldData || typeof oldData !== "object") return oldData;
+
+          const data = oldData as {
+            pages?: { posts: any[] }[];
+            pageParams?: any[];
+          };
+
+          if (!data.pages || !Array.isArray(data.pages)) return oldData;
+
+          return {
+            ...data,
+            pages: data.pages.map((page) => ({
+              ...page,
+              posts: page.posts?.map((post) => {
+                if (post.id === postId) {
+                  return { ...post, ...updates };
+                }
+                return post;
+              }) ?? [],
+            })),
+          };
+        }
+      );
+
       return { previousPost };
     },
 
@@ -110,6 +168,8 @@ export function useToggleLike() {
       }
       // Invalidate to get fresh data
       queryClient.invalidateQueries({ queryKey: feedKeys.all });
+      queryClient.invalidateQueries({ queryKey: groupDetailKeys.all });
+      queryClient.invalidateQueries({ queryKey: collegePostsKeys.all });
     },
   });
 }

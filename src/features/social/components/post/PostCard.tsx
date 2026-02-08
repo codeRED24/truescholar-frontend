@@ -49,6 +49,7 @@ interface PostCardProps {
   onReport?: (postId: string) => void;
   onAuthorClick?: (authorId: string, type?: "user" | "college") => void;
   className?: string;
+  groupId?: string;
 }
 
 export function PostCard({
@@ -60,6 +61,7 @@ export function PostCard({
   onReport,
   onAuthorClick,
   className,
+  groupId,
 }: PostCardProps) {
   const [isExpanded, setIsExpanded] = useState(variant === "detail");
   const [isFollowing, setIsFollowing] = useState(post.isFollowing ?? false);
@@ -163,9 +165,11 @@ export function PostCard({
 
   const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText(
-        `${window.location.origin}/post/${post.id}`
-      );
+      const url = groupId 
+        ? `${window.location.origin}/feed/groups/${groupId}?postId=${post.id}`
+        : `${window.location.origin}/post/${post.id}`;
+      
+      await navigator.clipboard.writeText(url);
       toast.success("Link copied!");
     } catch {
       toast.error("Failed to copy link");
@@ -192,7 +196,7 @@ export function PostCard({
           />
 
           <div className="ml-auto flex items-center">
-            {!isOwner && currentUserId && !isFollowing && (
+            {!isOwner && currentUserId && !isFollowing && !groupId && (
               <Button
                 variant="ghost"
                 size="sm"

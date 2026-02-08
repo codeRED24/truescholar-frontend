@@ -272,7 +272,43 @@ export interface CollegePeopleResponse {
 }
 
 // ============================================================================
+// Notification Types
+// ============================================================================
+
+export type NotificationType =
+  | "post_liked"
+  | "post_commented"
+  | "comment_liked"
+  | "comment_replied"
+  | "connection_requested"
+  | "connection_accepted"
+  | "new_follower"
+  | "job_application_received"
+  | "application_status_changed"
+  | "group_invite_received"
+  | "group_join_request_received"
+  | "group_join_request_approved"
+  | "group_role_updated";
+
+export interface Notification {
+  id: string;
+  type: NotificationType;
+  actor: {
+    id: string;
+    name: string;
+    image?: string;
+  };
+  title: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+  link?: string;
+  data?: any;
+}
+
+// ============================================================================
 // Facebook-style Groups Types
 // ============================================================================
 
 export * from "./groups";
+export * from "./events";

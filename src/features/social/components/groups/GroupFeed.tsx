@@ -4,14 +4,18 @@ import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 import { Loader2 } from "lucide-react";
 import { useGroupFeed } from "../../hooks/use-group-detail";
-import { GroupFeedPostCard } from "./GroupFeedPostCard";
+import { PostCard } from "../post/PostCard";
+import { transformGroupPostToPost } from "../../utils/post-transforms";
+import { Post } from "../../types";
 
 interface GroupFeedProps {
   slugId: string;
   currentUserId?: string;
+  onEdit?: (post: Post) => void;
+  onDelete?: (postId: string) => void;
 }
 
-export function GroupFeed({ slugId, currentUserId }: GroupFeedProps) {
+export function GroupFeed({ slugId, currentUserId, onEdit, onDelete }: GroupFeedProps) {
   const { ref, inView } = useInView();
   const {
     data,
@@ -57,13 +61,19 @@ export function GroupFeed({ slugId, currentUserId }: GroupFeedProps) {
 
   return (
     <div className="space-y-4">
-      {posts.map((post) => (
-        <GroupFeedPostCard
-          key={post.id}
-          post={post}
-          currentUserId={currentUserId}
-        />
-      ))}
+      {posts.map((post) => {
+        const transformedPost = transformGroupPostToPost(post);
+        return (
+          <PostCard
+            key={post.id}
+            post={transformedPost}
+            currentUserId={currentUserId}
+            groupId={slugId}
+            onEdit={onEdit ? () => onEdit(transformedPost) : undefined}
+            onDelete={onDelete}
+          />
+        );
+      })}
 
       {/* Infinite scroll trigger */}
       <div ref={ref} className="h-4" />

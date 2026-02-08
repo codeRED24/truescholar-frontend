@@ -10,6 +10,7 @@ import { MentionTextarea } from "@/components/ui/mention-textarea";
 import { X, Loader2 } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { useCreatePost, useUpdatePost } from "../../hooks/use-post";
+import { useCreateGroupPost } from "../../hooks/use-group-detail";
 import { uploadPostMedia } from "../../api/social-api";
 import { useCollegeMemberships } from "../../hooks/use-memberships";
 import {
@@ -38,6 +39,7 @@ interface PostComposerProps {
   currentUser?: Author;
   postToEdit?: Post | null;
   initialCollegeId?: number;
+  groupId?: string;
 }
 
 interface PostFormData {
@@ -50,6 +52,7 @@ export function PostComposer({
   currentUser,
   postToEdit,
   initialCollegeId,
+  groupId,
 }: PostComposerProps) {
   // --- State ---
   const [uploadedMedia, setUploadedMedia] = useState<UploadedMedia[]>([]);
@@ -82,6 +85,7 @@ export function PostComposer({
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const createPost = useCreatePost();
+  const createGroupPost = useCreateGroupPost(groupId || "");
   const updatePost = useUpdatePost();
   const isEditing = !!postToEdit;
 
@@ -248,6 +252,11 @@ export function PostComposer({
             visibility: visibility,
           },
         });
+      } else if (groupId) {
+        await createGroupPost.mutateAsync({
+          content: data.content,
+          media: media.length > 0 ? media : undefined,
+        });
       } else {
         await createPost.mutateAsync({
           content: data.content,
@@ -266,7 +275,7 @@ export function PostComposer({
     }
   };
 
-  const isPending = createPost.isPending || updatePost.isPending || isMediaUploading;
+  const isPending = createPost.isPending || updatePost.isPending || createGroupPost.isPending || isMediaUploading;
 
   // --- Render ---
 
@@ -344,8 +353,8 @@ export function PostComposer({
             authorName={selectedAuthor.name}
             authorImage={selectedAuthor.image}
             authorType={selectedAuthor.type}
-            visibility={visibility}
-            onAuthorClick={() => !isEditing && setActiveModal("settings")}
+            visibility={groupId ? "public" : visibility}
+            onAuthorClick={() => !isEditing && !groupId && setActiveModal("settings")}
           />
 
           {/* Content Input */}

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import { Image, Video, Calendar, Newspaper } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,6 +17,7 @@ export function InlineComposer({
   currentUser,
   onPostClick,
 }: InlineComposerProps) {
+  const router = useRouter();
   const userInitials =
     currentUser?.name
       ?.split(" ")
@@ -59,7 +61,7 @@ export function InlineComposer({
           <Button
             variant="ghost"
             className="flex-1 gap-2 text-muted-foreground hover:bg-muted h-12"
-            onClick={onPostClick}
+            onClick={() => router.push("/feed/events/create")}
           >
             <Calendar className="h-5 w-5 text-primary" />
             <span className="hidden sm:inline font-medium">Event</span>
