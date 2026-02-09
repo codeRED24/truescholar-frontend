@@ -57,14 +57,17 @@ export default function EditEventPage(props: { params: Promise<{ eventId: string
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 pb-12">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
+    <div className="max-w-3xl mx-auto space-y-8 pb-40">
+      <div className="flex items-center gap-4 border-b pb-6">
+        <Button variant="ghost" size="icon" asChild className="rounded-full hover:bg-muted">
           <Link href={`/feed/events/${eventId}`}>
             <ArrowLeft className="h-5 w-5" />
           </Link>
         </Button>
-        <h1 className="text-2xl font-bold">Edit Event</h1>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Edit Event</h1>
+          <p className="text-muted-foreground mt-1">Update event details and settings</p>
+        </div>
       </div>
 
       <EventForm mode="edit" initialData={event} eventId={eventId} />
