@@ -29,6 +29,7 @@ import {
   Event,
 } from "../types";
 import { toast } from "sonner";
+import { useSession } from "@/lib/auth-client";
 
 // ============================================================================
 // Query Keys
@@ -111,9 +112,50 @@ export function useMyRsvp(eventId: string) {
   });
 }
 
+export function useEventRsvps(eventId: string, page = 1, enabled = true) {
+  return useQuery({
+    queryKey: [...eventKeys.rsvps(eventId), page],
+    queryFn: async () => {
+      const result = await getEventRsvps(eventId, { page, limit: 20 });
+      if (isApiError(result)) throw new Error(result.error);
+      return result.data;
+    },
+    enabled: !!eventId && enabled,
+  });
+}
+
 // ============================================================================
 // Mutations
 // ============================================================================
+
+export function useMyRsvpedEvents(limit = 10) {
+  const { data: session } = useSession();
+  
+  return useQuery({
+    queryKey: [...eventKeys.lists(), "my-rsvped", session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return [];
+      const result = await getEvents({ rsvpUserId: session.user.id, limit });
+      if (isApiError(result)) throw new Error(result.error);
+      return result.data.data;
+    },
+    enabled: !!session?.user?.id,
+  });
+}
+
+export function useRandomEvents(limit = 3) {
+  return useQuery({
+    queryKey: [...eventKeys.lists(), "random", limit],
+    queryFn: async () => {
+      const result = await getEvents({ 
+        startAfter: new Date().toISOString(), 
+        limit: 10 // Fetch more to randomize
+      });
+      if (isApiError(result)) throw new Error(result.error);
+      return result.data.data.sort(() => 0.5 - Math.random()).slice(0, limit);
+    },
+  });
+}
 
 export function useCreateEvent() {
   const queryClient = useQueryClient();
