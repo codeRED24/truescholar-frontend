@@ -21,7 +21,7 @@ import { getMockFeed, getMockComments } from "../mocks/feed-data";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
-// Set to true to always use mock data (useful during development)
+// Set to true to always use mock data
 const USE_MOCK_DATA = false;
 
 // ============================================================================
@@ -558,7 +558,6 @@ export async function getCollegePosts(
 
   const queryString = queryParams.toString();
   return fetchApi<GroupFeedResponse>(
-    `/colleges/${slugId}/posts${queryString ? `?${queryString}` : ""}`
+    `/colleges/${slugId}/posts${queryString ? `?${queryString}` : ""}`,
   );
 }
-

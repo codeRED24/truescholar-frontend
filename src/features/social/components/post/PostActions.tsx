@@ -10,6 +10,8 @@ import { useFeedStore } from "../../stores/feed-store";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { ReactionAuthorSelector } from "./ReactionAuthorSelector";
+import { useSession } from "@/lib/auth-client";
+import { requireAuth } from "../../utils/auth-redirect";
 
 interface PostActionsProps {
   postId: string;
@@ -17,6 +19,7 @@ interface PostActionsProps {
   commentCount: number;
   hasLiked: boolean;
   className?: string;
+  groupId?: string;
 }
 
 export function PostActions({
@@ -25,7 +28,9 @@ export function PostActions({
   commentCount,
   hasLiked,
   className,
+  groupId,
 }: PostActionsProps) {
+  const { data: session } = useSession();
   const { toggle: toggleLike, isLoading: isLiking } = useLikePost(
     postId,
     hasLiked
@@ -34,6 +39,8 @@ export function PostActions({
   const reactionAuthor = useFeedStore((s) => s.reactionAuthor);
 
   const handleLike = () => {
+    if (!requireAuth(session?.user)) return;
+
     toggleLike({
       authorType: reactionAuthor?.type,
       collegeId:
@@ -43,10 +50,17 @@ export function PostActions({
     });
   };
 
+  const handleComment = () => {
+    if (!requireAuth(session?.user)) return;
+
+    toggleExpandedComments(postId);
+  };
+
   const handleShare = async () => {
     try {
+      const query = groupId ? `?groupId=${encodeURIComponent(groupId)}` : "";
       await navigator.clipboard.writeText(
-        `${window.location.origin}/post/${postId}`
+        `${window.location.origin}/feed/post/${postId}${query}`
       );
       toast.success("Link copied to clipboard!");
     } catch {
@@ -87,11 +101,13 @@ export function PostActions({
         {/* Comment Button */}
         <Button
           variant="ghost"
-          onClick={() => toggleExpandedComments(postId)}
+          onClick={handleComment}
           className="flex-1 rounded-none h-11 gap-2 font-medium text-muted-foreground hover:text-foreground"
         >
           <MessageSquare className="h-5 w-5" />
-          <span>Comment</span>
+          <span>
+            Comment{commentCount > 0 ? ` (${commentCount})` : ""}
+          </span>
         </Button>
 
         {/* Share Button */}

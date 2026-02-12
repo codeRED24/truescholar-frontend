@@ -40,7 +40,10 @@ export const groupListKeys = {
 // Browse/Discover Groups (Infinite)
 // ============================================================================
 
-export function useGroups(params?: Omit<GroupListParams, "cursor">) {
+export function useGroups(
+  params?: Omit<GroupListParams, "cursor">,
+  enabled = true,
+) {
   return useInfiniteQuery({
     queryKey: groupListKeys.list(params),
     queryFn: async ({ pageParam }) => {
@@ -51,6 +54,7 @@ export function useGroups(params?: Omit<GroupListParams, "cursor">) {
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     staleTime: 1000 * 60 * 2, // 2 minutes
+    enabled,
   });
 }
 
@@ -58,7 +62,7 @@ export function useGroups(params?: Omit<GroupListParams, "cursor">) {
 // My Groups (Infinite)
 // ============================================================================
 
-export function useMyGroups(limit = 20) {
+export function useMyGroups(limit = 20, enabled = true) {
   return useInfiniteQuery({
     queryKey: groupListKeys.myGroups(),
     queryFn: async ({ pageParam }) => {
@@ -69,6 +73,7 @@ export function useMyGroups(limit = 20) {
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     staleTime: 1000 * 60 * 5, // 5 minutes
+    enabled,
   });
 }
 
@@ -76,7 +81,7 @@ export function useMyGroups(limit = 20) {
 // My Invitations
 // ============================================================================
 
-export function useMyInvitations() {
+export function useMyInvitations(enabled = true) {
   return useQuery({
     queryKey: groupListKeys.invitations(),
     queryFn: async () => {
@@ -85,6 +90,7 @@ export function useMyInvitations() {
       return result.data;
     },
     staleTime: 1000 * 60 * 2,
+    enabled,
   });
 }
 

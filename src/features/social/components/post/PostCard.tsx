@@ -67,6 +67,7 @@ export function PostCard({
   const [isFollowing, setIsFollowing] = useState(post.isFollowing ?? false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const isCommentsExpanded = useFeedStore((s) => s.isCommentsExpanded(post.id));
+  const shouldShowComments = variant === "detail" || isCommentsExpanded;
   const reactionAuthor = useFeedStore((s) => s.reactionAuthor);
 
   const isCollegePost = post.authorType === "college" && !!post.taggedCollege;
@@ -165,9 +166,8 @@ export function PostCard({
 
   const handleCopyLink = async () => {
     try {
-      const url = groupId 
-        ? `${window.location.origin}/feed/groups/${groupId}?postId=${post.id}`
-        : `${window.location.origin}/post/${post.id}`;
+      const query = groupId ? `?groupId=${encodeURIComponent(groupId)}` : "";
+      const url = `${window.location.origin}/feed/post/${post.id}${query}`;
       
       await navigator.clipboard.writeText(url);
       toast.success("Link copied!");
@@ -297,11 +297,12 @@ export function PostCard({
           likeCount={post.likeCount}
           commentCount={post.commentCount}
           hasLiked={post.hasLiked}
+          groupId={groupId}
           className=""
         />
 
         {/* Comments Section (expandable) */}
-        {isCommentsExpanded && (
+        {shouldShowComments && (
           <CommentSection postId={post.id} className="mt-4" />
         )}
       </CardContent>

@@ -25,6 +25,7 @@ import {
 } from "@/features/social/utils/event-helpers";
 import { toast } from "sonner";
 import { EventAttendeeList } from "@/features/social/components/events/EventAttendeeList";
+import { requireAuth } from "@/features/social/utils/auth-redirect";
 
 export default function EventDetailPage(props: {
   params: Promise<{ eventId: string }>;
@@ -65,10 +66,7 @@ export default function EventDetailPage(props: {
   const isRsvped = myRsvp?.status === "booked";
 
   const handleRsvp = () => {
-    if (!session?.user) {
-      toast.error("Please login to RSVP");
-      return;
-    }
+    if (!requireAuth(session?.user, `/feed/events/${eventId}`)) return;
     rsvpMutation.mutate({
       status: isRsvped ? null : "booked",
       currentRsvpId: myRsvp?.id,

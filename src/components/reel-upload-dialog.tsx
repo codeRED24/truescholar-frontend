@@ -22,6 +22,7 @@ import {
 import { Info, Upload, Video } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/auth-client";
+import { setRedirectAfterLogin } from "@/lib/auth/redirect-after-login";
 
 interface ReelUploadData {
   reel: File | null;
@@ -114,9 +115,7 @@ export function ReelUploadDialog({
       // Check if user is authenticated before opening dialog
       if (isPending) return; // Wait for session to load
       if (!session?.user) {
-        // Store current path for redirect after login
-        const currentPath = window.location.pathname;
-        sessionStorage.setItem("redirectAfterLogin", currentPath);
+        setRedirectAfterLogin();
         router.push("/signin");
         return;
       }

@@ -13,6 +13,11 @@ import { signIn, authClient } from "@/lib/auth-client";
 import { Eye, EyeOff, Mail, Lock, Phone } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import {
+  buildAuthCallbackURL,
+  consumeRedirectAfterLogin,
+  getRedirectAfterLogin,
+} from "@/lib/auth/redirect-after-login";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 
@@ -45,9 +50,9 @@ export default function SigninPage() {
       try {
         const frontendUrl =
           process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
-        const redirectTo = sessionStorage.getItem("redirectAfterLogin") || "/";
+        const redirectTo = getRedirectAfterLogin();
         await authClient.oneTap({
-          callbackURL: `${frontendUrl}${redirectTo}`,
+          callbackURL: buildAuthCallbackURL(frontendUrl, redirectTo),
         });
       } catch (error) {
         // Silently fail - One Tap is optional
@@ -71,27 +76,16 @@ export default function SigninPage() {
     },
   });
 
-  // Helper function to validate redirect URL
-  const isValidRedirect = (url: string): boolean => {
-    try {
-      const redirectUrl = new URL(url, window.location.origin);
-      return redirectUrl.origin === window.location.origin;
-    } catch {
-      return false;
-    }
+  const getAuthCallbackURL = () => {
+    const frontendUrl =
+      process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
+    const redirectTo = getRedirectAfterLogin();
+    return buildAuthCallbackURL(frontendUrl, redirectTo);
   };
 
   const handleSuccessfulLogin = () => {
     toast.success("Logged in successfully");
-
-    // Check for stored redirect path
-    const redirectTo = sessionStorage.getItem("redirectAfterLogin");
-    if (redirectTo && isValidRedirect(redirectTo)) {
-      sessionStorage.removeItem("redirectAfterLogin");
-      router.push(redirectTo);
-    } else {
-      router.push("/");
-    }
+    router.push(consumeRedirectAfterLogin());
   };
 
   const onEmailSubmit = async (data: EmailFormData) => {
@@ -308,12 +302,12 @@ export default function SigninPage() {
 
                   <div className="mt-2 text-sm">
                     Forget Password?{" "}
-                    <a
+                    <Link
                       href="/forgot-password"
                       className="text-blue-800 font-medium"
                     >
                       Regain Access Now!
-                    </a>
+                    </Link>
                   </div>
                 </div>
 
@@ -399,12 +393,12 @@ export default function SigninPage() {
 
                   <div className="mt-2 text-sm">
                     Forget Password?{" "}
-                    <a
+                    <Link
                       href="/forgot-password"
                       className="text-blue-800 font-medium"
                     >
                       Regain Access Now!
-                    </a>
+                    </Link>
                   </div>
                 </div>
 
@@ -437,14 +431,9 @@ export default function SigninPage() {
               onClick={async () => {
                 setIsSubmitting(true);
                 try {
-                  const frontendUrl =
-                    process.env.NEXT_PUBLIC_FRONTEND_URL ||
-                    "http://localhost:3000";
-                  const redirectTo =
-                    sessionStorage.getItem("redirectAfterLogin") || "/";
                   await authClient.signIn.social({
                     provider: "google",
-                    callbackURL: `${frontendUrl}${redirectTo}`,
+                    callbackURL: getAuthCallbackURL(),
                   });
                 } catch (err) {
                   console.error("Google sign-in error:", err);
@@ -483,14 +472,9 @@ export default function SigninPage() {
               onClick={async () => {
                 setIsSubmitting(true);
                 try {
-                  const frontendUrl =
-                    process.env.NEXT_PUBLIC_FRONTEND_URL ||
-                    "http://localhost:3000";
-                  const redirectTo =
-                    sessionStorage.getItem("redirectAfterLogin") || "/";
                   await authClient.signIn.social({
                     provider: "linkedin",
-                    callbackURL: `${frontendUrl}${redirectTo}`,
+                    callbackURL: getAuthCallbackURL(),
                   });
                 } catch (err) {
                   console.error("LinkedIn sign-in error:", err);
@@ -514,14 +498,9 @@ export default function SigninPage() {
               onClick={async () => {
                 setIsSubmitting(true);
                 try {
-                  const frontendUrl =
-                    process.env.NEXT_PUBLIC_FRONTEND_URL ||
-                    "http://localhost:3000";
-                  const redirectTo =
-                    sessionStorage.getItem("redirectAfterLogin") || "/";
                   await authClient.signIn.social({
                     provider: "facebook",
-                    callbackURL: `${frontendUrl}${redirectTo}`,
+                    callbackURL: getAuthCallbackURL(),
                   });
                 } catch (err) {
                   console.error("Facebook sign-in error:", err);
@@ -539,7 +518,7 @@ export default function SigninPage() {
             </Button>
 
             <p className="text-sm text-center mt-4">
-              First Time? Let's dive right in and get you{" "}
+              First Time? Let&apos;s dive right in and get you{" "}
               <Link href={"/signup"} className="text-blue-800">
                 Registered!
               </Link>

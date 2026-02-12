@@ -2,19 +2,18 @@
 
 import { NetworkPage } from "@/features/social/components/network";
 import { useSession } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
+import { redirectToSignIn } from "@/features/social/utils/auth-redirect";
 
 export default function NetworkPageRoute() {
   const { data: session, isPending } = useSession();
-  const router = useRouter();
 
   useEffect(() => {
     if (!isPending && !session?.user) {
-      router.push("/auth/signin");
+      redirectToSignIn("/feed/network");
     }
-  }, [isPending, session, router]);
+  }, [isPending, session]);
 
   if (isPending) {
     return (

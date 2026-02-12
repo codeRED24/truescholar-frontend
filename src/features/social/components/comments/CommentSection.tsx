@@ -11,7 +11,6 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   useFlattenedComments,
   useCreateComment,
@@ -19,6 +18,8 @@ import {
 import { useFeedStore } from "../../stores/feed-store"; // Added
 import { CommentItem } from "./CommentItem";
 import { cn } from "@/lib/utils";
+import { useSession } from "@/lib/auth-client";
+import { requireAuth } from "../../utils/auth-redirect";
 
 interface CommentSectionProps {
   postId: string;
@@ -32,6 +33,7 @@ export function CommentSection({
   className,
 }: CommentSectionProps) {
   const [newComment, setNewComment] = useState("");
+  const { data: session } = useSession();
   const reactionAuthor = useFeedStore((s) => s.reactionAuthor); // Added
 
   const {
@@ -49,6 +51,8 @@ export function CommentSection({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!requireAuth(session?.user)) return;
+
     if (!newComment.trim() || newComment.length > MAX_CHARS) return;
 
     await createComment.mutateAsync({

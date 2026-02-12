@@ -1,7 +1,7 @@
 "use client";
 
-import { use, useState } from "react";
-import { useRouter } from "next/navigation";
+import { use, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { Loader2 } from "lucide-react";
 import { useGroupDetail, useJoinGroup, useLeaveGroup, useRequestToJoin, useCancelJoinRequest } from "@/features/social/hooks/use-group-detail";
@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { requireAuth } from "@/features/social/utils/auth-redirect";
 
 export default function GroupProfilePage(props: {
   params: Promise<{ slugId: string }>;
@@ -30,20 +31,33 @@ export default function GroupProfilePage(props: {
   const derivedId = match ? match[0] : slugIdParam;
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const sharedPostId = searchParams.get("postId");
+  const queryString = searchParams.toString();
   const { data: session } = useSession();
   
   // Fetch using the derived ID (or slug if no UUID found)
   // Backend getGroupBySlug supports both now
   const { data: group, isLoading, error } = useGroupDetail(derivedId);
 
-  // URL Normalization / Redirect
-  if (group && !isLoading) {
+  useEffect(() => {
+    if (!group || isLoading) return;
+
     const canonicalUrl = `${group.slug}-${group.id}`;
-    if (slugIdParam !== canonicalUrl) {
-      // Use replace to avoid history stack pollution
-      router.replace(`/feed/groups/${canonicalUrl}`);
+
+    if (sharedPostId) {
+      const postUrl = `/feed/post/${sharedPostId}?groupId=${encodeURIComponent(canonicalUrl)}`;
+      router.replace(postUrl);
+      return;
     }
-  }
+
+    if (slugIdParam !== canonicalUrl) {
+      const nextParams = new URLSearchParams(queryString);
+      nextParams.delete("postId");
+      const suffix = nextParams.toString();
+      router.replace(`/feed/groups/${canonicalUrl}${suffix ? `?${suffix}` : ""}`);
+    }
+  }, [group, isLoading, sharedPostId, slugIdParam, router, queryString]);
 
   // Use the real group ID for mutations once loaded, fallback to derivedId
   const targetId = group?.id || derivedId;
@@ -78,6 +92,8 @@ export default function GroupProfilePage(props: {
   };
 
   const handleJoin = async () => {
+    if (!requireAuth(session?.user, `/feed/groups/${slugIdParam}`)) return;
+
     try {
       await joinGroup.mutateAsync();
       toast.success("Joined group successfully!");
@@ -96,6 +112,8 @@ export default function GroupProfilePage(props: {
   };
 
   const handleRequestJoin = async () => {
+    if (!requireAuth(session?.user, `/feed/groups/${slugIdParam}`)) return;
+
     try {
       await requestJoin.mutateAsync(undefined);
       toast.success("Request sent!");
@@ -108,7 +126,7 @@ export default function GroupProfilePage(props: {
     try {
       await cancelRequest.mutateAsync();
       toast.success("Request cancelled");
-    } catch (error) {
+    } catch {
       toast.error("Failed to cancel request");
     }
   };
@@ -132,7 +150,7 @@ export default function GroupProfilePage(props: {
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
         <h1 className="text-2xl font-bold mb-2">Group not found</h1>
         <p className="text-muted-foreground mb-4">
-          The group you're looking for doesn't exist or has been removed.
+          The group you&apos;re looking for doesn&apos;t exist or has been removed.
         </p>
         <button
           onClick={() => router.push("/feed/groups")}

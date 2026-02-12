@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { Loader2 } from "lucide-react";
+import { setRedirectAfterLogin } from "@/lib/auth/redirect-after-login";
 
 export default function ProfileRedirect() {
   const router = useRouter();
@@ -16,7 +17,7 @@ export default function ProfileRedirect() {
         router.replace(`/feed/profile/${session.user.id}`);
       } else {
         // Not logged in - redirect to sign in
-        sessionStorage.setItem("redirectAfterLogin", "/feed/profile");
+        setRedirectAfterLogin("/feed/profile");
         router.replace("/signin");
       }
     }

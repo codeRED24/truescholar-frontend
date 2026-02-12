@@ -9,6 +9,8 @@ import { type Group } from "../../types";
 import { GroupRoleBadge } from "./GroupRoleBadge";
 import { useJoinGroup } from "../../hooks/use-group-detail";
 import { toast } from "sonner";
+import { useSession } from "@/lib/auth-client";
+import { requireAuth } from "../../utils/auth-redirect";
 
 interface GroupCardProps {
   group: Group;
@@ -17,11 +19,14 @@ interface GroupCardProps {
 }
 
 export function GroupCard({ group, userRole, showJoinButton = true }: GroupCardProps) {
+  const { data: session } = useSession();
   const joinMutation = useJoinGroup(group.id);
 
   const handleJoin = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!requireAuth(session?.user, "/feed/groups")) return;
+
     try {
       await joinMutation.mutateAsync();
       toast.success("Joined group successfully!");
@@ -88,7 +93,15 @@ export function GroupCard({ group, userRole, showJoinButton = true }: GroupCardP
                 </Button>
               )}
               {!isMember && showJoinButton && !isPublic && (
-                <Button size="sm" variant="outline">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    requireAuth(session?.user, "/feed/groups");
+                  }}
+                >
                   Request
                 </Button>
               )}
