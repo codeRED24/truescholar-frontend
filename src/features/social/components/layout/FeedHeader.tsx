@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { useSession } from "@/lib/auth-client";
+import { signOut, useSession } from "@/lib/auth-client";
 import {
   InputGroup,
   InputGroupAddon,
@@ -60,11 +60,11 @@ export function FeedHeader() {
     { label: "Network", icon: Users, href: "/feed/network" },
     { label: "Jobs", icon: Briefcase, href: "/feed/jobs" },
     { label: "Messaging", icon: MessageSquare, href: "/feed/messaging" },
-    { 
-      label: "Notifications", 
-      icon: Bell, 
+    {
+      label: "Notifications",
+      icon: Bell,
       href: "/feed/notifications",
-      count: unreadCount 
+      count: unreadCount,
     },
   ];
 
@@ -86,7 +86,7 @@ export function FeedHeader() {
           <div
             className={cn(
               "hidden md:block relative transition-all duration-300 ease-in-out",
-              isSearchFocused ? "w-96 lg:w-[32rem]" : "w-64 lg:w-80"
+              isSearchFocused ? "w-96 lg:w-[32rem]" : "w-64 lg:w-80",
             )}
           >
             <InputGroup className="rounded-full">
@@ -114,7 +114,7 @@ export function FeedHeader() {
                     href={item.href}
                     className={cn(
                       "flex flex-col items-center justify-center gap-1 pt-4 min-w-[3.5rem] rounded-md transition-colors hover:text-foreground/80",
-                      isActive ? "text-foreground" : "text-muted-foreground"
+                      isActive ? "text-foreground" : "text-muted-foreground",
                     )}
                   >
                     <div className="relative">
@@ -172,7 +172,7 @@ export function FeedHeader() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/profile">
+                  <Link href="/feed/profile">
                     <User className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                   </Link>
@@ -184,7 +184,10 @@ export function FeedHeader() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                <DropdownMenuItem
+                  onClick={() => signOut()}
+                  className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>
@@ -243,7 +246,7 @@ export function FeedHeader() {
                   {session?.user?.name || "Guest"}
                 </span>
                 <Link
-                  href="/profile"
+                  href="/feed/profile"
                   className="text-xs text-primary hover:underline"
                 >
                   View Profile
@@ -275,7 +278,10 @@ export function FeedHeader() {
                 <Settings className="h-5 w-5" />
                 Settings
               </Link>
-              <button className="w-full flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-md hover:bg-destructive/10 text-destructive hover:text-destructive">
+              <button
+                onClick={() => signOut()}
+                className="w-full flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-md hover:bg-destructive/10 text-destructive hover:text-destructive"
+              >
                 <LogOut className="h-5 w-5" />
                 Log out
               </button>
