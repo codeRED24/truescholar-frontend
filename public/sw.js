@@ -2,11 +2,14 @@ const CACHE_NAME = 'truescholar-v1';
 const STATIC_CACHE = 'truescholar-static-v1';
 const DYNAMIC_CACHE = 'truescholar-dynamic-v1';
 
-const STATIC_ASSETS = [
+const REQUIRED_STATIC_ASSETS = [
   '/',
-  '/manifest.json',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
+];
+
+const OPTIONAL_STATIC_ASSETS = [
+  '/manifest.webmanifest',
 ];
 
 const API_PATTERNS = [
@@ -19,11 +22,23 @@ const STATIC_PATTERNS = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(STATIC_CACHE).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
-    })
-  );
+  event.waitUntil((async () => {
+    const cache = await caches.open(STATIC_CACHE);
+
+    // Required assets must succeed for predictable offline boot.
+    await cache.addAll(REQUIRED_STATIC_ASSETS);
+
+    // Optional assets should not fail the entire service worker install.
+    const optionalResults = await Promise.allSettled(
+      OPTIONAL_STATIC_ASSETS.map((asset) => cache.add(asset))
+    );
+
+    optionalResults.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        console.warn('[SW] Optional precache failed:', OPTIONAL_STATIC_ASSETS[index], result.reason);
+      }
+    });
+  })());
   self.skipWaiting();
 });
 
