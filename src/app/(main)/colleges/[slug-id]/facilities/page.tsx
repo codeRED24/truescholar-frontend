@@ -51,7 +51,7 @@ export async function generateMetadata(props: {
     const { college_information, infrastructure } = college;
     const content = infrastructure?.content?.[0];
 
-    // Use the unified metadata generator (using generic tab since facilities isn't a standard tab)
+    // Use the unified metadata generator
     return generatePageMetadata({
       type: "college-tab",
       data: {
@@ -61,7 +61,7 @@ export async function generateMetadata(props: {
         city: college_information.city,
         state: college_information.state,
         logo_img: college_information.logo_img,
-        tab: "generic" as any,
+        tab: "facilities",
         tabContent: {
           title: content?.title,
           meta_desc: content?.meta_desc,
@@ -129,7 +129,7 @@ const CollegeFacilities = async (props: {
   const breadcrumbItems = buildCollegeBreadcrumbTrail(
     college_information.college_name,
     correctSlugId,
-    "generic" as any,
+    "facilities",
   );
 
   // Override the last breadcrumb to say "Facilities"

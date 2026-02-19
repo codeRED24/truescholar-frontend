@@ -59,7 +59,7 @@ export async function generateMetadata(props: {
 
     const { college_information } = college;
 
-    // Use the unified metadata generator (using generic tab since news isn't a standard tab)
+    // Use the unified metadata generator
     return generatePageMetadata({
       type: "college-tab",
       data: {
@@ -69,7 +69,7 @@ export async function generateMetadata(props: {
         city: college_information.city,
         state: college_information.state,
         logo_img: college_information.logo_img,
-        tab: "generic" as any,
+        tab: "news",
         tabContent: {
           title: `${college_information.college_name} News`,
           meta_desc: `Latest news and updates from ${college_information.college_name}.`,
@@ -139,7 +139,7 @@ const CollegeNews = async ({
   const breadcrumbItems = buildCollegeBreadcrumbTrail(
     college_information.college_name,
     correctSlugId,
-    "generic" as any
+    "news"
   );
 
   // Override the last breadcrumb to say "News"

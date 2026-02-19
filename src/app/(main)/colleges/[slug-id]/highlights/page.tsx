@@ -46,7 +46,7 @@ export async function generateMetadata(props: {
     const { college_information, highlight_section } = college;
     const highlight = highlight_section?.[0];
 
-    // Use the unified metadata generator (using generic tab since highlights isn't a standard tab)
+    // Use the unified metadata generator
     return generatePageMetadata({
       type: "college-tab",
       data: {
@@ -56,7 +56,7 @@ export async function generateMetadata(props: {
         city: college_information.city,
         state: college_information.state,
         logo_img: college_information.logo_img,
-        tab: "generic" as any,
+        tab: "highlights",
         tabContent: {
           title: highlight?.title,
           meta_desc: highlight?.meta_desc,
@@ -119,7 +119,7 @@ const CollegeHighlights = async (props: {
   const breadcrumbItems = buildCollegeBreadcrumbTrail(
     college_information.college_name,
     correctSlugId,
-    "generic" as any
+    "highlights"
   );
 
   // Override the last breadcrumb to say "Highlights"

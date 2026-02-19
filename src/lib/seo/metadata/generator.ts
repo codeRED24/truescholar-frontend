@@ -27,7 +27,6 @@ import {
   getCollegeTabTemplate,
   getExamSiloTemplate,
 } from "./templates";
-import { validateContent, getRobotsDirective } from "./validators";
 
 // Input types for the generator
 export type MetadataInput =
@@ -111,15 +110,6 @@ export function generatePageMetadata(input: MetadataInput): Metadata {
       throw new Error(`Unknown metadata type: ${(input as any).type}`);
   }
 
-  // Validate content quality
-  const contentToValidate =
-    "content" in input ? input.content : undefined;
-  const validation = validateContent({
-    title: template.title,
-    description: template.description,
-    content: contentToValidate,
-  });
-
   // Build the canonical URL
   const canonicalUrl = buildCanonicalUrl(template.canonicalPath);
 
@@ -128,9 +118,7 @@ export function generatePageMetadata(input: MetadataInput): Metadata {
     input.type === "static" && (input.data as StaticPageData).noIndex;
   const robotsDirective = shouldNoIndex
     ? { index: false, follow: true }
-    : validation.shouldIndex
-      ? { index: true, follow: true }
-      : { index: false, follow: true };
+    : { index: true, follow: true };
 
   // Build the metadata object
   const metadata: Metadata = {
