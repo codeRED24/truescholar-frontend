@@ -1,0 +1,91 @@
+# TrueScholar
+
+> India's most comprehensive college and university directory helping students discover the best institutions across India. Browse 1500+ colleges, 100+ entrance exams, and expert articles on admissions, scholarships, and career guidance.
+
+## Main Pages
+
+- [Find Colleges](https://www.truescholar.in/colleges): Browse all colleges in India
+- [Entrance Exams](https://www.truescholar.in/exams): Complete list of 100+ entrance exams
+- [Articles](https://www.truescholar.in/articles): Education news and admission guidance
+- [Compare Colleges](https://www.truescholar.in/compare-colleges): Compare up to 5 colleges side-by-side
+- [Sitemap](https://www.truescholar.in/sitemap): Complete site map
+
+## College Search Filters
+
+- [College by Stream](https://www.truescholar.in/colleges-stream-engineering): Engineering, Medical, Management, Law, Arts, Commerce
+- [College by City](https://www.truescholar.in/colleges-city-mumbai): Colleges in major cities across India
+- [College by State](https://www.truescholar.in/colleges-state-delhi): Colleges by state and union territory
+
+## College Detail Pages
+
+- /colleges/[slug-id]: College overview with key information
+- /colleges/[slug-id]/courses: Complete course offerings, durations, and specializations
+- /colleges/[slug-id]/fees: Detailed fee structure including tuition, hostel, and miscellaneous charges
+- /colleges/[slug-id]/placements: Placement records with company names, packages, and placement percentage
+- /colleges/[slug-id]/admission-process: Admission criteria, eligibility, and application process
+- /colleges/[slug-id]/cutoffs: Previous year cutoff ranks for various courses
+- /colleges/[slug-id]/rankings: National and state rankings
+- /colleges/[slug-id]/scholarship: Available scholarships and eligibility criteria
+- /colleges/[slug-id]/facilities: Campus infrastructure, amenities, and infrastructure details
+- /colleges/[slug-id]/reviews: Student reviews and ratings
+- /colleges/[slug-id]/news: College news and announcements
+- /colleges/[slug-id]/news/[news-id]: Individual college news article
+- /colleges/[slug-id]/faq: Frequently asked questions
+- /colleges/[slug-id]/highlights: Key highlights and achievements
+- /colleges/[slug-id]/eligibility: Course-wise eligibility criteria
+- /colleges/[slug-id]/results: Exam results and academic performance
+- /colleges/[slug-id]/others: Additional information and details
+
+## Exam Search Filters
+
+- [Engineering Exams](https://www.truescholar.in/exams-stream-engineering): JEE Main, JEE Advanced, BITSAT, VITEEE, SRMJEEE
+- [Medical Exams](https://www.truescholar.in/exams-stream-medical): NEET, AIIMS MBBS, JIPMER, PGIMER
+- [Management Exams](https://www.truescholar.in/exams-stream-management): CAT, MAT, XAT, CMAT, GMAT
+
+## Exam Detail Pages
+
+- /exams/[slug-id]: Exam overview with eligibility and important dates
+- /exams/[slug-id]/exam-syllabus: Complete syllabus and topics covered
+- /exams/[slug-id]/exam-pattern: Exam mode, duration, marking scheme
+- /exams/[slug-id]/exam-cutoff: Previous year cutoff scores
+- /exams/[slug-id]/exam-result: Result dates and score verification
+- /exams/[slug-id]/news: Exam notifications, updates, and announcements
+- /exams/[slug-id]/admit-card: Admit card download and instructions
+- /exams/[slug-id]/exam-imp-highlight: Important highlights and key information
+- /exams/[slug-id]/exam-application-process: Application form and submission process
+- /exams/[slug-id]/exam-eligibility-criteria: Eligibility criteria and qualifications
+- /exams/[slug-id]/exam-centers: Exam centers and venue details
+- /exams/[slug-id]/exam-faq: Frequently asked questions
+- /exams/[slug-id]/question-papers: Previous year question papers
+- /exams/[slug-id]/books: Recommended books and study materials
+- /exams/[slug-id]/answer-key: Official answer key
+- /exams/[slug-id]/analysis: Detailed exam analysis and review
+- /exams/[slug-id]/preparation: Preparation tips and strategies
+- /exams/[slug-id]/counselling: Counselling process and schedule
+- /exams/[slug-id]/notification: Official notifications and announcements
+- /exams/[slug-id]/slot-booking: Slot booking for exam
+
+## Articles & Authors
+
+- [Articles](https://www.truescholar.in/articles): Education news, admission guides, scholarship tips, career advice
+- /articles/[slug-id]: Individual article with detailed information
+- /authors/[authorId]: Author profile with published articles
+
+## Sitemaps
+
+- /sitemap.xml: Main sitemap index
+- /sitemap-static.xml: Static pages
+- /sitemap-colleges.xml: All college pages
+- /sitemap-exams.xml: All exam pages
+- /sitemap-articles.xml: All article pages
+- /sitemap-authors.xml: All author pages
+- /sitemap-cities.xml: City filter pages
+- /sitemap-states.xml: State filter pages
+- /sitemap-streams.xml: Stream filter pages
+
+## Optional
+
+- [About Us](https://www.truescholar.in/about-us): Platform information and mission
+- [Contact Us](https://www.truescholar.in/contact-us): Customer support
+- [Privacy Policy](https://www.truescholar.in/privacy-policy): Privacy information
+- [Terms of Service](https://www.truescholar.in/terms-and-conditions): Terms and conditions
