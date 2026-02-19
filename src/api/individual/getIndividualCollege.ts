@@ -102,6 +102,27 @@ export const getCollegeFaq = async (college_id: number) => {
   return fetchCollegeData("faq", college_id);
 };
 
+export const getCollegeOthersById = async (
+  college_id: number,
+  schema = false
+) => {
+  return fetchCollegeData("others", college_id, schema);
+};
+
+export const getCollegeEligibilityById = async (
+  college_id: number,
+  schema = false
+) => {
+  return fetchCollegeData("eligibility", college_id, schema);
+};
+
+export const getCollegeResultsById = async (
+  college_id: number,
+  schema = false
+) => {
+  return fetchCollegeData("results", college_id, schema);
+};
+
 export const getCollegeFilters = async (
   college_id: number,
   params?: string
