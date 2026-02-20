@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { Suspense, use } from "react";
 import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -70,7 +70,9 @@ export default function EditEventPage(props: { params: Promise<{ eventId: string
         </div>
       </div>
 
-      <EventForm mode="edit" initialData={event} eventId={eventId} />
+      <Suspense fallback={null}>
+        <EventForm mode="edit" initialData={event} eventId={eventId} />
+      </Suspense>
     </div>
   );
 }

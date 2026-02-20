@@ -1,19 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { signIn, authClient } from "@/lib/auth-client";
 import { Eye, EyeOff, Mail, Lock, Phone } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import PhoneInput from "react-phone-input-2";
+import {
+  consumeRedirectTarget,
+  getRedirectTarget,
+  saveRedirectTarget,
+} from "@/lib/auth-redirect";
 import "react-phone-input-2/lib/style.css";
 
 type LoginMethod = "email" | "phone";
@@ -32,12 +37,21 @@ const phoneSchema = z.object({
 type EmailFormData = z.infer<typeof emailSchema>;
 type PhoneFormData = z.infer<typeof phoneSchema>;
 
-export default function SigninPage() {
+function SigninPageContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loginMethod, setLoginMethod] = useState<LoginMethod>("email");
   const [phoneNumber, setPhoneNumber] = useState("");
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const redirectFromQuery =
+      searchParams.get("redirect") ?? searchParams.get("redirectAfterLogin");
+    if (redirectFromQuery) {
+      saveRedirectTarget(redirectFromQuery);
+    }
+  }, [searchParams]);
 
   // Trigger Google One Tap on page load
   useEffect(() => {
@@ -45,7 +59,7 @@ export default function SigninPage() {
       try {
         const frontendUrl =
           process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
-        const redirectTo = sessionStorage.getItem("redirectAfterLogin") || "/";
+        const redirectTo = getRedirectTarget("/");
         await authClient.oneTap({
           callbackURL: `${frontendUrl}${redirectTo}`,
         });
@@ -71,27 +85,9 @@ export default function SigninPage() {
     },
   });
 
-  // Helper function to validate redirect URL
-  const isValidRedirect = (url: string): boolean => {
-    try {
-      const redirectUrl = new URL(url, window.location.origin);
-      return redirectUrl.origin === window.location.origin;
-    } catch {
-      return false;
-    }
-  };
-
   const handleSuccessfulLogin = () => {
     toast.success("Logged in successfully");
-
-    // Check for stored redirect path
-    const redirectTo = sessionStorage.getItem("redirectAfterLogin");
-    if (redirectTo && isValidRedirect(redirectTo)) {
-      sessionStorage.removeItem("redirectAfterLogin");
-      router.push(redirectTo);
-    } else {
-      router.push("/");
-    }
+    router.push(consumeRedirectTarget("/"));
   };
 
   const onEmailSubmit = async (data: EmailFormData) => {
@@ -308,12 +304,9 @@ export default function SigninPage() {
 
                   <div className="mt-2 text-sm">
                     Forget Password?{" "}
-                    <a
-                      href="/forgot-password"
-                      className="text-blue-800 font-medium"
-                    >
+                    <Link href="/forgot-password" className="text-blue-800 font-medium">
                       Regain Access Now!
-                    </a>
+                    </Link>
                   </div>
                 </div>
 
@@ -399,12 +392,9 @@ export default function SigninPage() {
 
                   <div className="mt-2 text-sm">
                     Forget Password?{" "}
-                    <a
-                      href="/forgot-password"
-                      className="text-blue-800 font-medium"
-                    >
+                    <Link href="/forgot-password" className="text-blue-800 font-medium">
                       Regain Access Now!
-                    </a>
+                    </Link>
                   </div>
                 </div>
 
@@ -440,8 +430,7 @@ export default function SigninPage() {
                   const frontendUrl =
                     process.env.NEXT_PUBLIC_FRONTEND_URL ||
                     "http://localhost:3000";
-                  const redirectTo =
-                    sessionStorage.getItem("redirectAfterLogin") || "/";
+                  const redirectTo = getRedirectTarget("/");
                   await authClient.signIn.social({
                     provider: "google",
                     callbackURL: `${frontendUrl}${redirectTo}`,
@@ -486,8 +475,7 @@ export default function SigninPage() {
                   const frontendUrl =
                     process.env.NEXT_PUBLIC_FRONTEND_URL ||
                     "http://localhost:3000";
-                  const redirectTo =
-                    sessionStorage.getItem("redirectAfterLogin") || "/";
+                  const redirectTo = getRedirectTarget("/");
                   await authClient.signIn.social({
                     provider: "linkedin",
                     callbackURL: `${frontendUrl}${redirectTo}`,
@@ -517,8 +505,7 @@ export default function SigninPage() {
                   const frontendUrl =
                     process.env.NEXT_PUBLIC_FRONTEND_URL ||
                     "http://localhost:3000";
-                  const redirectTo =
-                    sessionStorage.getItem("redirectAfterLogin") || "/";
+                  const redirectTo = getRedirectTarget("/");
                   await authClient.signIn.social({
                     provider: "facebook",
                     callbackURL: `${frontendUrl}${redirectTo}`,
@@ -539,7 +526,7 @@ export default function SigninPage() {
             </Button>
 
             <p className="text-sm text-center mt-4">
-              First Time? Let's dive right in and get you{" "}
+              First Time? Let&apos;s dive right in and get you{" "}
               <Link href={"/signup"} className="text-blue-800">
                 Registered!
               </Link>
@@ -548,5 +535,13 @@ export default function SigninPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SigninPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+      <SigninPageContent />
+    </Suspense>
   );
 }

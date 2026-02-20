@@ -12,7 +12,7 @@ export default function NetworkPageRoute() {
 
   useEffect(() => {
     if (!isPending && !session?.user) {
-      router.push("/auth/signin");
+      router.push("/signin");
     }
   }, [isPending, session, router]);
 

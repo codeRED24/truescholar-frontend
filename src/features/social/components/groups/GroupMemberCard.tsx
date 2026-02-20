@@ -13,6 +13,7 @@ import { MoreHorizontal, Shield, ShieldOff, UserMinus } from "lucide-react";
 import { type GroupMember, type GroupRole } from "../../types";
 import { GroupRoleBadge } from "./GroupRoleBadge";
 import { formatDistanceToNow } from "date-fns";
+import { getUserProfilePath } from "../../utils/author-navigation";
 
 interface GroupMemberCardProps {
   member: GroupMember;
@@ -34,6 +35,7 @@ export function GroupMemberCard({
   const isOwner = member.role === "owner";
   const isAdmin = member.role === "admin";
   const canEdit = canManage && currentUserRole === "owner" && !isOwner;
+  const profilePath = getUserProfilePath(member.userId);
 
   return (
     <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent/50 transition-colors">
@@ -47,7 +49,7 @@ export function GroupMemberCard({
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <Link
-            href={`/feed/profile/${member.userId}`}
+            href={profilePath}
             className="font-medium hover:underline truncate"
           >
             {member.user.name}

@@ -5,7 +5,21 @@ import { getCookieCache } from "better-auth/cookies";
 const authPages = ["/signin", "/signup", "/forgot-password", "/reset-password"];
 
 // Protected pages - redirect to signin if not logged in
-const protectedPages: string[] = ["/profile"];
+const protectedPages = new Set([
+  "/feed/network",
+  "/feed/profile",
+  "/feed/notifications",
+  "/feed/events/create",
+  "/feed/groups/create",
+]);
+
+function isProtectedFeedPath(pathname: string): boolean {
+  if (protectedPages.has(pathname)) return true;
+  if (pathname.startsWith("/feed/profile/")) return true;
+  if (/^\/feed\/events\/[^/]+\/edit$/.test(pathname)) return true;
+  if (/^\/feed\/groups\/[^/]+\/settings$/.test(pathname)) return true;
+  return false;
+}
 
 export async function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
@@ -25,10 +39,14 @@ export async function middleware(req: NextRequest) {
   }
 
   // Protected pages: redirect to signin if not logged in
-  if (protectedPages.some((page) => pathname.startsWith(page))) {
+  const isProtectedPage = isProtectedFeedPath(pathname);
+
+  if (isProtectedPage) {
     if (!isLoggedIn) {
+      const redirectTarget = `${pathname}${url.search}`;
       url.pathname = "/signin";
-      url.searchParams.set("redirect", pathname);
+      url.search = "";
+      url.searchParams.set("redirect", redirectTarget);
       return NextResponse.redirect(url, 302);
     }
   }
@@ -61,7 +79,13 @@ export const config = {
     "/forgot-password",
     "/reset-password",
     // Protected pages
-    "/profile/:path*",
+    "/feed/network",
+    "/feed/profile/:path*",
+    "/feed/notifications",
+    "/feed/events/create",
+    "/feed/events/:eventId/edit",
+    "/feed/groups/create",
+    "/feed/groups/:slugId/settings",
     // Colleges URL normalization
     "/colleges/:path*",
   ],

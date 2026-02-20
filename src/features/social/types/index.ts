@@ -177,6 +177,31 @@ export interface CommentsResponse {
 }
 
 // ============================================================================
+// Post Likes Response
+// ============================================================================
+
+export interface PostLikeActor {
+  type: "user" | "college";
+  id: string;
+  name: string;
+  image?: string | null;
+  slug?: string;
+  collegeId?: number;
+}
+
+export interface PostLikeItem {
+  id: string;
+  actorType: "user" | "college";
+  actor: PostLikeActor;
+  createdAt: string;
+}
+
+export interface PostLikesResponse {
+  items: PostLikeItem[];
+  nextCursor: string | null;
+}
+
+// ============================================================================
 // API Response Types
 // ============================================================================
 
@@ -303,7 +328,7 @@ export interface Notification {
   isRead: boolean;
   createdAt: string;
   link?: string;
-  data?: any;
+  data?: Record<string, unknown>;
 }
 
 // ============================================================================

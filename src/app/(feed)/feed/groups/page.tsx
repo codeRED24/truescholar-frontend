@@ -12,6 +12,8 @@ import { GroupCard } from "@/features/social/components/groups/GroupCard";
 import { CreateGroupDialog } from "@/features/social/components/groups/CreateGroupDialog";
 import { MyInvitationsCard } from "@/features/social/components/groups/MyInvitationsCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSession } from "@/lib/auth-client";
+import { redirectToSignIn } from "@/features/social/utils/auth-redirect";
 
 // Simple debounce fallback
 function useDebounceValue<T>(value: T, delay: number): T {
@@ -26,24 +28,36 @@ function useDebounceValue<T>(value: T, delay: number): T {
 }
 
 export default function GroupsPage() {
+  const { data: session } = useSession();
+  const isAuthenticated = !!session?.user;
   const [activeTab, setActiveTab] = useState("my-groups");
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounceValue(search, 500);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   // Queries
-  const myGroupsQuery = useMyGroups();
+  const myGroupsQuery = useMyGroups(20, isAuthenticated);
   const discoverQuery = useGroups({ search: debouncedSearch });
-  const invitationsQuery = useMyInvitations();
+  const invitationsQuery = useMyInvitations(isAuthenticated);
+  const {
+    hasNextPage: discoverHasNextPage,
+    isFetchingNextPage: discoverIsFetchingNextPage,
+    fetchNextPage: discoverFetchNextPage,
+  } = discoverQuery;
 
   // Infinite scroll for discover tab
   const { ref: discoverRef, inView: discoverInView } = useInView();
   
   useEffect(() => {
-    if (discoverInView && discoverQuery.hasNextPage && !discoverQuery.isFetchingNextPage) {
-      discoverQuery.fetchNextPage();
+    if (discoverInView && discoverHasNextPage && !discoverIsFetchingNextPage) {
+      discoverFetchNextPage();
     }
-  }, [discoverInView, discoverQuery.hasNextPage, discoverQuery.isFetchingNextPage, discoverQuery.fetchNextPage]);
+  }, [
+    discoverInView,
+    discoverHasNextPage,
+    discoverIsFetchingNextPage,
+    discoverFetchNextPage,
+  ]);
 
   const invitationCount = invitationsQuery.data?.total || 0;
   
@@ -65,7 +79,15 @@ export default function GroupsPage() {
             Discover and join communities that share your interests.
           </p>
         </div>
-        <Button onClick={() => setIsCreateOpen(true)}>
+        <Button
+          onClick={() => {
+            if (!isAuthenticated) {
+              redirectToSignIn("/feed/groups");
+              return;
+            }
+            setIsCreateOpen(true);
+          }}
+        >
           <Plus className="h-4 w-4 mr-2" />
           Create Group
         </Button>
@@ -88,11 +110,21 @@ export default function GroupsPage() {
         <div className="mt-6">
           {/* My Groups Tab */}
           <TabsContent value="my-groups" className="space-y-6">
-            {myGroupsQuery.isLoading ? (
+            {!isAuthenticated ? (
+              <div className="text-center py-12 border rounded-xl bg-muted/20">
+                <h3 className="text-lg font-medium">Sign in to view your groups</h3>
+                <p className="text-muted-foreground mt-2 mb-4">
+                  Join communities and manage your memberships after signing in.
+                </p>
+                <Button variant="outline" onClick={() => redirectToSignIn("/feed/groups")}>
+                  Sign in
+                </Button>
+              </div>
+            ) : myGroupsQuery.isLoading ? (
               renderSkeletons()
             ) : myGroupsQuery.data?.pages[0]?.groups.length === 0 ? (
               <div className="text-center py-12 border rounded-xl bg-muted/20">
-                <h3 className="text-lg font-medium">You haven't joined any groups yet</h3>
+                <h3 className="text-lg font-medium">You haven&apos;t joined any groups yet</h3>
                 <p className="text-muted-foreground mt-2 mb-4">
                   Explore public groups or create your own community.
                 </p>
@@ -130,7 +162,7 @@ export default function GroupsPage() {
               renderSkeletons()
             ) : discoverQuery.data?.pages[0]?.groups.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                No groups found matching "{search}"
+                No groups found matching &quot;{search}&quot;
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -155,7 +187,17 @@ export default function GroupsPage() {
 
           {/* Invitations Tab */}
           <TabsContent value="invitations">
-            {invitationsQuery.isLoading ? (
+            {!isAuthenticated ? (
+              <div className="text-center py-12 border rounded-xl bg-muted/20">
+                <h3 className="text-lg font-medium">Sign in to view invitations</h3>
+                <p className="text-muted-foreground mt-2 mb-4">
+                  Invitations are available only for signed-in users.
+                </p>
+                <Button variant="outline" onClick={() => redirectToSignIn("/feed/groups")}>
+                  Sign in
+                </Button>
+              </div>
+            ) : invitationsQuery.isLoading ? (
               <Skeleton className="h-24 w-full rounded-xl" />
             ) : (
               <MyInvitationsCard invitations={invitationsQuery.data?.invitations || []} />

@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { setRedirectAfterLogin } from "@/lib/auth/redirect-after-login";
 
 interface LoginDialogProps {
   isOpen: boolean;
@@ -24,14 +25,10 @@ interface LoginDialogProps {
 export function LoginDialog({
   isOpen,
   onClose,
-  onLoginSuccess,
   userData,
 }: LoginDialogProps) {
   const handleSignIn = () => {
-    sessionStorage.setItem(
-      "redirectAfterLogin",
-      window.location.pathname + window.location.search
-    );
+    setRedirectAfterLogin();
     router.push("/signin");
   };
 

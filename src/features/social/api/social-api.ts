@@ -3,6 +3,7 @@
 
 import {
   type Post,
+  type FeedItem,
   type FeedResponse,
   type CreatePostDto,
   type UpdatePostDto,
@@ -15,50 +16,100 @@ import {
   type CollegeMember,
   type LinkRequest,
   type CollegeInfo,
-  isApiError,
+  type PostLikesResponse,
 } from "../types";
 import { getMockFeed, getMockComments } from "../mocks/feed-data";
+import { fetchJson } from "@/lib/api-fetch";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
-// Set to true to always use mock data (useful during development)
+// Set to true to always use mock data
 const USE_MOCK_DATA = false;
 
 // ============================================================================
 // Helper Functions
 // ============================================================================
 
+function toSafeCount(value: unknown): number {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return 0;
+
+    const parsed = Number(trimmed);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  return 0;
+}
+
+function normalizePostMetrics(post: Post): Post {
+  const rawPost = post as Post & {
+    like_count?: unknown;
+    comment_count?: unknown;
+  };
+
+  const likeCount = rawPost.likeCount ?? rawPost.like_count;
+  const commentCount = rawPost.commentCount ?? rawPost.comment_count;
+
+  return {
+    ...post,
+    likeCount: toSafeCount(likeCount),
+    commentCount: toSafeCount(commentCount),
+  };
+}
+
+function normalizeFeedItems(items: FeedItem[] = []): FeedItem[] {
+  return items.map((item) =>
+    item.type === "post"
+      ? {
+          ...item,
+          post: normalizePostMetrics(item.post),
+        }
+      : item,
+  );
+}
+
+function normalizeFeedResponse(
+  response: ApiResponse<FeedResponse>,
+): ApiResponse<FeedResponse> {
+  if ("error" in response) return response;
+
+  return {
+    data: {
+      ...response.data,
+      items: normalizeFeedItems(response.data.items),
+    },
+  };
+}
+
+function normalizePostLikesResponse(
+  response: ApiResponse<PostLikesResponse>,
+): ApiResponse<PostLikesResponse> {
+  if ("error" in response) return response;
+
+  return {
+    data: {
+      ...response.data,
+      items: (response.data.items ?? []).map((item) => ({
+        ...item,
+        actor: {
+          ...item.actor,
+          type: item.actorType,
+        },
+      })),
+    },
+  };
+}
+
 async function fetchApi<T>(
   endpoint: string,
   options?: RequestInit,
 ): Promise<ApiResponse<T>> {
-  try {
-    const response = await fetch(`${API_BASE}${endpoint}`, {
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-      },
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      return {
-        error:
-          errorData.message || `Request failed with status ${response.status}`,
-        statusCode: response.status,
-      };
-    }
-
-    const text = await response.text();
-    const data = text ? JSON.parse(text) : undefined;
-    return { data };
-  } catch (error) {
-    return {
-      error: error instanceof Error ? error.message : "Network error",
-    };
-  }
+  return fetchJson<T>(`${API_BASE}${endpoint}`, options);
 }
 
 // ============================================================================
@@ -74,7 +125,9 @@ export async function getFeed(params: {
   if (USE_MOCK_DATA) {
     // Simulate network delay
     await new Promise((resolve) => setTimeout(resolve, 500));
-    return { data: getMockFeed(params.cursor, params.limit) };
+    return normalizeFeedResponse({
+      data: getMockFeed(params.cursor, params.limit),
+    });
   }
 
   const queryParams = new URLSearchParams({
@@ -84,7 +137,8 @@ export async function getFeed(params: {
   if (params.authorType) queryParams.set("authorType", params.authorType);
   if (params.collegeId) queryParams.set("collegeId", String(params.collegeId));
 
-  return fetchApi<FeedResponse>(`/feed?${queryParams}`);
+  const response = await fetchApi<FeedResponse>(`/feed?${queryParams}`);
+  return normalizeFeedResponse(response);
 }
 
 export async function getGuestFeed(
@@ -93,13 +147,17 @@ export async function getGuestFeed(
 ): Promise<ApiResponse<FeedResponse>> {
   if (USE_MOCK_DATA) {
     await new Promise((resolve) => setTimeout(resolve, 500));
-    return { data: getMockFeed(cursor, limit) };
+    return normalizeFeedResponse({ data: getMockFeed(cursor, limit) });
   }
 
   const params = new URLSearchParams({ limit: String(limit) });
   if (cursor) params.set("cursor", cursor);
 
-  return fetchApi<FeedResponse>(`/feed/guest?${params}`);
+  // Guest feed is a public route; don't force signin redirect on 401 here.
+  const response = await fetchJson<FeedResponse>(`${API_BASE}/feed/guest?${params}`, {
+    redirectOn401: false,
+  });
+  return normalizeFeedResponse(response);
 }
 
 // ============================================================================
@@ -117,7 +175,7 @@ export async function getPost(
     );
 
     if (feedItem && feedItem.type === "post") {
-      return { data: feedItem.post };
+      return { data: normalizePostMetrics(feedItem.post) };
     }
     return { error: "Post not found", statusCode: 404 };
   }
@@ -127,7 +185,9 @@ export async function getPost(
   if (options?.collegeId)
     queryParams.set("collegeId", String(options.collegeId));
 
-  return fetchApi<Post>(`/posts/${postId}?${queryParams}`);
+  const response = await fetchApi<Post>(`/posts/${postId}?${queryParams}`);
+  if ("error" in response) return response;
+  return { data: normalizePostMetrics(response.data) };
 }
 
 export async function createPost(
@@ -194,34 +254,14 @@ export interface MediaUploadResponse {
 export async function uploadPostMedia(
   file: File,
 ): Promise<ApiResponse<MediaUploadResponse>> {
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
+  const formData = new FormData();
+  formData.append("file", file);
 
-    const response = await fetch(`${API_BASE}/posts/media`, {
-      method: "POST",
-      body: formData,
-      credentials: "include",
-      // Note: Don't set Content-Type header - browser sets it with boundary for FormData
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      return {
-        error:
-          errorData.message || `Upload failed with status ${response.status}`,
-        statusCode: response.status,
-      };
-    }
-
-    const text = await response.text();
-    const data = text ? JSON.parse(text) : undefined;
-    return { data };
-  } catch (error) {
-    return {
-      error: error instanceof Error ? error.message : "Upload failed",
-    };
-  }
+  // Note: Don't set Content-Type header - browser sets it with boundary for FormData
+  return fetchJson<MediaUploadResponse>(`${API_BASE}/posts/media`, {
+    method: "POST",
+    body: formData,
+  });
 }
 
 // ============================================================================
@@ -261,6 +301,22 @@ export async function unlikePost(
     method: "DELETE",
     body: JSON.stringify(options || {}),
   });
+}
+
+export async function getPostLikes(
+  postId: string,
+  cursor?: string,
+  limit = 20,
+): Promise<ApiResponse<PostLikesResponse>> {
+  const params = new URLSearchParams({
+    limit: String(limit),
+  });
+  if (cursor) params.set("cursor", cursor);
+
+  const response = await fetchApi<PostLikesResponse>(
+    `/posts/${postId}/likes?${params}`,
+  );
+  return normalizePostLikesResponse(response);
 }
 
 export async function searchHandles(
@@ -558,7 +614,6 @@ export async function getCollegePosts(
 
   const queryString = queryParams.toString();
   return fetchApi<GroupFeedResponse>(
-    `/colleges/${slugId}/posts${queryString ? `?${queryString}` : ""}`
+    `/colleges/${slugId}/posts${queryString ? `?${queryString}` : ""}`,
   );
 }
-
