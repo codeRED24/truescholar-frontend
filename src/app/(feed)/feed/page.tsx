@@ -15,6 +15,7 @@ import { useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import StatsCard from "@/features/social/components/sidebar/StatsCard";
+import { getAuthorProfilePath } from "@/features/social/utils/author-navigation";
 
 export default function FeedPage() {
   // Inside FeedPage component
@@ -49,11 +50,12 @@ export default function FeedPage() {
     authorId: string,
     type: "user" | "college" = "user",
   ) => {
-    if (type === "college") {
-      router.push(`/feed/colleges/${authorId}`);
-    } else {
-      router.push(`/feed/profile/${authorId}`);
-    }
+    router.push(
+      getAuthorProfilePath({
+        authorId,
+        type,
+      }),
+    );
   };
 
   const handlePostEdit = (post: any) => {

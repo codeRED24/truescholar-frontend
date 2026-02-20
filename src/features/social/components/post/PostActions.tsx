@@ -3,6 +3,7 @@
 
 "use client";
 
+import { useState } from "react";
 import { ThumbsUp, MessageSquare, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLikePost } from "../../hooks/use-likes";
@@ -10,8 +11,9 @@ import { useFeedStore } from "../../stores/feed-store";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { ReactionAuthorSelector } from "./ReactionAuthorSelector";
+import { PostLikesModal } from "./PostLikesModal";
 import { useSession } from "@/lib/auth-client";
-import { requireAuth } from "../../utils/auth-redirect";
+import { redirectToSigninWithReturn } from "@/lib/auth-redirect";
 
 interface PostActionsProps {
   postId: string;
@@ -19,7 +21,6 @@ interface PostActionsProps {
   commentCount: number;
   hasLiked: boolean;
   className?: string;
-  groupId?: string;
 }
 
 export function PostActions({
@@ -28,8 +29,15 @@ export function PostActions({
   commentCount,
   hasLiked,
   className,
-  groupId,
 }: PostActionsProps) {
+  const [isLikesModalOpen, setIsLikesModalOpen] = useState(false);
+  const safeLikeCount = Number.isFinite(Number(likeCount))
+    ? Number(likeCount)
+    : 0;
+  const safeCommentCount = Number.isFinite(Number(commentCount))
+    ? Number(commentCount)
+    : 0;
+
   const { data: session } = useSession();
   const { toggle: toggleLike, isLoading: isLiking } = useLikePost(
     postId,
@@ -39,8 +47,6 @@ export function PostActions({
   const reactionAuthor = useFeedStore((s) => s.reactionAuthor);
 
   const handleLike = () => {
-    if (!requireAuth(session?.user)) return;
-
     toggleLike({
       authorType: reactionAuthor?.type,
       collegeId:
@@ -50,17 +56,10 @@ export function PostActions({
     });
   };
 
-  const handleComment = () => {
-    if (!requireAuth(session?.user)) return;
-
-    toggleExpandedComments(postId);
-  };
-
   const handleShare = async () => {
     try {
-      const query = groupId ? `?groupId=${encodeURIComponent(groupId)}` : "";
       await navigator.clipboard.writeText(
-        `${window.location.origin}/feed/post/${postId}${query}`
+        `${window.location.origin}/post/${postId}`
       );
       toast.success("Link copied to clipboard!");
     } catch {
@@ -68,12 +67,51 @@ export function PostActions({
     }
   };
 
+  const handleLikeCountClick = () => {
+    if (!session?.user) {
+      redirectToSigninWithReturn();
+      return;
+    }
+
+    setIsLikesModalOpen(true);
+  };
+
+  const handleCommentCountClick = () => {
+    toggleExpandedComments(postId);
+  };
+
   return (
     <div className={cn("", className)}>
-      {/* Likes count row */}
-      {likeCount > 0 && (
-        <div className="px-3 py-2 text-sm text-muted-foreground">
-          {likeCount} {likeCount === 1 ? "like" : "likes"}
+      {/* Engagement count row */}
+      {(safeLikeCount > 0 || safeCommentCount > 0) && (
+        <div className="px-3 py-2 text-sm text-muted-foreground flex items-center justify-between">
+          <span>
+            {safeLikeCount > 0 ? (
+              <button
+                type="button"
+                onClick={handleLikeCountClick}
+                className="hover:underline underline-offset-2"
+              >
+                {safeLikeCount} {safeLikeCount === 1 ? "like" : "likes"}
+              </button>
+            ) : (
+              ""
+            )}
+          </span>
+          <span className="min-w-[84px] text-right">
+            {safeCommentCount > 0 ? (
+              <button
+                type="button"
+                onClick={handleCommentCountClick}
+                className="hover:underline underline-offset-2"
+              >
+                {safeCommentCount}{" "}
+                {safeCommentCount === 1 ? "comment" : "comments"}
+              </button>
+            ) : (
+              ""
+            )}
+          </span>
         </div>
       )}
 
@@ -101,13 +139,11 @@ export function PostActions({
         {/* Comment Button */}
         <Button
           variant="ghost"
-          onClick={handleComment}
+          onClick={() => toggleExpandedComments(postId)}
           className="flex-1 rounded-none h-11 gap-2 font-medium text-muted-foreground hover:text-foreground"
         >
           <MessageSquare className="h-5 w-5" />
-          <span>
-            Comment{commentCount > 0 ? ` (${commentCount})` : ""}
-          </span>
+          <span>Comment</span>
         </Button>
 
         {/* Share Button */}
@@ -120,6 +156,12 @@ export function PostActions({
           <span>Share</span>
         </Button>
       </div>
+
+      <PostLikesModal
+        postId={postId}
+        open={isLikesModalOpen}
+        onOpenChange={setIsLikesModalOpen}
+      />
     </div>
   );
 }
