@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { Suspense, use, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { Loader2 } from "lucide-react";
@@ -18,7 +18,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { requireAuth } from "@/features/social/utils/auth-redirect";
 
-export default function GroupProfilePage(props: {
+function GroupProfilePageContent(props: {
   params: Promise<{ slugId: string }>;
 }) {
   const params = use(props.params);
@@ -258,5 +258,21 @@ export default function GroupProfilePage(props: {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function GroupProfilePage(props: {
+  params: Promise<{ slugId: string }>;
+}) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      }
+    >
+      <GroupProfilePageContent {...props} />
+    </Suspense>
   );
 }

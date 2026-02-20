@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,7 @@ import { PostSkeleton } from "@/features/social/components/post/PostSkeleton";
 import { usePost } from "@/features/social/hooks/use-post";
 import { useSession } from "@/lib/auth-client";
 
-export default function PostDetailPage() {
+function PostDetailPageContent() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -66,5 +67,19 @@ export default function PostDetailPage() {
         />
       </Card>
     </div>
+  );
+}
+
+export default function PostDetailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="container mx-auto max-w-3xl px-4 py-6">
+          <PostSkeleton />
+        </div>
+      }
+    >
+      <PostDetailPageContent />
+    </Suspense>
   );
 }

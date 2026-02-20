@@ -297,7 +297,6 @@ export function PostCard({
           likeCount={post.likeCount}
           commentCount={post.commentCount}
           hasLiked={post.hasLiked}
-          groupId={groupId}
           className=""
         />
 
