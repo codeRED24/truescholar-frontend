@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { signOut, useSession } from "@/lib/auth-client";
+import { useSession } from "@/lib/auth-client";
 import {
   InputGroup,
   InputGroupAddon,
@@ -51,7 +51,6 @@ export function FeedHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const { data: session } = useSession(); // Assuming auth hook
-  const isAuthenticated = !!session?.user;
   const unreadCount = useNotificationStore((state) => state.unreadCount);
 
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -61,11 +60,11 @@ export function FeedHeader() {
     { label: "Network", icon: Users, href: "/feed/network" },
     { label: "Jobs", icon: Briefcase, href: "/feed/jobs" },
     { label: "Messaging", icon: MessageSquare, href: "/feed/messaging" },
-    {
-      label: "Notifications",
-      icon: Bell,
+    { 
+      label: "Notifications", 
+      icon: Bell, 
       href: "/feed/notifications",
-      count: unreadCount,
+      count: unreadCount 
     },
   ];
 
@@ -87,7 +86,7 @@ export function FeedHeader() {
           <div
             className={cn(
               "hidden md:block relative transition-all duration-300 ease-in-out",
-              isSearchFocused ? "w-96 lg:w-[32rem]" : "w-64 lg:w-80",
+              isSearchFocused ? "w-96 lg:w-[32rem]" : "w-64 lg:w-80"
             )}
           >
             <InputGroup className="rounded-full">
@@ -115,7 +114,7 @@ export function FeedHeader() {
                     href={item.href}
                     className={cn(
                       "flex flex-col items-center justify-center gap-1 pt-4 min-w-[3.5rem] rounded-md transition-colors hover:text-foreground/80",
-                      isActive ? "text-foreground" : "text-muted-foreground",
+                      isActive ? "text-foreground" : "text-muted-foreground"
                     )}
                   >
                     <div className="relative">
@@ -143,69 +142,54 @@ export function FeedHeader() {
           <div className="flex items-center gap-2">
             <AnimatedThemeToggler className="p-2 rounded-full hover:bg-accent hover:text-accent-foreground transition-colors" />
 
-            {isAuthenticated ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="relative h-10 w-10 rounded-full"
-                  >
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage
-                        src={session?.user?.image || ""}
-                        alt={session?.user?.name || "User"}
-                      />
-                      <AvatarFallback>
-                        {session?.user?.name?.charAt(0) || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">
-                        {session?.user?.name || "User"}
-                      </p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        {session?.user?.email}
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/feed/profile">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Profile</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/feed/settings">
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => signOut()}
-                    className="text-destructive focus:bg-destructive/10 focus:text-destructive"
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Link href="/signin">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   className="relative h-10 w-10 rounded-full"
-                  aria-label="Sign in"
                 >
-                  <User className="size-8 text-muted-foreground" />
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage
+                      src={session?.user?.image || ""}
+                      alt={session?.user?.name || "User"}
+                    />
+                    <AvatarFallback>
+                      {session?.user?.name?.charAt(0) || "U"}
+                    </AvatarFallback>
+                  </Avatar>
                 </Button>
-              </Link>
-            )}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {session?.user?.name || "User"}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {session?.user?.email}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/profile">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/settings">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </nav>
 
@@ -244,39 +228,28 @@ export function FeedHeader() {
       {isMobileMenuOpen && (
         <div className="md:hidden bg-background border-b animate-in fade-in slide-in-from-top-2 absolute w-full shadow-lg">
           <div className="px-4 py-2 space-y-1">
-            {isAuthenticated ? (
-              <div className="flex items-center gap-3 p-2 mb-2 border-b">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage
-                    src={session?.user?.image || ""}
-                    alt={session?.user?.name || "User"}
-                  />
-                  <AvatarFallback>
-                    {session?.user?.name?.charAt(0) || "U"}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col">
-                  <span className="font-semibold text-sm">
-                    {session?.user?.name}
-                  </span>
-                  <Link
-                    href="/feed/profile"
-                    className="text-xs text-primary hover:underline"
-                  >
-                    View Profile
-                  </Link>
-                </div>
+            <div className="flex items-center gap-3 p-2 mb-2 border-b">
+              <Avatar className="h-10 w-10">
+                <AvatarImage
+                  src={session?.user?.image || ""}
+                  alt={session?.user?.name || "User"}
+                />
+                <AvatarFallback>
+                  {session?.user?.name?.charAt(0) || "U"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col">
+                <span className="font-semibold text-sm">
+                  {session?.user?.name || "Guest"}
+                </span>
+                <Link
+                  href="/profile"
+                  className="text-xs text-primary hover:underline"
+                >
+                  View Profile
+                </Link>
               </div>
-            ) : (
-              <Link
-                href="/signin"
-                className="flex items-center gap-3 p-3 mb-2 border-b rounded-md hover:bg-accent hover:text-accent-foreground"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <User className="h-5 w-5" />
-                <span className="text-sm font-medium">Sign in</span>
-              </Link>
-            )}
+            </div>
             {navItems.map((item) => (
               <Link
                 key={item.label}
@@ -293,25 +266,20 @@ export function FeedHeader() {
                 )}
               </Link>
             ))}
-            {isAuthenticated && (
-              <div className="border-t pt-2 mt-2">
-                <Link
-                  href="/feed/settings"
-                  className="flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <Settings className="h-5 w-5" />
-                  Settings
-                </Link>
-                <button
-                  onClick={() => signOut()}
-                  className="w-full flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-md hover:bg-destructive/10 text-destructive hover:text-destructive"
-                >
-                  <LogOut className="h-5 w-5" />
-                  Log out
-                </button>
-              </div>
-            )}
+            <div className="border-t pt-2 mt-2">
+              <Link
+                href="/settings"
+                className="flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Settings className="h-5 w-5" />
+                Settings
+              </Link>
+              <button className="w-full flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-md hover:bg-destructive/10 text-destructive hover:text-destructive">
+                <LogOut className="h-5 w-5" />
+                Log out
+              </button>
+            </div>
           </div>
         </div>
       )}

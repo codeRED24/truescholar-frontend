@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { CollegeProfileResponse } from "../../types";
-import { getCollegeProfilePath } from "../../utils/author-navigation";
 
 interface OverviewSectionProps {
   profile: CollegeProfileResponse;
@@ -13,7 +12,6 @@ interface OverviewSectionProps {
 
 export function OverviewSection({ profile, slugId }: OverviewSectionProps) {
   const { college } = profile;
-  const aboutPath = getCollegeProfilePath(slugId, "about");
 
   if (!college.tagline) return null;
 
@@ -27,7 +25,7 @@ export function OverviewSection({ profile, slugId }: OverviewSectionProps) {
           {college.tagline}
         </p>
         <Button variant="outline" className="w-full" asChild>
-          <Link href={aboutPath}>Show all details</Link>
+          <Link href={`/feed/colleges/${slugId}/about`}>Show all details</Link>
         </Button>
       </CardContent>
     </Card>

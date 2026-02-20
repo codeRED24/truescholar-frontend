@@ -227,7 +227,7 @@ export default function LinkedInStyleProfilePage() {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
+      <div className="max-w-4xl mx-auto px-4 py-6 space-y-4">
         {/* Hero Card - LinkedIn style header */}
         <Card className="overflow-hidden border shadow-sm">
           {/* Cover/Banner */}

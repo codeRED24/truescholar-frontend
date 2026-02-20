@@ -32,7 +32,6 @@ import {
 import { useFeedStore } from "../../stores/feed-store"; // Added
 import type { Comment } from "../../types";
 import { cn } from "@/lib/utils";
-import { getUserProfilePath } from "../../utils/author-navigation";
 
 interface CommentItemProps {
   comment: Comment;
@@ -81,7 +80,7 @@ export function CommentItem({
   const canReply = depth < MAX_DEPTH;
 
   const handleAuthorClick = () => {
-    router.push(getUserProfilePath(comment.author.id));
+    router.push(`/profile/${comment.author.id}`);
   };
 
   const handleLike = () => {

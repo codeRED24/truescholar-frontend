@@ -10,7 +10,6 @@ import {
   type EventQueryDto,
   type RsvpsResponse
 } from "../types";
-import { fetchJson } from "@/lib/api-fetch";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
@@ -18,7 +17,33 @@ async function fetchApi<T>(
   endpoint: string,
   options?: RequestInit,
 ): Promise<ApiResponse<T>> {
-  return fetchJson<T>(`${API_BASE}${endpoint}`, options);
+  try {
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+      },
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return {
+        error:
+          errorData.message || `Request failed with status ${response.status}`,
+        statusCode: response.status,
+      };
+    }
+
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : undefined;
+    return { data };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Network error",
+    };
+  }
 }
 
 // ============================================================================

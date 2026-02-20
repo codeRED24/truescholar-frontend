@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Check, X } from "lucide-react";
 import { type GroupJoinRequest } from "../../types";
 import { formatDistanceToNow } from "date-fns";
-import { getUserProfilePath } from "../../utils/author-navigation";
 
 interface JoinRequestCardProps {
   request: GroupJoinRequest;
@@ -21,8 +20,6 @@ export function JoinRequestCard({
   onReject,
   isProcessing,
 }: JoinRequestCardProps) {
-  const profilePath = getUserProfilePath(request.userId);
-
   return (
     <div className="flex items-start gap-4 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
       <Avatar className="h-10 w-10 mt-1">
@@ -35,7 +32,7 @@ export function JoinRequestCard({
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
           <Link
-            href={profilePath}
+            href={`/feed/profile/${request.userId}`}
             className="font-medium hover:underline truncate"
           >
             {request.userName}

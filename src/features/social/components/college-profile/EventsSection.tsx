@@ -9,7 +9,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useEvents } from "../../hooks/use-events";
 import { useCollegeMemberships } from "../../hooks/use-memberships";
 import { EventCardCompact } from "../events/EventCardCompact";
-import { getCollegeProfilePath } from "../../utils/author-navigation";
 
 interface EventsSectionProps {
   slugId: string;
@@ -40,7 +39,6 @@ export function EventsSection({ slugId }: EventsSectionProps) {
 
   const events = data?.data || [];
   const hasEvents = events.length > 0;
-  const eventsPath = getCollegeProfilePath(slugId, "events");
 
   // Hide section for non-admins if no events
   if (!isLoading && !hasEvents && !isAdmin) {
@@ -73,7 +71,9 @@ export function EventsSection({ slugId }: EventsSectionProps) {
               ))}
             </div>
             <Button variant="outline" className="w-full" asChild>
-              <Link href={eventsPath}>Show all events</Link>
+              <Link href={`/feed/colleges/${slugId}/events`}>
+                Show all events
+              </Link>
             </Button>
           </>
         ) : (

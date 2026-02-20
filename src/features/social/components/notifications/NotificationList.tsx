@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSession } from "@/lib/auth-client";
 import { NotificationItem } from "./NotificationItem";
 import { Button } from "@/components/ui/button";
@@ -8,14 +8,12 @@ import { Loader2, CheckCheck } from "lucide-react";
 import { useNotificationStore } from "@/features/social/stores/notification-store";
 import { toast } from "sonner";
 import { useInView } from "react-intersection-observer";
-import { fetchJson } from "@/lib/api-fetch";
-import type { Notification as SocialNotification } from "../../types";
 
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 
 export const NotificationList = () => {
   const { data: session } = useSession();
-  const [notifications, setNotifications] = useState<SocialNotification[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -25,75 +23,52 @@ export const NotificationList = () => {
 
   const { ref, inView } = useInView();
 
-  const fetchNotifications = useCallback(
-    async (pageNum: number, isNew: boolean = false) => {
-      if (!session?.user) return;
+  const fetchNotifications = async (pageNum: number, isNew: boolean = false) => {
+    if (!session?.user) return; // Check for user instead of token
 
-      setLoading(true);
-      try {
-        const result = await fetchJson<SocialNotification[]>(
-          `${process.env.NEXT_PUBLIC_API_URL}/notifications?page=${pageNum}&limit=20`,
-        );
-        if (result.error) {
-          console.error("Failed to fetch notifications", result.error);
-          return;
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/notifications?page=${pageNum}&limit=20`,
+        {
+            credentials: "include"
         }
-
-        const data = result.data ?? [];
+      );
+      if (res.ok) {
+        const data = await res.json();
         if (data.length < 20) setHasMore(false);
         setNotifications((prev) => (isNew ? data : [...prev, ...data]));
-      } catch (error) {
-        console.error("Failed to fetch notifications", error);
-      } finally {
-        setLoading(false);
       }
-    },
-    [session?.user],
-  );
-
-  useEffect(() => {
-    if (!session?.user) {
-      setNotifications([]);
-      setHasMore(true);
+    } catch (error) {
+      console.error("Failed to fetch notifications", error);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    setPage(1);
-    setHasMore(true);
-    fetchNotifications(1, true);
-  }, [fetchNotifications, session?.user]);
+  };
 
   useEffect(() => {
-    if (inView && hasMore && !loading && session?.user) {
-      const nextPage = page + 1;
-      setPage(nextPage);
-      fetchNotifications(nextPage);
+    fetchNotifications(1, true);
+  }, [session]);
+
+  useEffect(() => {
+    if (inView && hasMore && !loading) {
+      setPage((p) => p + 1);
+      fetchNotifications(page + 1);
     }
-  }, [fetchNotifications, hasMore, inView, loading, page, session?.user]);
+  }, [inView]);
 
   const handleMarkAllRead = async () => {
     if (!session?.user) return; // Check for user instead of token
     try {
-      const result = await fetchJson<{ success: boolean }>(
-        `${process.env.NEXT_PUBLIC_API_URL}/notifications/read-all`,
-        {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/read-all`, {
         method: "POST",
-        },
-      );
-
-      if (result.error) {
-        toast.error("Failed to mark all as read");
-        return;
-      }
-
+        credentials: "include"
+      });
       setNotifications((prev) =>
         prev.map((n) => ({ ...n, isRead: true }))
       );
       updateStoreCount();
       toast.success("All notifications marked as read");
     } catch (error) {
-      console.error("Failed to mark all as read", error);
       toast.error("Failed to mark all as read");
     }
   };
@@ -106,24 +81,20 @@ export const NotificationList = () => {
     decrementUnreadCount();
 
     try {
-      const result = await fetchJson<{ success: boolean }>(
+      await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/notifications/${id}/read`,
         {
           method: "POST",
-        },
+          credentials: "include"
+        }
       );
-
-      if (result.error) {
-        throw new Error(result.error);
-      }
     } catch (error) {
         // Revert on error if critical, but for read status usually fine to ignore
-        console.error("Failed to mark read", error);
+        console.error("Failed to mark read");
     }
   };
 
   const handleDelete = async (id: string) => {
-      void id;
       // Implement delete logic if needed
   };
 

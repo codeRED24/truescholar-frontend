@@ -13,13 +13,10 @@ import {
   type UpdatePostDto,
   type FeedResponse,
   type FeedItem,
-  type GroupFeedResponse,
 } from "../types";
 import { feedKeys } from "./use-feed";
 import { toast } from "sonner";
 import { useFeedStore } from "../stores/feed-store"; // Added import
-import { groupDetailKeys } from "./use-group-detail";
-import { collegePostsKeys } from "./use-college-profile";
 
 // Query key factory
 export const postKeys = {
@@ -180,13 +177,7 @@ export function useDeletePost() {
 export function useUpdatePostInCache() {
   const queryClient = useQueryClient();
 
-  return (
-    postId: string,
-    updates: Partial<Post> | ((post: Post) => Partial<Post>)
-  ) => {
-    const resolveUpdates = (post: Post): Partial<Post> =>
-      typeof updates === "function" ? updates(post) : updates;
-
+  return (postId: string, updates: Partial<Post>) => {
     // Update in feed pages
     queryClient.setQueriesData(
       { queryKey: feedKeys.all },
@@ -205,67 +196,12 @@ export function useUpdatePostInCache() {
             ...page,
             items: page.items.map((item: FeedItem) => {
               if (item.type === "post" && item.post.id === postId) {
-                const nextUpdates = resolveUpdates(item.post);
                 return {
                   ...item,
-                  post: { ...item.post, ...nextUpdates },
+                  post: { ...item.post, ...updates },
                 };
               }
               return item;
-            }),
-          })),
-        };
-      }
-    );
-
-    // Update in group feed pages
-    queryClient.setQueriesData(
-      { queryKey: groupDetailKeys.all },
-      (oldData: unknown) => {
-        if (!oldData || typeof oldData !== "object") return oldData;
-
-        const data = oldData as {
-          pages?: GroupFeedResponse[];
-          pageParams?: unknown[];
-        };
-
-        if (!data.pages || !Array.isArray(data.pages)) return oldData;
-
-        return {
-          ...data,
-          pages: data.pages.map((page) => ({
-            ...page,
-            posts: (page.posts ?? []).map((post) => {
-              if (post.id !== postId) return post;
-              const nextUpdates = resolveUpdates(post as Post);
-              return { ...post, ...nextUpdates };
-            }),
-          })),
-        };
-      }
-    );
-
-    // Update in college profile posts pages
-    queryClient.setQueriesData(
-      { queryKey: collegePostsKeys.all },
-      (oldData: unknown) => {
-        if (!oldData || typeof oldData !== "object") return oldData;
-
-        const data = oldData as {
-          pages?: Array<{ posts: Post[] }>;
-          pageParams?: unknown[];
-        };
-
-        if (!data.pages || !Array.isArray(data.pages)) return oldData;
-
-        return {
-          ...data,
-          pages: data.pages.map((page) => ({
-            ...page,
-            posts: (page.posts ?? []).map((post) => {
-              if (post.id !== postId) return post;
-              const nextUpdates = resolveUpdates(post);
-              return { ...post, ...nextUpdates };
             }),
           })),
         };
@@ -276,7 +212,7 @@ export function useUpdatePostInCache() {
     queryClient.setQueryData(
       postKeys.detail(postId),
       (oldPost: Post | undefined) =>
-        oldPost ? { ...oldPost, ...resolveUpdates(oldPost) } : oldPost
+        oldPost ? { ...oldPost, ...updates } : oldPost
     );
   };
 }
