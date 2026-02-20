@@ -21,6 +21,7 @@ import {
   GroupFeedPost,
 } from "../../types";
 import { formatRelativeTime } from "../../utils/formatters";
+import { getCollegeProfilePath } from "../../utils/author-navigation";
 
 interface PostsCarouselProps {
   slugId: string;
@@ -32,6 +33,7 @@ export function PostsCarousel({ slugId }: PostsCarouselProps) {
   const [canScrollRight, setCanScrollRight] = useState(true);
 
   const { data, isLoading, error } = useCollegePosts(slugId);
+  const postsPath = getCollegeProfilePath(slugId, "posts");
 
   // Flatten pages into posts array and map to standard Post type (limit to first 8)
   const posts: Post[] =
@@ -137,7 +139,7 @@ export function PostsCarousel({ slugId }: PostsCarouselProps) {
             Failed to load posts. Please try again.
           </div>
           <Button variant="outline" className="w-full" asChild>
-            <Link href={`/feed/colleges/${slugId}/posts`}>Show all posts</Link>
+            <Link href={postsPath}>Show all posts</Link>
           </Button>
         </CardContent>
       </Card>
@@ -160,7 +162,7 @@ export function PostsCarousel({ slugId }: PostsCarouselProps) {
             </p>
           </div>
           <Button variant="outline" className="w-full" asChild>
-            <Link href={`/feed/colleges/${slugId}/posts`}>Show all posts</Link>
+            <Link href={postsPath}>Show all posts</Link>
           </Button>
         </CardContent>
       </Card>
@@ -209,7 +211,7 @@ export function PostsCarousel({ slugId }: PostsCarouselProps) {
         </div>
 
         <Button variant="outline" className="w-full" asChild>
-          <Link href={`/feed/colleges/${slugId}/posts`}>Show all posts</Link>
+          <Link href={postsPath}>Show all posts</Link>
         </Button>
       </CardContent>
     </Card>
@@ -223,6 +225,7 @@ interface PostPreviewCardProps {
 }
 
 function PostPreviewCard({ post, slugId }: PostPreviewCardProps) {
+  const postsPath = getCollegeProfilePath(slugId, "posts");
   const isCollegePost = post.authorType === "college" && !!post.taggedCollege;
 
   // Determine display author
@@ -255,7 +258,7 @@ function PostPreviewCard({ post, slugId }: PostPreviewCardProps) {
 
   return (
     <Link
-      href={`/feed/colleges/${slugId}/posts`}
+      href={postsPath}
       className="flex-shrink-0 w-[280px] md:w-[300px] block"
     >
       <div className="border rounded-lg p-4 bg-card hover:bg-accent/50 transition-colors h-full flex flex-col">

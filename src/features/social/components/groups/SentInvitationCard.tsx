@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { type GroupInvitation } from "../../types";
 import { formatDistanceToNow } from "date-fns";
+import { getUserProfilePath } from "../../utils/author-navigation";
 
 interface SentInvitationCardProps {
   invitation: GroupInvitation;
@@ -20,6 +21,7 @@ export function SentInvitationCard({
 }: SentInvitationCardProps) {
   // invitedUser should be present for sent invitations
   const user = invitation.invitedUser || { id: "unknown", name: "Unknown User", image: null };
+  const profilePath = getUserProfilePath(user.id);
 
   return (
     <div className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
@@ -34,7 +36,7 @@ export function SentInvitationCard({
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <Link
-              href={`/feed/profile/${user.id}`}
+              href={profilePath}
               className="font-medium hover:underline truncate"
             >
               {user.name}

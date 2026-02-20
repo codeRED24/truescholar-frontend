@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useGroupSuggestions } from "../../hooks/use-groups";
 import { Loader2 } from "lucide-react";
+import { getAuthorProfilePath } from "../../utils/author-navigation";
 
 export function PeopleAlsoViewedCard() {
   const { data: suggestions, isLoading } = useGroupSuggestions(3);
@@ -32,10 +33,16 @@ export function PeopleAlsoViewedCard() {
           const slug = college.slug
             ? `${college.slug}-${college.college_id}`
             : `${college.college_id}`;
+          const collegePath = getAuthorProfilePath({
+            authorId: String(college.college_id),
+            type: "college",
+            collegeSlug: slug,
+            collegeId: college.college_id,
+          });
 
           return (
             <div key={college.college_id} className="flex items-center gap-3">
-              <Link href={`/feed/colleges/${slug}`}>
+              <Link href={collegePath}>
                 <Avatar className="h-10 w-10 rounded-lg">
                   <AvatarImage
                     src={college.logo_img ?? undefined}
@@ -48,7 +55,7 @@ export function PeopleAlsoViewedCard() {
               </Link>
               <div className="flex-1 min-w-0">
                 <Link
-                  href={`/feed/colleges/${slug}`}
+                  href={collegePath}
                   className="font-medium text-sm truncate block hover:underline"
                 >
                   {college.college_name}

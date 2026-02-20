@@ -19,7 +19,7 @@ import {
   getReplies,
 } from "../api/social-api";
 import { isApiError, type Comment, type CreateCommentDto } from "../types";
-import { postKeys, useUpdatePostInCache } from "./use-post";
+import { useUpdatePostInCache } from "./use-post";
 import { membershipKeys } from "./use-memberships";
 import { useFeedStore } from "../stores/feed-store"; // Added import
 
@@ -131,13 +131,14 @@ export function useCreateComment(postId: string) {
       queryClient.invalidateQueries({ queryKey: commentKeys.list(postId) });
 
       // Increment comment count on post
-      updatePostInCache(postId, {
-        commentCount:
-          (
-            queryClient.getQueryData(postKeys.detail(postId)) as {
-              commentCount: number;
-            }
-          )?.commentCount + 1 || 1,
+      updatePostInCache(postId, (post) => {
+        const baseCount = Number.isFinite(Number(post.commentCount))
+          ? Number(post.commentCount)
+          : 0;
+
+        return {
+          commentCount: baseCount + 1,
+        };
       });
     },
   });
@@ -165,14 +166,14 @@ export function useDeleteComment(postId: string) {
       queryClient.invalidateQueries({ queryKey: commentKeys.list(postId) });
 
       // Decrement comment count on post
-      const currentCount =
-        (
-          queryClient.getQueryData(postKeys.detail(postId)) as {
-            commentCount: number;
-          }
-        )?.commentCount || 1;
-      updatePostInCache(postId, {
-        commentCount: Math.max(0, currentCount - 1),
+      updatePostInCache(postId, (post) => {
+        const baseCount = Number.isFinite(Number(post.commentCount))
+          ? Number(post.commentCount)
+          : 0;
+
+        return {
+          commentCount: Math.max(0, baseCount - 1),
+        };
       });
     },
   });

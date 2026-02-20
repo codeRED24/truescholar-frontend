@@ -6,6 +6,10 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useCollegeAlumni } from "../../hooks/use-college-profile";
 import { Loader2 } from "lucide-react";
+import {
+  getCollegeProfilePath,
+  getUserProfilePath,
+} from "../../utils/author-navigation";
 
 interface AlumniCardProps {
   slugId: string;
@@ -14,6 +18,7 @@ interface AlumniCardProps {
 export function AlumniCard({ slugId }: AlumniCardProps) {
   const { data, isLoading } = useCollegeAlumni(slugId);
   const alumni = data?.pages.flatMap((page) => page.people) || [];
+  const peoplePath = getCollegeProfilePath(slugId, "people");
 
   if (isLoading) {
     return (
@@ -35,7 +40,7 @@ export function AlumniCard({ slugId }: AlumniCardProps) {
       <CardContent className="space-y-4">
         {alumni.slice(0, 3).map((person) => (
           <div key={person.id} className="flex items-center gap-3">
-            <Link href={`/profile/${person.id}`}>
+            <Link href={getUserProfilePath(person.id)}>
               <Avatar className="h-10 w-10">
                 <AvatarImage src={person.image ?? undefined} />
                 <AvatarFallback>{person.name.charAt(0)}</AvatarFallback>
@@ -43,7 +48,7 @@ export function AlumniCard({ slugId }: AlumniCardProps) {
             </Link>
             <div className="flex-1 min-w-0">
               <Link
-                href={`/profile/${person.id}`}
+                href={getUserProfilePath(person.id)}
                 className="font-medium text-sm truncate block hover:underline"
               >
                 {person.name}
@@ -58,7 +63,7 @@ export function AlumniCard({ slugId }: AlumniCardProps) {
           </div>
         ))}
         <Button variant="ghost" className="w-full text-sm" asChild>
-          <Link href={`/feed/colleges/${slugId}/people`}>Show all</Link>
+          <Link href={peoplePath}>Show all</Link>
         </Button>
       </CardContent>
     </Card>

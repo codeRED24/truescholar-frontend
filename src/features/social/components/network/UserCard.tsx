@@ -10,6 +10,7 @@ import { UserMinus, MessageCircle, Loader2 } from "lucide-react";
 import { useUnfollowUser } from "../../hooks/use-network";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { getUserProfilePath } from "../../utils/author-navigation";
 
 interface UserCardProps {
   user: {
@@ -48,7 +49,7 @@ export function UserCard({
   };
 
   const handleProfileClick = () => {
-    router.push(`/profile/${user.id}`);
+    router.push(getUserProfilePath(user.id));
   };
 
   if (isUnfollowed) return null;

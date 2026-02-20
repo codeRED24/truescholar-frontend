@@ -3,6 +3,7 @@
 
 "use client";
 
+import { useState } from "react";
 import { ThumbsUp, MessageSquare, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLikePost } from "../../hooks/use-likes";
@@ -10,6 +11,9 @@ import { useFeedStore } from "../../stores/feed-store";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { ReactionAuthorSelector } from "./ReactionAuthorSelector";
+import { PostLikesModal } from "./PostLikesModal";
+import { useSession } from "@/lib/auth-client";
+import { redirectToSigninWithReturn } from "@/lib/auth-redirect";
 
 interface PostActionsProps {
   postId: string;
@@ -26,6 +30,15 @@ export function PostActions({
   hasLiked,
   className,
 }: PostActionsProps) {
+  const [isLikesModalOpen, setIsLikesModalOpen] = useState(false);
+  const safeLikeCount = Number.isFinite(Number(likeCount))
+    ? Number(likeCount)
+    : 0;
+  const safeCommentCount = Number.isFinite(Number(commentCount))
+    ? Number(commentCount)
+    : 0;
+
+  const { data: session } = useSession();
   const { toggle: toggleLike, isLoading: isLiking } = useLikePost(
     postId,
     hasLiked
@@ -54,12 +67,51 @@ export function PostActions({
     }
   };
 
+  const handleLikeCountClick = () => {
+    if (!session?.user) {
+      redirectToSigninWithReturn();
+      return;
+    }
+
+    setIsLikesModalOpen(true);
+  };
+
+  const handleCommentCountClick = () => {
+    toggleExpandedComments(postId);
+  };
+
   return (
     <div className={cn("", className)}>
-      {/* Likes count row */}
-      {likeCount > 0 && (
-        <div className="px-3 py-2 text-sm text-muted-foreground">
-          {likeCount} {likeCount === 1 ? "like" : "likes"}
+      {/* Engagement count row */}
+      {(safeLikeCount > 0 || safeCommentCount > 0) && (
+        <div className="px-3 py-2 text-sm text-muted-foreground flex items-center justify-between">
+          <span>
+            {safeLikeCount > 0 ? (
+              <button
+                type="button"
+                onClick={handleLikeCountClick}
+                className="hover:underline underline-offset-2"
+              >
+                {safeLikeCount} {safeLikeCount === 1 ? "like" : "likes"}
+              </button>
+            ) : (
+              ""
+            )}
+          </span>
+          <span className="min-w-[84px] text-right">
+            {safeCommentCount > 0 ? (
+              <button
+                type="button"
+                onClick={handleCommentCountClick}
+                className="hover:underline underline-offset-2"
+              >
+                {safeCommentCount}{" "}
+                {safeCommentCount === 1 ? "comment" : "comments"}
+              </button>
+            ) : (
+              ""
+            )}
+          </span>
         </div>
       )}
 
@@ -104,6 +156,12 @@ export function PostActions({
           <span>Share</span>
         </Button>
       </div>
+
+      <PostLikesModal
+        postId={postId}
+        open={isLikesModalOpen}
+        onOpenChange={setIsLikesModalOpen}
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { getCollegeProfilePath } from "../../utils/author-navigation";
 
 interface CollegeTabsProps {
   slugId: string;
@@ -10,11 +11,12 @@ interface CollegeTabsProps {
 
 export function CollegeTabs({ slugId }: CollegeTabsProps) {
   const pathname = usePathname();
-  const baseUrl = `/colleges/${slugId}`; // Note: Actual route might be /feed/colleges/...
 
   // Check if we are in the feed route
   const isFeedRoute = pathname.includes("/feed/");
-  const basePath = isFeedRoute ? `/feed/colleges/${slugId}` : `/colleges/${slugId}`;
+  const basePath = isFeedRoute
+    ? getCollegeProfilePath(slugId)
+    : `/colleges/${slugId}`;
 
   const tabs = [
     { name: "Home", path: basePath, exact: true },
