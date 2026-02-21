@@ -1,12 +1,31 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { updateProfileHandle } from "@/api/profile/profile-api";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
+  normalizeProfileHandle,
+  validateProfileHandle,
+} from "@/features/social/utils/profile-handle";
 
 interface ProfileSidebarProps {
-  userId: string;
+  profileHandle: string;
+  isOwner?: boolean;
+  onHandleUpdated?: () => Promise<void> | void;
 }
 
 const PLACEHOLDER_PEOPLE = [
@@ -14,9 +33,59 @@ const PLACEHOLDER_PEOPLE = [
   { id: "user-placeholder-2", name: "Rahul Verma", subtitle: "UX Strategist" },
 ];
 
-export function ProfileSidebar({ userId }: ProfileSidebarProps) {
-  const publicProfilePath = `/feed/profile/${userId}`;
-  const publicProfileLabel = `truescholar.com/feed/profile/${userId}`;
+export function ProfileSidebar({
+  profileHandle,
+  isOwner = false,
+  onHandleUpdated,
+}: ProfileSidebarProps) {
+  const router = useRouter();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [draftHandle, setDraftHandle] = useState(profileHandle);
+  const [isSaving, setIsSaving] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setDraftHandle(profileHandle);
+  }, [profileHandle]);
+
+  const normalizedHandle = useMemo(
+    () => normalizeProfileHandle(draftHandle),
+    [draftHandle],
+  );
+  const validationError = useMemo(
+    () => validateProfileHandle(draftHandle),
+    [draftHandle],
+  );
+
+  const publicProfilePath = `/feed/profile/${profileHandle}`;
+  const publicProfileLabel = `truescholar.com/feed/profile/${profileHandle}`;
+
+  const handleSave = async () => {
+    if (validationError) return;
+    setIsSaving(true);
+    setSubmitError(null);
+
+    try {
+      const result = await updateProfileHandle(normalizedHandle);
+      if ("error" in result) {
+        const errorMessage =
+          result.statusCode === 409
+            ? "This profile URL is already taken."
+            : result.error || "Unable to update profile URL";
+        setSubmitError(errorMessage);
+        return;
+      }
+
+      await onHandleUpdated?.();
+      setIsDialogOpen(false);
+      toast.success("Profile URL updated");
+      router.replace(`/feed/profile/${result.handle}`);
+    } catch {
+      setSubmitError("Unable to update profile URL");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -26,9 +95,23 @@ export function ProfileSidebar({ userId }: ProfileSidebarProps) {
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="break-all text-sm text-muted-foreground">{publicProfileLabel}</p>
-          <Button asChild variant="outline" className="w-full rounded-full">
-            <Link href={publicProfilePath}>View profile</Link>
-          </Button>
+          <div className="grid grid-cols-1 gap-2">
+            <Button asChild variant="outline" className="w-full rounded-full">
+              <Link href={publicProfilePath}>View profile</Link>
+            </Button>
+            {isOwner ? (
+              <Button
+                variant="ghost"
+                className="w-full rounded-full"
+                onClick={() => {
+                  setSubmitError(null);
+                  setIsDialogOpen(true);
+                }}
+              >
+                Edit URL
+              </Button>
+            ) : null}
+          </div>
         </CardContent>
       </Card>
 
@@ -56,6 +139,51 @@ export function ProfileSidebar({ userId }: ProfileSidebarProps) {
           </Button>
         </CardContent>
       </Card>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit profile URL</DialogTitle>
+            <DialogDescription>
+              Choose a unique handle for your public profile.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            <Input
+              value={draftHandle}
+              onChange={(event) => setDraftHandle(event.target.value)}
+              placeholder="your_handle"
+              autoFocus
+            />
+            <p className="text-xs text-muted-foreground">
+              URL preview: truescholar.com/feed/profile/{normalizedHandle || "your_handle"}
+            </p>
+            {validationError ? (
+              <p className="text-xs text-destructive">{validationError}</p>
+            ) : null}
+            {submitError ? (
+              <p className="text-xs text-destructive">{submitError}</p>
+            ) : null}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDialogOpen(false)}
+              disabled={isSaving}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={Boolean(validationError) || isSaving}
+            >
+              {isSaving ? "Saving..." : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -56,11 +56,13 @@ export function PostLikesModal({
   const handleProfileNavigation = (like: (typeof likes)[number]) => {
     const targetPath = getAuthorProfilePath({
       authorId: like.actor.id,
+      authorHandle: like.actorType === "user" ? like.actor.handle : null,
       type: like.actorType,
       collegeSlug: like.actor.slug,
       collegeId: like.actor.collegeId,
     });
 
+    if (!targetPath) return;
     onOpenChange(false);
     router.push(targetPath);
   };

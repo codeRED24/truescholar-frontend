@@ -33,7 +33,9 @@ export default function CollegePeoplePage(props: {
         {alumni.length > 0 ? (
           <div className="space-y-4">
             {alumni.map((person) => {
-              const profilePath = getUserProfilePath(person.id);
+              const profilePath = person.handle
+                ? getUserProfilePath(person.handle)
+                : null;
 
               return (
                 <div
@@ -41,19 +43,30 @@ export default function CollegePeoplePage(props: {
                   className="flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
-                    <Link href={profilePath}>
+                    {profilePath ? (
+                      <Link href={profilePath}>
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src={person.image ?? undefined} />
+                          <AvatarFallback>{person.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                      </Link>
+                    ) : (
                       <Avatar className="h-12 w-12">
                         <AvatarImage src={person.image ?? undefined} />
                         <AvatarFallback>{person.name.charAt(0)}</AvatarFallback>
                       </Avatar>
-                    </Link>
+                    )}
                     <div>
-                      <Link
-                        href={profilePath}
-                        className="font-medium block hover:underline"
-                      >
-                        {person.name}
-                      </Link>
+                      {profilePath ? (
+                        <Link
+                          href={profilePath}
+                          className="font-medium block hover:underline"
+                        >
+                          {person.name}
+                        </Link>
+                      ) : (
+                        <p className="font-medium">{person.name}</p>
+                      )}
                       <p className="text-sm text-muted-foreground">
                         {person.handle
                           ? `@${person.handle}`

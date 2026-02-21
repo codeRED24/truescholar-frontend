@@ -9,6 +9,7 @@ export interface Author {
   id: string;
   name: string;
   image?: string;
+  handle?: string | null;
   user_type?: string; // Matches backend FeedAuthorDto
 }
 
@@ -149,6 +150,7 @@ export interface FeedSuggestedUser {
   id: string;
   name: string;
   image?: string;
+  handle?: string | null;
   mutualCount: number;
 }
 
@@ -185,6 +187,7 @@ export interface PostLikeActor {
   id: string;
   name: string;
   image?: string | null;
+  handle?: string | null;
   slug?: string;
   collegeId?: number;
 }

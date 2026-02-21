@@ -26,6 +26,7 @@ export interface NetworkUser {
   id: string;
   name: string;
   image: string | null;
+  handle?: string | null;
   headline?: string;
   user_type?: string;
 }
@@ -40,6 +41,7 @@ export interface SuggestedUser {
   id: string;
   name: string;
   image: string | null;
+  handle?: string | null;
   mutualCount: number; // Mutual follows
 }
 

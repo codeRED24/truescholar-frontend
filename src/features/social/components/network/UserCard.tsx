@@ -17,6 +17,7 @@ interface UserCardProps {
     id: string;
     name: string;
     image: string | null;
+    handle?: string | null;
     user_type?: string;
   };
   showUnfollow?: boolean;
@@ -49,7 +50,8 @@ export function UserCard({
   };
 
   const handleProfileClick = () => {
-    router.push(getUserProfilePath(user.id));
+    if (!user.handle) return;
+    router.push(getUserProfilePath(user.handle));
   };
 
   if (isUnfollowed) return null;
@@ -59,7 +61,7 @@ export function UserCard({
       <CardContent className="p-4 flex items-center gap-4">
         {/* Avatar */}
         <Avatar
-          className="h-12 w-12 cursor-pointer hover:opacity-80 transition-opacity"
+          className="h-12 w-12 transition-opacity hover:opacity-80"
           onClick={handleProfileClick}
         >
           <AvatarImage src={user.image ?? undefined} />
@@ -69,7 +71,7 @@ export function UserCard({
         {/* User info */}
         <div className="flex-1 min-w-0">
           <h3
-            className="font-semibold text-sm line-clamp-1 cursor-pointer hover:underline"
+            className="line-clamp-1 text-sm font-semibold hover:underline"
             onClick={handleProfileClick}
           >
             {user.name}

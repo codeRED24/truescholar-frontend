@@ -10,11 +10,11 @@ import {
   RightSidebar,
   MessagingWidget,
   MobileProfileCard,
+  type Post,
 } from "@/features/social";
 import { useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import StatsCard from "@/features/social/components/sidebar/StatsCard";
 import { getAuthorProfilePath } from "@/features/social/utils/author-navigation";
 
 export default function FeedPage() {
@@ -22,7 +22,7 @@ export default function FeedPage() {
   const { data: session, isPending } = useSession();
   const router = useRouter();
   const [isPostComposerOpen, setIsPostComposerOpen] = useState(false);
-  const [editingPost, setEditingPost] = useState<any>(null); // Using any temporarily for Post type safely
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
 
   const isAuthenticated = !!session?.user;
   const currentUserId = session?.user?.id;
@@ -49,16 +49,18 @@ export default function FeedPage() {
   const handleAuthorClick = (
     authorId: string,
     type: "user" | "college" = "user",
+    authorHandle?: string | null,
   ) => {
-    router.push(
-      getAuthorProfilePath({
-        authorId,
-        type,
-      }),
-    );
+    const path = getAuthorProfilePath({
+      authorId,
+      authorHandle,
+      type,
+    });
+    if (!path) return;
+    router.push(path);
   };
 
-  const handlePostEdit = (post: any) => {
+  const handlePostEdit = (post: Post) => {
     setEditingPost(post);
     setIsPostComposerOpen(true);
   };
@@ -85,8 +87,6 @@ export default function FeedPage() {
             {isAuthenticated && currentUser && (
               <SidebarProfile user={currentUser} stats={mockStats} />
             )}
-
-            <StatsCard stats={mockStats} />
             <SidebarNavigation />
           </div>
         </div>

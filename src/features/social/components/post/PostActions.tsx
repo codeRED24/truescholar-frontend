@@ -21,6 +21,7 @@ interface PostActionsProps {
   commentCount: number;
   hasLiked: boolean;
   className?: string;
+  onCommentClick?: (postId: string) => void;
 }
 
 export function PostActions({
@@ -29,6 +30,7 @@ export function PostActions({
   commentCount,
   hasLiked,
   className,
+  onCommentClick,
 }: PostActionsProps) {
   const [isLikesModalOpen, setIsLikesModalOpen] = useState(false);
   const safeLikeCount = Number.isFinite(Number(likeCount))
@@ -77,6 +79,11 @@ export function PostActions({
   };
 
   const handleCommentCountClick = () => {
+    if (onCommentClick) {
+      onCommentClick(postId);
+      return;
+    }
+
     toggleExpandedComments(postId);
   };
 
@@ -139,7 +146,9 @@ export function PostActions({
         {/* Comment Button */}
         <Button
           variant="ghost"
-          onClick={() => toggleExpandedComments(postId)}
+          onClick={() =>
+            onCommentClick ? onCommentClick(postId) : toggleExpandedComments(postId)
+          }
           className="flex-1 rounded-none h-11 gap-2 font-medium text-muted-foreground hover:text-foreground"
         >
           <MessageSquare className="h-5 w-5" />

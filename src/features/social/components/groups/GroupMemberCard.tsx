@@ -35,7 +35,9 @@ export function GroupMemberCard({
   const isOwner = member.role === "owner";
   const isAdmin = member.role === "admin";
   const canEdit = canManage && currentUserRole === "owner" && !isOwner;
-  const profilePath = getUserProfilePath(member.userId);
+  const profilePath = member.user.handle
+    ? getUserProfilePath(member.user.handle)
+    : null;
 
   return (
     <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent/50 transition-colors">
@@ -48,12 +50,16 @@ export function GroupMemberCard({
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <Link
-            href={profilePath}
-            className="font-medium hover:underline truncate"
-          >
-            {member.user.name}
-          </Link>
+          {profilePath ? (
+            <Link
+              href={profilePath}
+              className="font-medium hover:underline truncate"
+            >
+              {member.user.name}
+            </Link>
+          ) : (
+            <span className="font-medium truncate">{member.user.name}</span>
+          )}
           <GroupRoleBadge role={member.role} size="sm" />
         </div>
         <p className="text-xs text-muted-foreground">

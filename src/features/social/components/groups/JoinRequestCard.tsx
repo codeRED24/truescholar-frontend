@@ -21,7 +21,9 @@ export function JoinRequestCard({
   onReject,
   isProcessing,
 }: JoinRequestCardProps) {
-  const profilePath = getUserProfilePath(request.userId);
+  const profilePath = request.userHandle
+    ? getUserProfilePath(request.userHandle)
+    : null;
 
   return (
     <div className="flex items-start gap-4 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
@@ -34,12 +36,16 @@ export function JoinRequestCard({
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
-          <Link
-            href={profilePath}
-            className="font-medium hover:underline truncate"
-          >
-            {request.userName}
-          </Link>
+          {profilePath ? (
+            <Link
+              href={profilePath}
+              className="font-medium hover:underline truncate"
+            >
+              {request.userName}
+            </Link>
+          ) : (
+            <span className="font-medium truncate">{request.userName}</span>
+          )}
           <span className="text-xs text-muted-foreground whitespace-nowrap">
             {formatDistanceToNow(new Date(request.createdAt), { addSuffix: true })}
           </span>

@@ -14,10 +14,11 @@ interface UsePublicProfilePageResult {
   isLoading: boolean;
   error: string | null;
   toggleFollow: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 export function usePublicProfilePage(
-  userId: string,
+  identifier: string,
   sessionUserId?: string,
 ): UsePublicProfilePageResult {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -28,57 +29,49 @@ export function usePublicProfilePage(
   const [isFollowLoading, setIsFollowLoading] = useState(false);
 
   const isOwner = useMemo(() => {
-    if (!sessionUserId) return false;
-    return sessionUserId === userId;
-  }, [sessionUserId, userId]);
+    if (!sessionUserId || !profileUser?.id) return false;
+    return sessionUserId === profileUser.id;
+  }, [profileUser?.id, sessionUserId]);
+
+  const loadProfile = useCallback(async () => {
+    if (!identifier) {
+      setError("Invalid profile URL");
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    const result = await getPublicProfile(identifier);
+
+    if ("error" in result) {
+      setError(result.error || "Failed to fetch profile");
+      setProfile(null);
+      setProfileUser(null);
+    } else {
+      setProfile(result.profile);
+      setProfileUser(result.user);
+    }
+
+    setIsLoading(false);
+  }, [identifier]);
 
   useEffect(() => {
-    let isMounted = true;
-
-    const loadProfile = async () => {
-      if (!userId) {
-        if (isMounted) {
-          setError("Invalid profile URL");
-          setIsLoading(false);
-        }
-        return;
-      }
-
-      setIsLoading(true);
-      setError(null);
-
-      const result = await getPublicProfile(userId);
-      if (!isMounted) return;
-
-      if ("error" in result) {
-        setError(result.error || "Failed to fetch profile");
-        setProfile(null);
-        setProfileUser(null);
-      } else {
-        setProfile(result.profile);
-        setProfileUser(result.user);
-      }
-
-      setIsLoading(false);
-    };
-
-    loadProfile();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [userId]);
+    void loadProfile();
+  }, [loadProfile]);
 
   useEffect(() => {
     let isMounted = true;
 
     const loadFollowStatus = async () => {
-      if (!sessionUserId || !userId || isOwner) {
+      const targetUserId = profileUser?.id;
+      if (!sessionUserId || !targetUserId || isOwner) {
         setIsFollowing(false);
         return;
       }
 
-      const status = await getFollowStatus(userId);
+      const status = await getFollowStatus(targetUserId);
       if (!isMounted) return;
 
       if (!("error" in status)) {
@@ -91,10 +84,11 @@ export function usePublicProfilePage(
     return () => {
       isMounted = false;
     };
-  }, [sessionUserId, userId, isOwner]);
+  }, [isOwner, profileUser?.id, sessionUserId]);
 
   const toggleFollow = useCallback(async () => {
-    if (!sessionUserId || !userId || isOwner || isFollowLoading) return;
+    const targetUserId = profileUser?.id;
+    if (!sessionUserId || !targetUserId || isOwner || isFollowLoading) return;
 
     setIsFollowLoading(true);
     const previous = isFollowing;
@@ -102,7 +96,7 @@ export function usePublicProfilePage(
 
     try {
       if (previous) {
-        const response = await unfollowUser(userId);
+        const response = await unfollowUser(targetUserId);
         if ("error" in response) {
           setIsFollowing(previous);
           toast.error(response.error || "Failed to unfollow");
@@ -110,7 +104,7 @@ export function usePublicProfilePage(
         }
         toast.success("Unfollowed");
       } else {
-        const response = await followUser(userId);
+        const response = await followUser(targetUserId);
         if ("error" in response) {
           setIsFollowing(previous);
           toast.error(response.error || "Failed to follow");
@@ -124,7 +118,7 @@ export function usePublicProfilePage(
     } finally {
       setIsFollowLoading(false);
     }
-  }, [isFollowLoading, isFollowing, isOwner, sessionUserId, userId]);
+  }, [isFollowLoading, isFollowing, isOwner, profileUser?.id, sessionUserId]);
 
   return {
     profile,
@@ -135,5 +129,6 @@ export function usePublicProfilePage(
     isLoading,
     error,
     toggleFollow,
+    refreshProfile: loadProfile,
   };
 }

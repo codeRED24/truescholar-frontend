@@ -57,6 +57,7 @@ export interface GroupMember {
     id: string;
     name: string;
     image: string | null;
+    handle?: string | null;
   };
   role: GroupRole;
   joinedAt: string;
@@ -67,6 +68,7 @@ export interface GroupJoinRequest {
   userId: string;
   userName: string;
   userImage: string | null;
+  userHandle?: string | null;
   message: string | null;
   status: JoinRequestStatus;
   createdAt: string;
@@ -82,11 +84,13 @@ export interface GroupInvitation {
     id: string;
     name: string;
     image: string | null;
+    handle?: string | null;
   };
   invitedUser?: {
     id: string;
     name: string;
     image: string | null;
+    handle?: string | null;
   };
   status: InvitationStatus;
   createdAt: string;
@@ -156,6 +160,7 @@ export interface GroupFeedPost {
     id: string;
     name: string;
     image: string | null;
+    handle?: string | null;
   };
   type: string;
   content: string;

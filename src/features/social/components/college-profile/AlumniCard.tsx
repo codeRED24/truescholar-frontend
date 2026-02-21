@@ -40,19 +40,30 @@ export function AlumniCard({ slugId }: AlumniCardProps) {
       <CardContent className="space-y-4">
         {alumni.slice(0, 3).map((person) => (
           <div key={person.id} className="flex items-center gap-3">
-            <Link href={getUserProfilePath(person.id)}>
+            {person.handle ? (
+              <Link href={getUserProfilePath(person.handle)}>
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={person.image ?? undefined} />
+                  <AvatarFallback>{person.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+              </Link>
+            ) : (
               <Avatar className="h-10 w-10">
                 <AvatarImage src={person.image ?? undefined} />
                 <AvatarFallback>{person.name.charAt(0)}</AvatarFallback>
               </Avatar>
-            </Link>
+            )}
             <div className="flex-1 min-w-0">
-              <Link
-                href={getUserProfilePath(person.id)}
-                className="font-medium text-sm truncate block hover:underline"
-              >
-                {person.name}
-              </Link>
+              {person.handle ? (
+                <Link
+                  href={getUserProfilePath(person.handle)}
+                  className="font-medium text-sm truncate block hover:underline"
+                >
+                  {person.name}
+                </Link>
+              ) : (
+                <p className="font-medium text-sm truncate">{person.name}</p>
+              )}
               <p className="text-xs text-muted-foreground truncate">
                 {person.handle ? `@${person.handle}` : "Alumni"}
               </p>

@@ -11,6 +11,8 @@ import { type PublicProfileUser, type UserProfile } from "@/api/profile/profile-
 interface ProfileHeroCardProps {
   profile: UserProfile | null;
   profileUser: PublicProfileUser;
+  followersCount?: number;
+  followingCount?: number;
   isOwner: boolean;
   isAuthenticated: boolean;
   isFollowing: boolean;
@@ -43,6 +45,8 @@ function getJoinedDate(dateValue: string): string {
 export function ProfileHeroCard({
   profile,
   profileUser,
+  followersCount = 0,
+  followingCount = 0,
   isOwner,
   isAuthenticated,
   isFollowing,
@@ -57,6 +61,9 @@ export function ProfileHeroCard({
     }
     return "TrueScholar member";
   }, [profile?.bio]);
+
+  const formatCount = (value: number) =>
+    new Intl.NumberFormat("en-US", { notation: "compact" }).format(value);
 
   return (
     <Card className="overflow-hidden border-neutral-200 shadow-sm">
@@ -86,6 +93,16 @@ export function ProfileHeroCard({
               <span className="inline-flex items-center gap-1">
                 <Calendar className="h-3.5 w-3.5" />
                 Joined {getJoinedDate(profileUser.createdAt)}
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground sm:text-sm">
+              <span>
+                <strong className="text-foreground">{formatCount(followersCount)}</strong>{" "}
+                followers
+              </span>
+              <span>
+                <strong className="text-foreground">{formatCount(followingCount)}</strong>{" "}
+                following
               </span>
             </div>
           </div>
@@ -123,7 +140,6 @@ export function ProfileHeroCard({
           </div>
         </div>
 
-        <div className="text-xs text-muted-foreground">{profileUser.email}</div>
       </CardContent>
     </Card>
   );

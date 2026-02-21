@@ -190,6 +190,36 @@ export async function getPost(
   return { data: normalizePostMetrics(response.data) };
 }
 
+export interface UserPostsActivityResponse {
+  posts: Post[];
+  total: number;
+  nextCursor: string | null;
+}
+
+export async function getUserPosts(
+  userId: string,
+  cursor?: string,
+  limit = 6,
+): Promise<ApiResponse<UserPostsActivityResponse>> {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (cursor) params.set("cursor", cursor);
+
+  const response = await fetchApi<UserPostsActivityResponse>(
+    `/posts/user/${userId}?${params}`,
+  );
+
+  if ("error" in response) return response;
+
+  return {
+    data: {
+      ...response.data,
+      posts: (response.data.posts ?? []).map((post) =>
+        normalizePostMetrics(post),
+      ),
+    },
+  };
+}
+
 export async function createPost(
   data: CreatePostDto,
 ): Promise<ApiResponse<Post>> {
@@ -355,6 +385,12 @@ export interface FollowStatusResponse {
   isFollowedBy: boolean;
 }
 
+export interface UserFollowStatsResponse {
+  followersCount: number;
+  followingCount: number;
+  followingCollegesCount: number;
+}
+
 interface FollowOptions {
   authorType?: string;
   followerCollegeId?: number;
@@ -364,6 +400,12 @@ export async function getFollowStatus(
   userId: string,
 ): Promise<ApiResponse<FollowStatusResponse>> {
   return fetchApi<FollowStatusResponse>(`/followers/status/${userId}`);
+}
+
+export async function getUserFollowStats(
+  userId: string,
+): Promise<ApiResponse<UserFollowStatsResponse>> {
+  return fetchApi<UserFollowStatsResponse>(`/followers/stats/${userId}`);
 }
 
 export async function followUser(
@@ -492,6 +534,44 @@ export async function getComments(
   if (options?.collegeId) params.set("collegeId", String(options.collegeId));
 
   return fetchApi<CommentsResponse>(`/posts/${postId}/comments?${params}`);
+}
+
+export interface UserCommentActivityItem {
+  id: string;
+  postId: string;
+  content: string;
+  createdAt: string;
+  likeCount: number;
+  replyCount: number;
+  hasLiked: boolean;
+  post: {
+    id: string;
+    content: string;
+    createdAt: string | null;
+  };
+  author: {
+    id: string;
+    name: string;
+    image?: string | null;
+    handle?: string | null;
+    type: "user" | "college";
+  };
+}
+
+export interface UserCommentsActivityResponse {
+  items: UserCommentActivityItem[];
+  nextCursor: string | null;
+}
+
+export async function getUserComments(
+  userId: string,
+  cursor?: string,
+  limit = 6,
+): Promise<ApiResponse<UserCommentsActivityResponse>> {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (cursor) params.set("cursor", cursor);
+
+  return fetchApi<UserCommentsActivityResponse>(`/comments/user/${userId}?${params}`);
 }
 
 export async function createComment(

@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { Loader2 } from "lucide-react";
+import { getMyProfileHandle } from "@/api/profile/profile-api";
 import { getUserProfilePath } from "@/features/social/utils/author-navigation";
 
 export default function ProfileRedirect() {
@@ -11,17 +12,23 @@ export default function ProfileRedirect() {
   const { data: session, isPending } = useSession();
 
   useEffect(() => {
-    if (!isPending) {
+    if (isPending) return;
+
+    const redirectToMyProfile = async () => {
       if (session?.user?.id) {
-        // Redirect to user's own profile
-        router.replace(getUserProfilePath(session.user.id));
-      } else {
-        // Not logged in - redirect to sign in
-        sessionStorage.setItem("redirectAfterLogin", "/feed/profile");
-        router.replace("/signin");
+        const result = await getMyProfileHandle();
+        if (!("error" in result) && result.handle) {
+          router.replace(getUserProfilePath(result.handle));
+          return;
+        }
       }
-    }
-  }, [session, isPending, router]);
+
+      sessionStorage.setItem("redirectAfterLogin", "/feed/profile");
+      router.replace("/signin");
+    };
+
+    void redirectToMyProfile();
+  }, [isPending, router, session?.user?.id]);
 
   return (
     <div className="flex h-screen items-center justify-center">

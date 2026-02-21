@@ -43,11 +43,19 @@ export type PostCardVariant = "default" | "compact" | "detail";
 interface PostCardProps {
   post: Post;
   variant?: PostCardVariant;
+  truncateLength?: number;
+  contentLineClamp?: 1 | 2 | 3 | 4 | 5 | 6;
+  alignActionsToBottom?: boolean;
   currentUserId?: string;
   onEdit?: (post: Post) => void;
   onDelete?: (postId: string) => void;
   onReport?: (postId: string) => void;
-  onAuthorClick?: (authorId: string, type?: "user" | "college") => void;
+  onAuthorClick?: (
+    authorId: string,
+    type?: "user" | "college",
+    authorHandle?: string | null,
+  ) => void;
+  onCommentClick?: (postId: string) => void;
   className?: string;
   groupId?: string;
 }
@@ -55,11 +63,15 @@ interface PostCardProps {
 export function PostCard({
   post,
   variant = "default",
+  truncateLength = 280,
+  contentLineClamp,
+  alignActionsToBottom = false,
   currentUserId,
   onEdit,
   onDelete,
   onReport,
   onAuthorClick,
+  onCommentClick,
   className,
   groupId,
 }: PostCardProps) {
@@ -72,11 +84,25 @@ export function PostCard({
 
   const isCollegePost = post.authorType === "college" && !!post.taggedCollege;
   const isOwner = currentUserId === post.author.id; // User is still the creator
-  const shouldTruncate = variant !== "detail" && post.content.length > 280;
+  const shouldTruncate = variant !== "detail" && post.content.length > truncateLength;
   const displayContent =
     shouldTruncate && !isExpanded
-      ? post.content.slice(0, 280) + "…"
+      ? post.content.slice(0, truncateLength) + "…"
       : post.content;
+  const contentLineClampClass =
+    contentLineClamp === 1
+      ? "line-clamp-1"
+      : contentLineClamp === 2
+        ? "line-clamp-2"
+        : contentLineClamp === 3
+          ? "line-clamp-3"
+          : contentLineClamp === 4
+            ? "line-clamp-4"
+            : contentLineClamp === 5
+              ? "line-clamp-5"
+              : contentLineClamp === 6
+                ? "line-clamp-6"
+                : undefined;
 
   // Determine display author (User or College)
   const displayAuthor: Author = isCollegePost
@@ -178,9 +204,16 @@ export function PostCard({
 
   return (
     <Card className={cn("border-0 shadow-none", className)}>
-      <CardContent className={cn("p-4 pb-0", variant === "compact" && "p-3")}>
-        {/* Header */}
-        <div className="flex items-start mb-3">
+      <CardContent
+        className={cn(
+          "p-4 pb-0",
+          variant === "compact" && "p-3",
+          alignActionsToBottom && "flex h-full flex-col",
+        )}
+      >
+        <div className={cn(alignActionsToBottom && "flex-1")}>
+          {/* Header */}
+          <div className="flex items-start mb-3">
           <AuthorHeader
             author={displayAuthor}
             createdAt={post.createdAt}
@@ -190,115 +223,125 @@ export function PostCard({
             onClick={() =>
               onAuthorClick?.(
                 displayAuthor.id,
-                isCollegePost ? "college" : "user"
+                isCollegePost ? "college" : "user",
+                isCollegePost ? null : post.author.handle ?? null,
               )
             }
           />
 
-          <div className="ml-auto flex items-center">
-            {!isOwner && currentUserId && !isFollowing && !groupId && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="mr-1 h-8 font-semibold px-2 text-primary hover:text-primary/80 hover:bg-primary/10"
-                onClick={handleFollow}
-                disabled={isFollowLoading}
-              >
-                {isFollowLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  "+ Follow"
-                )}
-              </Button>
-            )}
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            <div className="ml-auto flex items-center">
+              {!isOwner && currentUserId && !isFollowing && !groupId && (
                 <Button
                   variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-muted-foreground"
+                  size="sm"
+                  className="mr-1 h-8 font-semibold px-2 text-primary hover:text-primary/80 hover:bg-primary/10"
+                  onClick={handleFollow}
+                  disabled={isFollowLoading}
                 >
-                  <MoreHorizontal className="h-4 w-4" />
+                  {isFollowLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "+ Follow"
+                  )}
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleCopyLink}>
-                  <Link2 className="h-4 w-4 mr-2" />
-                  Copy link
-                </DropdownMenuItem>
+              )}
 
-                {isOwner && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => onEdit?.(post)}>
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => onDelete?.(post.id)}
-                      className="text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </DropdownMenuItem>
-                  </>
-                )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground"
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleCopyLink}>
+                    <Link2 className="h-4 w-4 mr-2" />
+                    Copy link
+                  </DropdownMenuItem>
 
-                {!isOwner && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => onReport?.(post.id)}
-                      className="text-destructive"
-                    >
-                      <Flag className="h-4 w-4 mr-2" />
-                      Report
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  {isOwner && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => onEdit?.(post)}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => onDelete?.(post.id)}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </>
+                  )}
+
+                  {!isOwner && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => onReport?.(post.id)}
+                        className="text-destructive"
+                      >
+                        <Flag className="h-4 w-4 mr-2" />
+                        Report
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
-        </div>
 
-        {/* Content */}
-        <div className="mb-3">
-          <p className="whitespace-pre-wrap wrap-break-word">
-            {renderContentWithMentions(displayContent, post.mentions)}
-          </p>
-          {shouldTruncate && !isExpanded && (
-            <button
-              onClick={() => setIsExpanded(true)}
-              className="text-primary text-sm font-medium hover:underline"
+          {/* Content */}
+          <div className="mb-3">
+            <p
+              className={cn(
+                "whitespace-pre-wrap wrap-break-word",
+                contentLineClampClass,
+              )}
             >
-              See more
-            </button>
+              {renderContentWithMentions(displayContent, post.mentions)}
+            </p>
+            {shouldTruncate && !isExpanded && (
+              <button
+                onClick={() => setIsExpanded(true)}
+                className="text-primary text-sm font-medium hover:underline"
+              >
+                See more
+              </button>
+            )}
+          </div>
+
+          {/* Media */}
+          {post.media.length > 0 && (
+            <MediaGallery media={post.media} className="mb-3" />
+          )}
+
+          {/* Post Type Badge (for announcements, events, etc.) */}
+          {post.type && post.type !== "general" && (
+            <div className="mb-3">
+              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded capitalize">
+                {post.type}
+              </span>
+            </div>
           )}
         </div>
 
-        {/* Media */}
-        {post.media.length > 0 && (
-          <MediaGallery media={post.media} className="mb-3" />
-        )}
-
-        {/* Post Type Badge (for announcements, events, etc.) */}
-        {post.type && post.type !== "general" && (
-          <div className="mb-3">
-            <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded capitalize">
-              {post.type}
-            </span>
-          </div>
-        )}
-
         {/* Actions */}
-        <PostActions
-          postId={post.id}
-          likeCount={post.likeCount}
-          commentCount={post.commentCount}
-          hasLiked={post.hasLiked}
-          className=""
-        />
+        <div className={cn(alignActionsToBottom && "mt-auto")}>
+          <PostActions
+            postId={post.id}
+            likeCount={post.likeCount}
+            commentCount={post.commentCount}
+            hasLiked={post.hasLiked}
+            onCommentClick={onCommentClick}
+            className=""
+          />
+        </div>
 
         {/* Comments Section (expandable) */}
         {shouldShowComments && (

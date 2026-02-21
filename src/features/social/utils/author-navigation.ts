@@ -1,14 +1,20 @@
 export type AuthorNavigationType = "user" | "college";
 
 interface AuthorProfilePathOptions {
-  authorId: string;
+  authorId?: string;
+  authorHandle?: string | null;
   type?: AuthorNavigationType;
   collegeSlug?: string;
   collegeId?: string | number;
 }
 
+export function hasUserHandle(handle?: string | null): handle is string {
+  return typeof handle === "string" && handle.trim().length > 0;
+}
+
 export function getAuthorProfilePath({
   authorId,
+  authorHandle,
   type = "user",
   collegeSlug,
   collegeId,
@@ -20,12 +26,16 @@ export function getAuthorProfilePath({
     return `/feed/colleges/${collegeIdentifier}`;
   }
 
-  return `/feed/profile/${authorId}`;
+  if (!hasUserHandle(authorHandle)) {
+    return "";
+  }
+
+  return `/feed/profile/${encodeURIComponent(authorHandle)}`;
 }
 
-export function getUserProfilePath(userId: string): string {
+export function getUserProfilePath(userHandle: string): string {
   return getAuthorProfilePath({
-    authorId: userId,
+    authorHandle: userHandle,
     type: "user",
   });
 }

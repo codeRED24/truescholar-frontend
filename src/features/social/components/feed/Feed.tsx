@@ -16,7 +16,11 @@ import type { Post, FeedItem } from "../../types";
 interface FeedProps {
   isAuthenticated?: boolean;
   currentUserId?: string;
-  onAuthorClick?: (authorId: string, type?: "user" | "college") => void;
+  onAuthorClick?: (
+    authorId: string,
+    type?: "user" | "college",
+    authorHandle?: string | null,
+  ) => void;
   onPostEdit?: (post: Post) => void;
   onPostDelete?: (postId: string) => void;
   className?: string;

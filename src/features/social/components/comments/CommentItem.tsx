@@ -81,7 +81,8 @@ export function CommentItem({
   const canReply = depth < MAX_DEPTH;
 
   const handleAuthorClick = () => {
-    router.push(getUserProfilePath(comment.author.id));
+    if (!comment.author.handle) return;
+    router.push(getUserProfilePath(comment.author.handle));
   };
 
   const handleLike = () => {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import {
   ProfileSidebar,
 } from "@/features/social/components/profile-page";
 import { usePublicProfilePage } from "@/features/social/hooks/use-public-profile-page";
+import { useUserFollowStats } from "@/features/social/hooks/use-profile-activity";
 
 function ProfileContentSkeleton() {
   return (
@@ -43,9 +45,18 @@ export default function ProfilePage() {
   const params = useParams();
   const router = useRouter();
   const { data: session, isPending: isSessionPending } = useSession();
+  const sessionAuthor = session?.user
+    ? {
+        id: session.user.id,
+        name: session.user.name ?? "You",
+        image: session.user.image ?? undefined,
+      }
+    : undefined;
 
-  const paramUserId = params?.userId;
-  const userId = Array.isArray(paramUserId) ? paramUserId[0] : paramUserId;
+  const paramIdentifier = params?.userId;
+  const handle = Array.isArray(paramIdentifier)
+    ? paramIdentifier[0]
+    : paramIdentifier;
 
   const {
     profile,
@@ -56,9 +67,19 @@ export default function ProfilePage() {
     isLoading,
     error,
     toggleFollow,
-  } = usePublicProfilePage(userId || "", session?.user?.id);
+    refreshProfile,
+  } = usePublicProfilePage(handle || "", session?.user?.id);
+  const { data: followStats } = useUserFollowStats(profileUser?.id || "", {
+    enabled: Boolean(profileUser?.id),
+  });
 
-  if (!userId) {
+  useEffect(() => {
+    if (!profileUser?.handle) return;
+    if (!handle || profileUser.handle === handle) return;
+    router.replace(`/feed/profile/${profileUser.handle}`);
+  }, [handle, profileUser?.handle, router]);
+
+  if (!handle) {
     return (
       <div className="min-h-screen bg-[#F4F2EE] dark:bg-black">
         <div className="container mx-auto max-w-7xl px-4 py-6">
@@ -135,6 +156,8 @@ export default function ProfilePage() {
             <ProfileHeroCard
               profile={profile}
               profileUser={profileUser}
+              followersCount={followStats?.followersCount}
+              followingCount={followStats?.followingCount}
               isOwner={isOwner}
               isAuthenticated={Boolean(session?.user)}
               isFollowing={isFollowing}
@@ -143,14 +166,23 @@ export default function ProfilePage() {
             />
             <ProfileAnalyticsCard />
             <ProfileAboutCard bio={profile?.bio} />
-            <ProfileActivityCard />
+            <ProfileActivityCard
+              activityUserId={profileUser.id}
+              profileHandle={profileUser.handle || handle}
+              isOwner={isOwner}
+              currentUser={sessionAuthor}
+            />
             <ProfileExperienceCard experience={profile?.experience} />
             <ProfileEducationCard education={profile?.education} />
           </div>
 
           <div className="lg:col-span-4">
             <div className="space-y-4 lg:sticky lg:top-20">
-              <ProfileSidebar userId={userId} />
+              <ProfileSidebar
+                profileHandle={profileUser.handle || handle}
+                isOwner={isOwner}
+                onHandleUpdated={refreshProfile}
+              />
             </div>
           </div>
         </div>

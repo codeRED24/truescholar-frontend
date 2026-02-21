@@ -20,8 +20,12 @@ export function SentInvitationCard({
   isProcessing,
 }: SentInvitationCardProps) {
   // invitedUser should be present for sent invitations
-  const user = invitation.invitedUser || { id: "unknown", name: "Unknown User", image: null };
-  const profilePath = getUserProfilePath(user.id);
+  const user = invitation.invitedUser || {
+    id: "unknown",
+    name: "Unknown User",
+    image: null,
+  };
+  const profilePath = user.handle ? getUserProfilePath(user.handle) : null;
 
   return (
     <div className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
@@ -35,12 +39,16 @@ export function SentInvitationCard({
 
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <Link
-              href={profilePath}
-              className="font-medium hover:underline truncate"
-            >
-              {user.name}
-            </Link>
+            {profilePath ? (
+              <Link
+                href={profilePath}
+                className="font-medium hover:underline truncate"
+              >
+                {user.name}
+              </Link>
+            ) : (
+              <span className="font-medium truncate">{user.name}</span>
+            )}
             <span className="text-xs text-muted-foreground whitespace-nowrap hidden sm:inline-block">
               • Sent {formatDistanceToNow(new Date(invitation.createdAt), { addSuffix: true })}
             </span>

@@ -25,6 +25,8 @@ const baseProps = {
     image: null,
     createdAt: "2025-01-01T00:00:00.000Z",
   },
+  followersCount: 1234,
+  followingCount: 89,
   isFollowing: false,
   isFollowLoading: false,
   onToggleFollow: vi.fn(async () => undefined),
@@ -56,5 +58,19 @@ describe("ProfileHeroCard", () => {
 
     expect(screen.queryByRole("button", { name: "Follow" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /message/i })).toBeDisabled();
+  });
+
+  it("renders follower/following stats and hides public email", () => {
+    render(
+      <ProfileHeroCard
+        {...baseProps}
+        isOwner={false}
+        isAuthenticated
+      />,
+    );
+
+    expect(screen.getByText(/followers/i)).toBeInTheDocument();
+    expect(screen.getByText(/following/i)).toBeInTheDocument();
+    expect(screen.queryByText("john@example.com")).not.toBeInTheDocument();
   });
 });

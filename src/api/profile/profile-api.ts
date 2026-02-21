@@ -55,7 +55,7 @@ export interface UpdateProfileDto {
   skills?: string[];
 }
 
-type ApiError = { error: string };
+type ApiError = { error: string; statusCode?: number };
 
 async function requestJson<T>(
   path: string,
@@ -65,7 +65,7 @@ async function requestJson<T>(
   if (result.error) {
     return { error: result.error };
   }
-  return (result.data ?? ({} as T));
+  return result.data ?? ({} as T);
 }
 
 function jsonOptions(method: string, body?: unknown): RequestInit {
@@ -87,23 +87,47 @@ export async function getProfile(): Promise<
   return requestJson<{ profile: UserProfile }>("/profile", jsonOptions("GET"));
 }
 
-// Get public profile by user ID
+// Get public profile by handle
 export interface PublicProfileUser {
   id: string;
   name: string;
   email: string;
   image?: string | null;
   createdAt: string;
+  handle?: string | null;
 }
 
 export async function getPublicProfile(
-  userId: string,
+  handle: string,
 ): Promise<
   { profile: UserProfile; user: PublicProfileUser } | { error: string }
 > {
   return requestJson<{ profile: UserProfile; user: PublicProfileUser }>(
-    `/profile/${userId}`,
+    `/profile/${handle}`,
     jsonOptions("GET"),
+  );
+}
+
+export interface ProfileHandleResponse {
+  handle: string;
+  profileUrl: string;
+}
+
+export async function getMyProfileHandle(): Promise<
+  ProfileHandleResponse | { error: string }
+> {
+  return requestJson<ProfileHandleResponse>(
+    "/profile/handle/me",
+    jsonOptions("GET"),
+  );
+}
+
+export async function updateProfileHandle(
+  handle: string,
+): Promise<ProfileHandleResponse | { error: string; statusCode?: number }> {
+  return requestJson<ProfileHandleResponse>(
+    "/profile/handle",
+    jsonOptions("PUT", { handle }),
   );
 }
 
