@@ -101,7 +101,6 @@ function SigninPageContent() {
 
       if (result.error) {
         toast.error(result.error.message || "Invalid credentials");
-        setIsSubmitting(false);
         return;
       }
 
@@ -109,6 +108,7 @@ function SigninPageContent() {
     } catch (err) {
       console.error("Login error:", err);
       toast.error("Failed to login. Please try again.");
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -128,7 +128,6 @@ function SigninPageContent() {
 
       if (result.error) {
         toast.error(result.error.message || "Invalid credentials");
-        setIsSubmitting(false);
         return;
       }
 
@@ -136,6 +135,7 @@ function SigninPageContent() {
     } catch (err) {
       console.error("Login error:", err);
       toast.error("Failed to login. Please try again.");
+    } finally {
       setIsSubmitting(false);
     }
   };
