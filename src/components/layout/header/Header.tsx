@@ -50,14 +50,14 @@ const DialogTitle = dynamic(
   () => import("@/components/ui/dialog").then((mod) => mod.DialogTitle),
   {
     ssr: false,
-  }
+  },
 );
 
 const SearchModal = dynamic(
   () => import("@/components/miscellaneous/SearchModal"),
   {
     ssr: false,
-  }
+  },
 );
 
 // const LeadModal = dynamic(() => import("@/components/modals/LeadModal"), {
@@ -88,7 +88,7 @@ const Header: React.FC = () => {
   const [scrolling, setScrolling] = useState(false);
   const [activeStream, setActiveStream] = useState<number | null>(null);
   const [activeSubSection, setActiveSubSection] = useState<NavOption | null>(
-    null
+    null,
   );
   const [showMoreStreams, setShowMoreStreams] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false); // State for mobile Sheet
@@ -98,7 +98,7 @@ const Header: React.FC = () => {
   const searchModalRef = useRef<HTMLDivElement>(null);
 
   const additionalStreams = overStreamData.filter(
-    (stream) => !Object.keys(streamNames).includes(stream.stream_id.toString())
+    (stream) => !Object.keys(streamNames).includes(stream.stream_id.toString()),
   );
 
   const fetchNavData = useCallback(async () => {
@@ -108,14 +108,20 @@ const Header: React.FC = () => {
       setOverStreamData(over_stream_section);
       setCitiesData(cities_section.slice(0, 10));
       setExamsByStream(
-        over_stream_section.reduce((acc, stream) => {
-          acc[stream.stream_id] = stream.exams.map((exam) => ({
-            exam_id: exam.exam_id,
-            slug: exam.slug ?? "",
-            exam_name: exam.exam_name,
-          }));
-          return acc;
-        }, {} as Record<number, { exam_id: number; slug: string; exam_name: string }[]>)
+        over_stream_section.reduce(
+          (acc, stream) => {
+            acc[stream.stream_id] = stream.exams.map((exam) => ({
+              exam_id: exam.exam_id,
+              slug: exam.slug ?? "",
+              exam_name: exam.exam_name,
+            }));
+            return acc;
+          },
+          {} as Record<
+            number,
+            { exam_id: number; slug: string; exam_name: string }[]
+          >,
+        ),
       );
     } catch (error) {
       console.error("Error loading stream data", error);
@@ -161,7 +167,7 @@ const Header: React.FC = () => {
   const renderOptions = (
     type: NavOption,
     streamId: number | null,
-    streamName?: string
+    streamName?: string,
   ) => {
     if (!streamId || !streamName) return null;
     const stream = overStreamData.find((s) => s.stream_id === streamId);
@@ -339,7 +345,7 @@ const Header: React.FC = () => {
                                 setActiveStream(
                                   activeStream === Number(id)
                                     ? null
-                                    : Number(id)
+                                    : Number(id),
                                 )
                               }
                             >
@@ -378,7 +384,7 @@ const Header: React.FC = () => {
                               </ul>
                             )}
                           </li>
-                        )
+                        ),
                       )}
                       {additionalStreams.length > 0 && (
                         <li>
@@ -422,7 +428,7 @@ const Header: React.FC = () => {
                         <h3 className="font-semibold uppercase text-sm">
                           {getOptionLabel(
                             activeSubSection,
-                            streamNames[activeStream!]?.name || "More"
+                            streamNames[activeStream!]?.name || "More",
                           )}
                         </h3>
                         <ArrowLeft
@@ -436,8 +442,8 @@ const Header: React.FC = () => {
                           activeStream,
                           streamNames[activeStream!]?.name ||
                             overStreamData.find(
-                              (s) => s.stream_id === activeStream
-                            )?.stream_name
+                              (s) => s.stream_id === activeStream,
+                            )?.stream_name,
                         )}
                       </div>
                     </div>
@@ -506,7 +512,7 @@ const Header: React.FC = () => {
                     {user.name}
                   </div>
                   <Link
-                    href="/profile"
+                    href="/feed/profile"
                     className="flex items-center gap-2 w-full px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
                   >
                     <User className="w-4 h-4" />
@@ -611,7 +617,7 @@ const Header: React.FC = () => {
                         {additionalStreams.map((stream) => (
                           <Link
                             href={`/college/${formatName(
-                              stream.stream_name
+                              stream.stream_name,
                             )}-colleges`}
                             prefetch
                             key={stream.stream_id}
@@ -660,7 +666,7 @@ const Header: React.FC = () => {
                     {user.name}
                   </div>
                   <Link
-                    href="/profile"
+                    href="/feed/profile"
                     className="flex items-center gap-2 w-full px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
                   >
                     <User className="w-4 h-4" />
